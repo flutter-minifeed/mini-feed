@@ -1,0 +1,39 @@
+name: ✨ 기능
+description: 화면·데이터·서버 기능을 구현할 때 사용해요
+labels: ['type: feature']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        제목은 `[MP1] 글쓰기 입력·300자 제한 구현`처럼 단계를 앞에 붙여 주세요.
+        담당자는 **Assignees**, 단계와 마감은 **Milestone**, 영역은 `area:` 라벨로 지정해요.
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: 목표
+      description: 이 이슈가 끝나면 무엇이 되는지 한두 문장으로 적어 주세요.
+      placeholder: 입력부터 작성 완료·취소까지의 상태를 일관되게 처리한다.
+    validations:
+      required: true
+
+  - type: textarea
+    id: done
+    attributes:
+      label: 작업·완료 기준
+      description: 확인할 수 있는 단위로 나누고, 마지막 항목에 검증 방법(테스트 케이스 번호·실기기 확인)을 적어 주세요.
+      value: |
+        - [ ]
+        - [ ]
+        - [ ] 검증:
+    validations:
+      required: true
+
+  - type: textarea
+    id: reference
+    attributes:
+      label: 참고
+      description: Figma 시안, 관련 요구사항 ID, 선행 이슈 등 (선택)
+      placeholder: |
+        - Figma: [글쓰기](https://www.figma.com/design/jXkTiGX1WcgWJrd7jQnDXK?node-id=158-10)
+        - 요구사항: C1·C2·R1 · 선행: #4, #5
