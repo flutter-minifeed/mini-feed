@@ -1,4 +1,4 @@
-package com.minifeed.minifeed
+package com.minifeed
 
 import io.flutter.embedding.android.FlutterActivity
 
