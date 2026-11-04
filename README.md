@@ -1,7 +1,21 @@
 # Mini Feed
 
-Flutter로 개발하는 미니 피드 팀 프로젝트입니다. 앱 소스는 저장소의 `app/`에 둡니다.
+Flutter로 개발하는 미니 피드 팀 프로젝트입니다. 앱 소스는 저장소 루트의 `app/` 한 곳에서 관리합니다.
 
-현재 프로젝트 초기 구성 단계입니다. 기본 앱 코드 공유와 실행 검증은 [이슈 #3](https://github.com/flutter-minifeed/mini-feed/issues/3)에서 진행합니다.
+## 화면 구성
 
-프로젝트 생성, Chrome 실행, Android 실기기 검증은 각각 확인한 결과를 기록합니다. 이 README의 추가는 앱 구현이나 실행 검증 완료를 뜻하지 않습니다.
+(#7·#8·#9 구현 후 작성)
+
+## 더미 데이터 구조
+
+(#5 구현 후 작성)
+
+## 실행 절차
+
+Flutter 3.47.9 stable / Dart 3.13.7, Android 최소 API 24
+
+Android 패키지 ID: `com.minifeed`
+
+1. `flutter doctor`로 환경 확인
+2. 저장소 루트에서 `cd app` 실행 후 `flutter pub get`
+3. `flutter run`
