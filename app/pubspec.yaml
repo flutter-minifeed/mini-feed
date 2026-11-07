@@ -53,6 +53,11 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # #40 메모리 저장소가 앱 시작 때 한 번 읽는 더미 데이터
+  assets:
+    - assets/dummy/post/posts.json
+    - assets/dummy/comment/comments.json
+
   fonts:
     - family: NotoSansKR
       fonts:
