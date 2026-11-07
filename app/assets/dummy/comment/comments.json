@@ -1,0 +1,749 @@
+[
+  {
+    "id": "post-50-c1",
+    "postId": "post-50",
+    "authorId": "user-11",
+    "nickName": "구름 위 토끼",
+    "colorIndex": 2,
+    "body": "오늘 비 진짜 왔다갔다 하더라",
+    "createdAt": "2026-10-30T13:23:00+09:00"
+  },
+  {
+    "id": "post-48-c1",
+    "postId": "post-48",
+    "authorId": "user-07",
+    "nickName": "산책하는 고래",
+    "colorIndex": 6,
+    "body": "표정만 멀쩡한 걸수도 있어요ㅋㅋ 저도 그래요",
+    "createdAt": "2026-10-30T20:35:00+09:00"
+  },
+  {
+    "id": "post-47-c1",
+    "postId": "post-47",
+    "authorId": "user-02",
+    "nickName": "새벽 수달",
+    "colorIndex": 1,
+    "body": "오타 발견했어?",
+    "createdAt": "2026-10-30T22:55:00+09:00"
+  },
+  {
+    "id": "post-47-c2",
+    "postId": "post-47",
+    "authorId": "user-me",
+    "nickName": "처음 온 펭귄",
+    "colorIndex": 4,
+    "body": "아니 아직 안 봤는데 보면 뭔가 나올 것 같아서 안 보는 중",
+    "createdAt": "2026-10-30T22:58:00+09:00"
+  },
+  {
+    "id": "post-46-c1",
+    "postId": "post-46",
+    "authorId": "user-03",
+    "nickName": "졸린 판다",
+    "colorIndex": 2,
+    "body": "혹시 흰색 충전기도 있어요?",
+    "createdAt": "2026-10-31T12:44:00+09:00"
+  },
+  {
+    "id": "post-46-c2",
+    "postId": "post-46",
+    "authorId": "user-06",
+    "nickName": "커피 마신 다람쥐",
+    "colorIndex": 5,
+    "body": "전부 흰색이라ㅠ 매장에 전화해서 확인해보세요",
+    "createdAt": "2026-10-31T12:53:00+09:00"
+  },
+  {
+    "id": "post-44-c1",
+    "postId": "post-44",
+    "authorId": "user-10",
+    "nickName": "책 읽는 고슴도치",
+    "colorIndex": 1,
+    "body": "저는 그냥 앉아있다가 책 좀 읽었어요. 생각보다 시간 금방 가요",
+    "createdAt": "2026-10-31T18:04:00+09:00"
+  },
+  {
+    "id": "post-44-c2",
+    "postId": "post-44",
+    "authorId": "user-07",
+    "nickName": "산책하는 고래",
+    "colorIndex": 6,
+    "body": "돌아오는 기차만 너무 늦게 안 잡으면 괜찮았어요 해 지니까 할 게 없어서",
+    "createdAt": "2026-10-31T18:08:00+09:00"
+  },
+  {
+    "id": "post-44-c3",
+    "postId": "post-44",
+    "authorId": "user-16",
+    "nickName": "파란 목도리 사슴",
+    "colorIndex": 7,
+    "body": "저녁 먹기 전에 오는 걸로 봐야겠네요",
+    "createdAt": "2026-10-31T18:14:00+09:00"
+  },
+  {
+    "id": "post-43-c1",
+    "postId": "post-43",
+    "authorId": "user-14",
+    "nickName": "주머니 속 햄스터",
+    "colorIndex": 5,
+    "body": "나도 천원 이천원은 계산 안하고 샀는데 합치니까 크더라",
+    "createdAt": "2026-10-31T19:26:00+09:00"
+  },
+  {
+    "id": "post-43-c2",
+    "postId": "post-43",
+    "authorId": "user-04",
+    "nickName": "느긋한 거북이",
+    "colorIndex": 3,
+    "body": "맞아 그래서 일단 집에서 물 챙겨나가려고",
+    "createdAt": "2026-10-31T19:37:00+09:00"
+  },
+  {
+    "id": "post-41-c1",
+    "postId": "post-41",
+    "authorId": "user-me",
+    "nickName": "처음 온 펭귄",
+    "colorIndex": 4,
+    "body": "자동저장 켜자",
+    "createdAt": "2026-10-31T23:35:00+09:00"
+  },
+  {
+    "id": "post-41-c2",
+    "postId": "post-41",
+    "authorId": "user-02",
+    "nickName": "새벽 수달",
+    "colorIndex": 1,
+    "body": "방금 켰어...",
+    "createdAt": "2026-10-31T23:42:00+09:00"
+  },
+  {
+    "id": "post-39-c1",
+    "postId": "post-39",
+    "authorId": "user-06",
+    "nickName": "커피 마신 다람쥐",
+    "colorIndex": 5,
+    "body": "일하는 입장에선 그냥 앉으셔도 괜찮아요 필요하면 자리 안내해드려요",
+    "createdAt": "2026-11-01T12:49:00+09:00"
+  },
+  {
+    "id": "post-39-c2",
+    "postId": "post-39",
+    "authorId": "user-05",
+    "nickName": "비 오는 날 여우",
+    "colorIndex": 4,
+    "body": "그렇구나 담엔 그냥 물어보고 앉아야겠다",
+    "createdAt": "2026-11-01T12:58:00+09:00"
+  },
+  {
+    "id": "post-37-c1",
+    "postId": "post-37",
+    "authorId": "user-07",
+    "nickName": "산책하는 고래",
+    "colorIndex": 6,
+    "body": "오 저번에 2키로에서 쉬었다던 분이죠 축하해요",
+    "createdAt": "2026-11-01T16:38:00+09:00"
+  },
+  {
+    "id": "post-37-c2",
+    "postId": "post-37",
+    "authorId": "user-15",
+    "nickName": "달리는 코알라",
+    "colorIndex": 6,
+    "body": "맞아요 기억하시네요 감사합니다ㅎㅎ",
+    "createdAt": "2026-11-01T16:42:00+09:00"
+  },
+  {
+    "id": "post-36-c1",
+    "postId": "post-36",
+    "authorId": "user-04",
+    "nickName": "느긋한 거북이",
+    "colorIndex": 3,
+    "body": "껍질 얇은거야?",
+    "createdAt": "2026-11-01T18:36:00+09:00"
+  },
+  {
+    "id": "post-36-c2",
+    "postId": "post-36",
+    "authorId": "user-14",
+    "nickName": "주머니 속 햄스터",
+    "colorIndex": 5,
+    "body": "응 엄청 얇아 손톱에 다 끼는거",
+    "createdAt": "2026-11-01T18:47:00+09:00"
+  },
+  {
+    "id": "post-34-c1",
+    "postId": "post-34",
+    "authorId": "user-me",
+    "nickName": "처음 온 펭귄",
+    "colorIndex": 4,
+    "body": "마감시간 정해서 한번만 더 보내봐",
+    "createdAt": "2026-11-01T21:45:00+09:00"
+  },
+  {
+    "id": "post-34-c2",
+    "postId": "post-34",
+    "authorId": "user-13",
+    "nickName": "조용한 너구리",
+    "colorIndex": 4,
+    "body": "열시까지 눌러달라고 했어 일단",
+    "createdAt": "2026-11-01T21:52:00+09:00"
+  },
+  {
+    "id": "post-34-c3",
+    "postId": "post-34",
+    "authorId": "user-02",
+    "nickName": "새벽 수달",
+    "colorIndex": 1,
+    "body": "수고한다.. 시간 잡는게 제일 오래 걸려",
+    "createdAt": "2026-11-01T21:54:00+09:00"
+  },
+  {
+    "id": "post-32-c1",
+    "postId": "post-32",
+    "authorId": "user-08",
+    "nickName": "말없는 참새",
+    "colorIndex": 7,
+    "body": "화요일 점심 먹을 시간은 있어?",
+    "createdAt": "2026-11-02T09:19:00+09:00"
+  },
+  {
+    "id": "post-32-c2",
+    "postId": "post-32",
+    "authorId": "user-03",
+    "nickName": "졸린 판다",
+    "colorIndex": 2,
+    "body": "한시간 있긴한데 이동하면 40분쯤",
+    "createdAt": "2026-11-02T09:28:00+09:00"
+  },
+  {
+    "id": "post-31-c1",
+    "postId": "post-31",
+    "authorId": "user-09",
+    "nickName": "노란 우산 오리",
+    "colorIndex": 0,
+    "body": "급속 돌려요ㅠ",
+    "createdAt": "2026-11-02T12:56:00+09:00"
+  },
+  {
+    "id": "post-31-c2",
+    "postId": "post-31",
+    "authorId": "user-04",
+    "nickName": "느긋한 거북이",
+    "colorIndex": 3,
+    "body": "돌렸는데 이미 배 반쯤 참",
+    "createdAt": "2026-11-02T13:02:00+09:00"
+  },
+  {
+    "id": "post-27-c1",
+    "postId": "post-27",
+    "authorId": "user-14",
+    "nickName": "주머니 속 햄스터",
+    "colorIndex": 5,
+    "body": "무슨 빵",
+    "createdAt": "2026-11-02T19:05:00+09:00"
+  },
+  {
+    "id": "post-27-c2",
+    "postId": "post-27",
+    "authorId": "user-06",
+    "nickName": "커피 마신 다람쥐",
+    "colorIndex": 5,
+    "body": "소금빵 두개랑 크루아상 하나",
+    "createdAt": "2026-11-02T19:12:00+09:00"
+  },
+  {
+    "id": "post-27-c3",
+    "postId": "post-27",
+    "authorId": "user-14",
+    "nickName": "주머니 속 햄스터",
+    "colorIndex": 5,
+    "body": "그건 못참지",
+    "createdAt": "2026-11-02T19:14:00+09:00"
+  },
+  {
+    "id": "post-26-c1",
+    "postId": "post-26",
+    "authorId": "user-10",
+    "nickName": "책 읽는 고슴도치",
+    "colorIndex": 1,
+    "body": "처음이면 밝은 색이 코 잘 보여서 편해요",
+    "createdAt": "2026-11-02T20:26:00+09:00"
+  },
+  {
+    "id": "post-26-c2",
+    "postId": "post-26",
+    "authorId": "user-11",
+    "nickName": "구름 위 토끼",
+    "colorIndex": 2,
+    "body": "아이보리도 샀는데 그걸로 시작해볼게요",
+    "createdAt": "2026-11-02T20:29:00+09:00"
+  },
+  {
+    "id": "post-25-c1",
+    "postId": "post-25",
+    "authorId": "user-13",
+    "nickName": "조용한 너구리",
+    "colorIndex": 4,
+    "body": "나는 그냥 계좌 한번 더 보내 진짜 까먹는 사람도 있어서",
+    "createdAt": "2026-11-02T21:34:00+09:00"
+  },
+  {
+    "id": "post-25-c2",
+    "postId": "post-25",
+    "authorId": "user-05",
+    "nickName": "비 오는 날 여우",
+    "colorIndex": 4,
+    "body": "방금 보냈더니 바로 보내줬어 진짜 까먹었대ㅋㅋ",
+    "createdAt": "2026-11-02T21:43:00+09:00"
+  },
+  {
+    "id": "post-24-c1",
+    "postId": "post-24",
+    "authorId": "user-03",
+    "nickName": "졸린 판다",
+    "colorIndex": 2,
+    "body": "주말 약속 미리 잡아놔 안그러면 계속 못만남",
+    "createdAt": "2026-11-02T22:10:00+09:00"
+  },
+  {
+    "id": "post-24-c2",
+    "postId": "post-24",
+    "authorId": "user-12",
+    "nickName": "낮잠 자는 물개",
+    "colorIndex": 3,
+    "body": "이번주 토요일에 하기로 함",
+    "createdAt": "2026-11-02T22:16:00+09:00"
+  },
+  {
+    "id": "post-23-c1",
+    "postId": "post-23",
+    "authorId": "user-me",
+    "nickName": "처음 온 펭귄",
+    "colorIndex": 4,
+    "body": "같은 줄 수정했나봐. 복사해놨으면 비교하면서 천천히 봐",
+    "createdAt": "2026-11-02T23:25:00+09:00"
+  },
+  {
+    "id": "post-23-c2",
+    "postId": "post-23",
+    "authorId": "user-02",
+    "nickName": "새벽 수달",
+    "colorIndex": 1,
+    "body": "해결함 둘다 필요한 코드였네",
+    "createdAt": "2026-11-02T23:29:00+09:00"
+  },
+  {
+    "id": "post-22-c1",
+    "postId": "post-22",
+    "authorId": "user-07",
+    "nickName": "산책하는 고래",
+    "colorIndex": 6,
+    "body": "뒤집어보면 발끝만 축축함 꼭",
+    "createdAt": "2026-11-03T08:43:00+09:00"
+  },
+  {
+    "id": "post-20-c1",
+    "postId": "post-20",
+    "authorId": "user-14",
+    "nickName": "주머니 속 햄스터",
+    "colorIndex": 5,
+    "body": "밥은 언제 넣은거야ㅋㅋ",
+    "createdAt": "2026-11-03T12:21:00+09:00"
+  },
+  {
+    "id": "post-20-c2",
+    "postId": "post-20",
+    "authorId": "user-04",
+    "nickName": "느긋한 거북이",
+    "colorIndex": 3,
+    "body": "포기한 직후",
+    "createdAt": "2026-11-03T12:28:00+09:00"
+  },
+  {
+    "id": "post-18-c1",
+    "postId": "post-18",
+    "authorId": "user-04",
+    "nickName": "느긋한 거북이",
+    "colorIndex": 3,
+    "body": "학생회관 2층 테이블",
+    "createdAt": "2026-11-03T15:15:00+09:00"
+  },
+  {
+    "id": "post-18-c2",
+    "postId": "post-18",
+    "authorId": "user-03",
+    "nickName": "졸린 판다",
+    "colorIndex": 2,
+    "body": "거기 자리 항상 차있지않아?",
+    "createdAt": "2026-11-03T15:24:00+09:00"
+  },
+  {
+    "id": "post-18-c3",
+    "postId": "post-18",
+    "authorId": "user-04",
+    "nickName": "느긋한 거북이",
+    "colorIndex": 3,
+    "body": "점심 지나면 좀 빠져",
+    "createdAt": "2026-11-03T15:27:00+09:00"
+  },
+  {
+    "id": "post-18-c4",
+    "postId": "post-18",
+    "authorId": "user-09",
+    "nickName": "노란 우산 오리",
+    "colorIndex": 0,
+    "body": "저는 과방 가요",
+    "createdAt": "2026-11-03T15:34:00+09:00"
+  },
+  {
+    "id": "post-18-c5",
+    "postId": "post-18",
+    "authorId": "user-03",
+    "nickName": "졸린 판다",
+    "colorIndex": 2,
+    "body": "과방이 없어서ㅠ",
+    "createdAt": "2026-11-03T15:36:00+09:00"
+  },
+  {
+    "id": "post-18-c6",
+    "postId": "post-18",
+    "authorId": "user-13",
+    "nickName": "조용한 너구리",
+    "colorIndex": 4,
+    "body": "날 괜찮으면 운동장 옆 벤치도 좋음",
+    "createdAt": "2026-11-03T15:47:00+09:00"
+  },
+  {
+    "id": "post-18-c7",
+    "postId": "post-18",
+    "authorId": "user-15",
+    "nickName": "달리는 코알라",
+    "colorIndex": 6,
+    "body": "오늘 거기 바람 많이 불던데",
+    "createdAt": "2026-11-03T15:51:00+09:00"
+  },
+  {
+    "id": "post-18-c8",
+    "postId": "post-18",
+    "authorId": "user-13",
+    "nickName": "조용한 너구리",
+    "colorIndex": 4,
+    "body": "아 오늘은 안 가봤다",
+    "createdAt": "2026-11-03T15:57:00+09:00"
+  },
+  {
+    "id": "post-18-c9",
+    "postId": "post-18",
+    "authorId": "user-06",
+    "nickName": "커피 마신 다람쥐",
+    "colorIndex": 5,
+    "body": "친구랑 둘이면 빈 강의실도 괜찮지 않나",
+    "createdAt": "2026-11-03T16:06:00+09:00"
+  },
+  {
+    "id": "post-18-c10",
+    "postId": "post-18",
+    "authorId": "user-me",
+    "nickName": "처음 온 펭귄",
+    "colorIndex": 4,
+    "body": "빈 강의실 들어갔다가 다음 수업 사람들 오면 눈치보여ㅋㅋ",
+    "createdAt": "2026-11-03T16:09:00+09:00"
+  },
+  {
+    "id": "post-18-c11",
+    "postId": "post-18",
+    "authorId": "user-08",
+    "nickName": "말없는 참새",
+    "colorIndex": 7,
+    "body": "시간표 문에 붙어있음 그거 보고 들어가",
+    "createdAt": "2026-11-03T16:16:00+09:00"
+  },
+  {
+    "id": "post-18-c12",
+    "postId": "post-18",
+    "authorId": "user-11",
+    "nickName": "구름 위 토끼",
+    "colorIndex": 2,
+    "body": "학생회관 1층 안쪽에도 의자 있어요",
+    "createdAt": "2026-11-03T16:18:00+09:00"
+  },
+  {
+    "id": "post-18-c13",
+    "postId": "post-18",
+    "authorId": "user-03",
+    "nickName": "졸린 판다",
+    "colorIndex": 2,
+    "body": "매점 옆 말하는거야?",
+    "createdAt": "2026-11-03T16:29:00+09:00"
+  },
+  {
+    "id": "post-18-c14",
+    "postId": "post-18",
+    "authorId": "user-11",
+    "nickName": "구름 위 토끼",
+    "colorIndex": 2,
+    "body": "네 매점 지나서 오른쪽이요",
+    "createdAt": "2026-11-03T16:33:00+09:00"
+  },
+  {
+    "id": "post-18-c15",
+    "postId": "post-18",
+    "authorId": "user-07",
+    "nickName": "산책하는 고래",
+    "colorIndex": 6,
+    "body": "거긴 콘센트가 없더라",
+    "createdAt": "2026-11-03T16:39:00+09:00"
+  },
+  {
+    "id": "post-18-c16",
+    "postId": "post-18",
+    "authorId": "user-03",
+    "nickName": "졸린 판다",
+    "colorIndex": 2,
+    "body": "폰만 충전돼있으면 돼서 괜찮음",
+    "createdAt": "2026-11-03T16:48:00+09:00"
+  },
+  {
+    "id": "post-18-c17",
+    "postId": "post-18",
+    "authorId": "user-12",
+    "nickName": "낮잠 자는 물개",
+    "colorIndex": 3,
+    "body": "난 세시간이면 집 갔다옴",
+    "createdAt": "2026-11-03T16:51:00+09:00"
+  },
+  {
+    "id": "post-18-c18",
+    "postId": "post-18",
+    "authorId": "user-02",
+    "nickName": "새벽 수달",
+    "colorIndex": 1,
+    "body": "집 왕복 세시간인 사람은 울어요",
+    "createdAt": "2026-11-03T16:58:00+09:00"
+  },
+  {
+    "id": "post-18-c19",
+    "postId": "post-18",
+    "authorId": "user-16",
+    "nickName": "파란 목도리 사슴",
+    "colorIndex": 7,
+    "body": "밥 천천히 먹고 산책하면 은근 금방 가긴 해요",
+    "createdAt": "2026-11-03T17:00:00+09:00"
+  },
+  {
+    "id": "post-18-c20",
+    "postId": "post-18",
+    "authorId": "user-03",
+    "nickName": "졸린 판다",
+    "colorIndex": 2,
+    "body": "일단 1층 가봤는데 자리 있네 여기 있을게 고마워",
+    "createdAt": "2026-11-03T17:11:00+09:00"
+  },
+  {
+    "id": "post-18-c21",
+    "postId": "post-18",
+    "authorId": "user-11",
+    "nickName": "구름 위 토끼",
+    "colorIndex": 2,
+    "body": "오 다행이에요",
+    "createdAt": "2026-11-03T17:15:00+09:00"
+  },
+  {
+    "id": "post-16-c1",
+    "postId": "post-16",
+    "authorId": "user-08",
+    "nickName": "말없는 참새",
+    "colorIndex": 7,
+    "body": "나도 그래서 대본에 쉬는 곳 표시해놓음",
+    "createdAt": "2026-11-03T17:48:00+09:00"
+  },
+  {
+    "id": "post-15-c1",
+    "postId": "post-15",
+    "authorId": "user-03",
+    "nickName": "졸린 판다",
+    "colorIndex": 2,
+    "body": "아",
+    "createdAt": "2026-11-03T18:14:00+09:00"
+  },
+  {
+    "id": "post-15-c2",
+    "postId": "post-15",
+    "authorId": "user-14",
+    "nickName": "주머니 속 햄스터",
+    "colorIndex": 5,
+    "body": "봉투째 잡지말고 밑을 받쳐야 했는데...",
+    "createdAt": "2026-11-03T18:25:00+09:00"
+  },
+  {
+    "id": "post-14-c1",
+    "postId": "post-14",
+    "authorId": "user-10",
+    "nickName": "책 읽는 고슴도치",
+    "colorIndex": 1,
+    "body": "전 알바만 정해두고 쉬었어요. 처음 한 달은 진짜 거의 누워 있었고요",
+    "createdAt": "2026-11-03T19:31:00+09:00"
+  },
+  {
+    "id": "post-14-c2",
+    "postId": "post-14",
+    "authorId": "user-13",
+    "nickName": "조용한 너구리",
+    "colorIndex": 4,
+    "body": "돈은 어느 정도 모아두는 게 좋았어요. 저는 생활비 때문에 쉬면서도 계속 쫓기는 기분이었어서",
+    "createdAt": "2026-11-03T19:33:00+09:00"
+  },
+  {
+    "id": "post-14-c3",
+    "postId": "post-14",
+    "authorId": "user-16",
+    "nickName": "파란 목도리 사슴",
+    "colorIndex": 7,
+    "body": "아 생활비 먼저 계산해봐야겠네요 감사합니다",
+    "createdAt": "2026-11-03T19:44:00+09:00"
+  },
+  {
+    "id": "post-12-c1",
+    "postId": "post-12",
+    "authorId": "user-06",
+    "nickName": "커피 마신 다람쥐",
+    "colorIndex": 5,
+    "body": "썰어서 얼려두면 편해요",
+    "createdAt": "2026-11-03T21:07:00+09:00"
+  },
+  {
+    "id": "post-12-c2",
+    "postId": "post-12",
+    "authorId": "user-04",
+    "nickName": "느긋한 거북이",
+    "colorIndex": 3,
+    "body": "냉동실이 너무 작아서 이번엔 그냥 다 먹었어요ㅋㅋ",
+    "createdAt": "2026-11-03T21:10:00+09:00"
+  },
+  {
+    "id": "post-11-c1",
+    "postId": "post-11",
+    "authorId": "user-14",
+    "nickName": "주머니 속 햄스터",
+    "colorIndex": 5,
+    "body": "침대가 좋은가봐ㅋㅋ",
+    "createdAt": "2026-11-03T21:39:00+09:00"
+  },
+  {
+    "id": "post-11-c2",
+    "postId": "post-11",
+    "authorId": "user-07",
+    "nickName": "산책하는 고래",
+    "colorIndex": 6,
+    "body": "바닥에 벗어놓고 온 잠옷 위에 누워있어",
+    "createdAt": "2026-11-03T21:48:00+09:00"
+  },
+  {
+    "id": "post-10-c1",
+    "postId": "post-10",
+    "authorId": "user-10",
+    "nickName": "책 읽는 고슴도치",
+    "colorIndex": 1,
+    "body": "단 끝에서 옆에 실까지 같이 뜨신 거 아닐까요? 저도 처음에 그랬어요",
+    "createdAt": "2026-11-03T22:23:00+09:00"
+  },
+  {
+    "id": "post-10-c2",
+    "postId": "post-10",
+    "authorId": "user-11",
+    "nickName": "구름 위 토끼",
+    "colorIndex": 2,
+    "body": "아 끝이 계속 헷갈렸는데 그건가봐요ㅠ 풀어야겠다",
+    "createdAt": "2026-11-03T22:29:00+09:00"
+  },
+  {
+    "id": "post-09-c1",
+    "postId": "post-09",
+    "authorId": "user-16",
+    "nickName": "파란 목도리 사슴",
+    "colorIndex": 7,
+    "body": "저희 엄마도 꼭 어디 아프냐고 먼저 물어보세요",
+    "createdAt": "2026-11-03T23:57:00+09:00"
+  },
+  {
+    "id": "post-09-c2",
+    "postId": "post-09",
+    "authorId": "user-05",
+    "nickName": "비 오는 날 여우",
+    "colorIndex": 4,
+    "body": "맞아 밥 먹었냐 다음에 그거 물어봄",
+    "createdAt": "2026-11-04T00:01:00+09:00"
+  },
+  {
+    "id": "post-08-c1",
+    "postId": "post-08",
+    "authorId": "user-03",
+    "nickName": "졸린 판다",
+    "colorIndex": 2,
+    "body": "파일명에 최종 붙인거 맞지",
+    "createdAt": "2026-11-04T00:40:00+09:00"
+  },
+  {
+    "id": "post-08-c2",
+    "postId": "post-08",
+    "authorId": "user-02",
+    "nickName": "새벽 수달",
+    "colorIndex": 1,
+    "body": "최종진짜최종 말고 그냥 학번으로 냈다...",
+    "createdAt": "2026-11-04T00:51:00+09:00"
+  },
+  {
+    "id": "post-05-c1",
+    "postId": "post-05",
+    "authorId": "user-02",
+    "nickName": "새벽 수달",
+    "colorIndex": 1,
+    "body": "아침엔 둘다 정신없어서ㅋㅋ",
+    "createdAt": "2026-11-04T10:51:00+09:00"
+  },
+  {
+    "id": "post-05-c2",
+    "postId": "post-05",
+    "authorId": "user-06",
+    "nickName": "커피 마신 다람쥐",
+    "colorIndex": 5,
+    "body": "결국 아이스로 드림 본인도 말하고 웃으셨어",
+    "createdAt": "2026-11-04T10:54:00+09:00"
+  },
+  {
+    "id": "post-04-c1",
+    "postId": "post-04",
+    "authorId": "user-05",
+    "nickName": "비 오는 날 여우",
+    "colorIndex": 4,
+    "body": "오 저 그 근처 앉았었는데 확인해볼게요 감사합니다",
+    "createdAt": "2026-11-04T11:24:00+09:00"
+  },
+  {
+    "id": "post-02-c1",
+    "postId": "post-02",
+    "authorId": "user-04",
+    "nickName": "느긋한 거북이",
+    "colorIndex": 3,
+    "body": "방금 받았어요 줄은 좀 있어요",
+    "createdAt": "2026-11-04T12:42:00+09:00"
+  },
+  {
+    "id": "post-02-c2",
+    "postId": "post-02",
+    "authorId": "user-09",
+    "nickName": "노란 우산 오리",
+    "colorIndex": 0,
+    "body": "감사합니다 뛰어가는중",
+    "createdAt": "2026-11-04T12:46:00+09:00"
+  },
+  {
+    "id": "post-01-c1",
+    "postId": "post-01",
+    "authorId": "user-12",
+    "nickName": "낮잠 자는 물개",
+    "colorIndex": 3,
+    "body": "지금 강의실도 더움..",
+    "createdAt": "2026-11-04T12:50:00+09:00"
+  }
+]
