@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
-import '../models/post.dart';
+import '../../models/post.dart';
 import 'post_repository.dart';
 
 // MP1용 게시글 저장소. JSON은 앱 시작 때 한 번만 읽고, 이후 조회·작성은 메모리 목록으로 한다.

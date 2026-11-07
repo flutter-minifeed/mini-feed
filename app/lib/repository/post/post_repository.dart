@@ -1,4 +1,4 @@
-import '../models/post.dart';
+import '../../models/post.dart';
 
 ///게시글 저장소 인터페이스. 화면은 구현이 아니라 이 타입에만 의존한다.
 ///

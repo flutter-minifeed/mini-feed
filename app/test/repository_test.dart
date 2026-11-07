@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:minifeed/models/post.dart';
-import 'package:minifeed/repository/in_memory_comment_repository.dart';
-import 'package:minifeed/repository/in_memory_post_repository.dart';
+import 'package:minifeed/repository/comment/in_memory_comment_repository.dart';
+import 'package:minifeed/repository/post/in_memory_post_repository.dart';
 
 // 저장소는 실제 assets JSON을 읽으므로 화면 없는 단위 테스트(test)로 확인한다.
 // testWidgets의 가짜 시간 안에서는 파일 읽기가 끝나지 않을 수 있다.

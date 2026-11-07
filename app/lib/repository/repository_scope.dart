@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
-import 'comment_repository.dart';
-import 'post_repository.dart';
+import 'comment/comment_repository.dart';
+import 'post/post_repository.dart';
 
 /// 앱 전체가 저장소 객체 하나씩을 함께 쓰게 하는 통로.
 ///

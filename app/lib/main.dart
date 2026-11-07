@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'repository/in_memory_comment_repository.dart';
-import 'repository/in_memory_post_repository.dart';
+import 'repository/comment/in_memory_comment_repository.dart';
+import 'repository/post/in_memory_post_repository.dart';
 import 'repository/repository_scope.dart';
 import 'screens/feed_screen.dart';
 import 'theme/app_theme.dart';
