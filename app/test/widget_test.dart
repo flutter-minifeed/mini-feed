@@ -1,30 +1,44 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:minifeed/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('앱을 켜면 피드 화면이 보인다', (tester) async {
+    // when
     await tester.pumpWidget(const MyApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // then
+    expect(find.text('미니피드'), findsOneWidget);
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  testWidgets('상세 화면에서 화살표를 누르면 피드로 돌아온다', (tester) async {
+    // given: 피드에서 상세로 들어간 상태
+    await tester.pumpWidget(const MyApp());
+    await tester.tap(find.text('상세 열기'));
+    await tester.pumpAndSettle();
+    expect(find.text('상세'), findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // when
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.text('미니피드'), findsOneWidget);
+  });
+
+  testWidgets('글쓰기 화면에서 X를 누르면 피드로 돌아온다', (tester) async {
+    // given: 피드에서 글쓰기로 들어간 상태
+    await tester.pumpWidget(const MyApp());
+    await tester.tap(find.text('글쓰기 열기'));
+    await tester.pumpAndSettle();
+    expect(find.text('글쓰기'), findsOneWidget);
+
+    // when
+    await tester.tap(find.byType(CloseButton));
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.text('미니피드'), findsOneWidget);
   });
 }
