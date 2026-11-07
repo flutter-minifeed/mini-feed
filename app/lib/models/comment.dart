@@ -1,7 +1,6 @@
 // 댓글 한 건. Post처럼 저장 방식(JSON·Firestore)을 모른다.
 // 저장 형식에서 Comment로 바꾸는 일은 각 저장소 구현이 맡는다.
 class Comment {
-  // const 생성자: 모든 필드가 final이라 만든 뒤에는 값이 바뀌지 않는다.
   const Comment({
     required this.id,
     required this.postId,
