@@ -1,0 +1,53 @@
+name: Flutter CI
+
+# main으로 향하는 PR, main 반영, 수동 실행에서 검사합니다.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# 같은 PR에 새 커밋이 올라오면 이전 검사를 취소합니다.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Analyze and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: app
+
+    steps:
+      - name: 코드 가져오기
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: 팀 Flutter 버전 준비
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          channel: stable
+          cache: true
+
+      - name: Flutter 버전 확인
+        run: flutter --version
+
+      - name: 고정된 의존성 설치
+        run: flutter pub get --enforce-lockfile
+
+      - name: 정적 분석
+        run: flutter analyze --no-pub
+
+      - name: 단위·위젯 테스트
+        run: flutter test --no-pub
