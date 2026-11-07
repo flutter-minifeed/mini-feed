@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'models/author.dart';
 import 'repository/comment/in_memory_comment_repository.dart';
 import 'repository/post/in_memory_post_repository.dart';
 import 'repository/repository_scope.dart';
@@ -13,10 +14,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // 현재 사용자는 더미 데이터의 user-me로 둔다. MP2 #12 익명 인증 결과로 바뀐다.
+  const currentUser = Author(id: 'user-me', nickName: '처음 온 펭귄', colorIndex: 4);
   final postRepository = await InMemoryPostRepository.load(
-    authorId: 'user-me',
-    nickName: '처음 온 펭귄',
-    colorIndex: 4,
+    currentUser: currentUser,
   );
   final commentRepository = await InMemoryCommentRepository.load();
 

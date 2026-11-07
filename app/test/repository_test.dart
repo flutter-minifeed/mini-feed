@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:minifeed/models/author.dart';
 import 'package:minifeed/models/post.dart';
 import 'package:minifeed/repository/comment/in_memory_comment_repository.dart';
 import 'package:minifeed/repository/post/in_memory_post_repository.dart';
@@ -81,9 +82,7 @@ void main() {
     final added = await repository.addPost('새 글 본문');
 
     // then: 현재 사용자 정보와 0개 카운트로 만들어진다.
-    expect(added.authorId, 'user-me');
-    expect(added.nickName, '처음 온 펭귄');
-    expect(added.colorIndex, 4);
+    expect(added.author, same(_me));
     expect(added.likeCount, 0);
     expect(added.commentCount, 0);
     expect(added.likedByMe, isFalse);
@@ -121,12 +120,12 @@ void main() {
 }
 
 // main.dart와 같은 현재 사용자로 게시글 저장소를 불러온다.
+// main.dart와 같은 현재 사용자.
+const _me = Author(id: 'user-me', nickName: '처음 온 펭귄', colorIndex: 4);
+
+// 현재 사용자로 게시글 저장소를 불러온다.
 Future<InMemoryPostRepository> _loadPosts() {
-  return InMemoryPostRepository.load(
-    authorId: 'user-me',
-    nickName: '처음 온 펭귄',
-    colorIndex: 4,
-  );
+  return InMemoryPostRepository.load(currentUser: _me);
 }
 
 bool _isNewestFirst(List<Post> posts) {
