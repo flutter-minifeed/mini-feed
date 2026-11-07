@@ -19,14 +19,13 @@ class InMemoryPostRepository implements PostRepository {
 
   static const assetPath = 'assets/dummy/post/posts.json';
 
-  // 앱 시작 때 한 번 호출한다. bundle은 테스트에서 바꿔 넣을 수 있게 열어 뒀다.
+  // 앱 시작 때 main.dart에서 한 번 호출한다.
   static Future<InMemoryPostRepository> load({
     required String authorId,
     required String nickName,
     required int colorIndex,
-    AssetBundle? bundle,
   }) async {
-    final json = await (bundle ?? rootBundle).loadString(assetPath);
+    final json = await rootBundle.loadString(assetPath);
     return InMemoryPostRepository.fromJsonString(
       json,
       authorId: authorId,
@@ -35,7 +34,7 @@ class InMemoryPostRepository implements PostRepository {
     );
   }
 
-  // JSON 문자열로 만든다. 단위 테스트는 asset 없이 이 생성자를 쓴다.
+  // load가 읽은 JSON 문자열을 게시글 목록으로 바꿔 저장소를 만든다.
   factory InMemoryPostRepository.fromJsonString(
     String json, {
     required String authorId,
