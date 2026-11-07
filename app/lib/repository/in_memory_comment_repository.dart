@@ -13,13 +13,13 @@ class InMemoryCommentRepository implements CommentRepository {
 
   static const assetPath = 'assets/dummy/comment/comments.json';
 
-  // 앱 시작 때 한 번 호출한다. bundle은 테스트에서 바꿔 넣을 수 있게 열어 뒀다.
-  static Future<InMemoryCommentRepository> load({AssetBundle? bundle}) async {
-    final json = await (bundle ?? rootBundle).loadString(assetPath);
+  // 앱 시작 때 main.dart에서 한 번 호출한다.
+  static Future<InMemoryCommentRepository> load() async {
+    final json = await rootBundle.loadString(assetPath);
     return InMemoryCommentRepository.fromJsonString(json);
   }
 
-  // JSON 문자열로 만든다. 단위 테스트는 asset 없이 이 생성자를 쓴다.
+  // load가 읽은 JSON 문자열을 댓글 목록으로 바꿔 저장소를 만든다.
   factory InMemoryCommentRepository.fromJsonString(String json) {
     final comments = (jsonDecode(json) as List)
         .cast<Map<String, dynamic>>()
