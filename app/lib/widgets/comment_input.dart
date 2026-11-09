@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// 상세 화면 맨 아래 댓글 입력줄. Figma CommentInput과 이름을 맞춘다(R10).
 ///
-/// 입력이 비었거나 공백뿐이면 전송 버튼을 끈다(D4).
+/// 입력이 비었거나 공백뿐이면(D4), 또는 200자를 넘으면 전송 버튼을 끈다.
 /// 입력 내용과 포커스는 상세 화면이 가진다. 댓글 아이콘으로 열 때 포커스를 주고,
 /// 등록이 끝난 뒤 입력을 지우는 것도 상세 화면이 정하기 때문이다.
 class CommentInput extends StatelessWidget {
@@ -75,12 +75,16 @@ class CommentInput extends StatelessWidget {
             valueListenable: controller,
             builder: (context, value, _) {
               final body = value.text.trim();
+              // iOS·웹은 한글 조합이 끝날 때까지 maxLength를 넘는 입력을 허용하므로
+              // 보낼 내용의 글자 수를 다시 확인한다.
+              final canSend =
+                  body.isNotEmpty && body.characters.length <= maxLength;
               return IconButton(
                 icon: const Icon(Icons.send),
                 color: colors.primary,
                 tooltip: '댓글 보내기',
                 // null이면 버튼이 꺼지고 Figma의 disabledContent(38% 회색)가 된다.
-                onPressed: body.isEmpty ? null : () => onSend(body),
+                onPressed: canSend ? () => onSend(body) : null,
               );
             },
           ),
