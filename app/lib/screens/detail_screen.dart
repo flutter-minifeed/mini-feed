@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../models/comment.dart';
 import '../models/post.dart';
@@ -63,6 +64,16 @@ class _DetailScreenState extends State<DetailScreen> {
     return (post: post, comments: comments);
   }
 
+  // 상세 안의 댓글 버튼. Android 뒤로가기로 키보드만 내리면 입력창 포커스는 남아 있어서
+  // requestFocus가 아무 일도 하지 않는다. 그때는 키보드를 직접 다시 연다.
+  void _focusCommentInput() {
+    if (_commentFocus.hasFocus) {
+      SystemChannels.textInput.invokeMethod<void>('TextInput.show');
+    } else {
+      _commentFocus.requestFocus();
+    }
+  }
+
   void _sendComment(String body) {
     // TODO(#20): MP3에서 commentRepository로 등록하고, 성공하면 입력을 지운다.
   }
@@ -91,7 +102,7 @@ class _DetailScreenState extends State<DetailScreen> {
                   children: [
                     _PostCard(
                       post: data.post,
-                      onCommentTap: _commentFocus.requestFocus,
+                      onCommentTap: _focusCommentInput,
                     ),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
