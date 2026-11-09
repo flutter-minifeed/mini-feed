@@ -69,6 +69,7 @@ void main() {
     // then
     expect(_sendButton(tester).onPressed, isNotNull);
   });
+
   testWidgets('iOS에서 한글 조합 중 201자가 되면 댓글을 보낼 수 없다', (tester) async {
     // given
     await _openDetail(tester);
