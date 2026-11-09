@@ -89,7 +89,7 @@ class _DetailScreenState extends State<DetailScreen> {
               Expanded(
                 child: ListView(
                   children: [
-                    _PostSection(
+                    _PostCard(
                       post: data.post,
                       onCommentTap: _commentFocus.requestFocus,
                     ),
@@ -123,12 +123,12 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 }
 
-// 상세 위쪽 게시글 영역. Figma PostCard 모양이다.
+// 상세 위쪽 게시글 영역. 이름은 Figma PostCard에 맞춘다(R10).
 //
 // PostCard는 피드 카드(#7)와 함께 쓰는 위젯이라 지금은 상세 안에 임시로 둔다.
 // #7의 PostCard가 머지되면 그것으로 바꾼다.
-class _PostSection extends StatelessWidget {
-  const _PostSection({required this.post, required this.onCommentTap});
+class _PostCard extends StatelessWidget {
+  const _PostCard({required this.post, required this.onCommentTap});
 
   final Post post;
   final VoidCallback onCommentTap;
