@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:minifeed/screens/detail_screen.dart';
@@ -34,6 +35,20 @@ void main() {
 
     // then
     expect(_commentField(tester).focusNode!.hasFocus, isTrue);
+    expect(tester.testTextInput.isVisible, isTrue);
+  });
+
+  testWidgets('키보드만 내린 뒤 댓글 버튼을 누르면 키보드가 다시 열린다', (tester) async {
+    // given: 댓글 아이콘으로 열고 Android 뒤로가기로 키보드만 내린 상태
+    await _openDetail(tester, focusComment: true);
+    await SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
+    expect(tester.testTextInput.isVisible, isFalse);
+
+    // when
+    await tester.tap(find.byIcon(Icons.chat_bubble_outline));
+    await tester.pump();
+
+    // then
     expect(tester.testTextInput.isVisible, isTrue);
   });
 
