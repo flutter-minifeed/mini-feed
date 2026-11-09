@@ -69,6 +69,26 @@ void main() {
     // then
     expect(_sendButton(tester).onPressed, isNotNull);
   });
+  testWidgets('iOS에서 한글 조합 중 201자가 되면 댓글을 보낼 수 없다', (tester) async {
+    // given
+    await _openDetail(tester);
+    await tester.showKeyboard(find.byType(TextField));
+
+    // when: 201번째 글자를 아직 조합 중인 상태
+    // iOS는 조합이 끝날 때까지 maxLength를 넘는 입력을 허용한다.
+    tester.testTextInput.updateEditingValue(
+      TextEditingValue(
+        text: '가' * 201,
+        selection: const TextSelection.collapsed(offset: 201),
+        composing: const TextRange(start: 200, end: 201),
+      ),
+    );
+    await tester.pump();
+
+    // then
+    expect(_commentField(tester).controller!.text, hasLength(201));
+    expect(_sendButton(tester).onPressed, isNull);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 }
 
 // 테스트용 저장소 위에 상세 화면만 띄우고, 글을 다 불러올 때까지 기다린다.
