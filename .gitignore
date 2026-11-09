@@ -31,3 +31,8 @@ build/
 .env
 .env.*
 !.env.example
+
+# Firebase 로컬 설정 — 팀 프로젝트에 연결할 때 FlutterFire CLI로 생성
+/app/android/app/google-services.json
+/app/lib/firebase_options.dart
+/app/firebase.json

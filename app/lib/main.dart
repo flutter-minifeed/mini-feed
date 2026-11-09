@@ -1,5 +1,7 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
+import 'firebase_options.dart';
 import 'models/author.dart';
 import 'repository/comment/in_memory_comment_repository.dart';
 import 'repository/post/in_memory_post_repository.dart';
@@ -12,6 +14,10 @@ import 'theme/app_theme.dart';
 Future<void> main() async {
   // runApp 전에 asset을 읽으려면 Flutter 엔진을 먼저 준비해야 한다.
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   // 현재 사용자는 더미 데이터의 user-me로 둔다. MP2 #12 익명 인증 결과로 바뀐다.
   const currentUser = Author(id: 'user-me', nickName: '처음 온 펭귄', colorIndex: 4);
