@@ -50,7 +50,7 @@ class CommentInput extends StatelessWidget {
               }) => null,
               style: textTheme.bodyMedium,
               decoration: InputDecoration(
-                hintText: '댓글 달기… (200자)',
+                hintText: '댓글 달기… ($maxLength자)',
                 hintStyle: textTheme.bodyMedium?.copyWith(
                   color: colors.onSurfaceVariant,
                 ),
