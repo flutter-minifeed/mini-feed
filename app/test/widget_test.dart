@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:minifeed/main.dart';
 
+import 'test_repositories.dart';
+
 void main() {
   testWidgets('앱을 켜면 피드 화면이 보인다', (tester) async {
     // when
@@ -14,10 +16,10 @@ void main() {
 
   testWidgets('상세 화면에서 화살표를 누르면 피드로 돌아온다', (tester) async {
     // given: 피드에서 상세로 들어간 상태
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(withTestRepositories(const MyApp()));
     await tester.tap(find.text('상세 열기'));
     await tester.pumpAndSettle();
-    expect(find.text('상세'), findsOneWidget);
+    expect(find.text('게시글'), findsOneWidget);
 
     // when
     await tester.tap(find.byType(BackButton));
