@@ -62,3 +62,17 @@ final appTheme = ThemeData(
     ).copyWith(color: _colors.onSurface),
   ),
 );
+
+/// Figma 파운데이션의 user/1~8. Author.colorIndex(0~7) 순서로 사용한다.
+const userColors = [
+  Color(0xFFEEEFE8),
+  Color(0xFFBDCEE0),
+  Color(0xFFE8ACBA),
+  Color(0xFF8FBC93),
+  Color(0xFFFBEBBE),
+  Color(0xFFBDCEE0),
+  Color(0xFFE8ACBA),
+  Color(0xFF8FBC93),
+];
+
+const userOnColor = Color(0xFF1F1F1F);
