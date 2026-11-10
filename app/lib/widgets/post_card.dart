@@ -25,7 +25,7 @@ class PostCard extends StatelessWidget {
     final colors = theme.colorScheme;
     final text = theme.textTheme;
     final author = post.author;
-    return DecoratedBox(
+    return Ink(
       decoration: BoxDecoration(
         color: colors.surface,
         border: Border(bottom: BorderSide(color: colors.outlineVariant)),
