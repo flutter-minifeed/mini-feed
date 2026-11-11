@@ -11,6 +11,7 @@ import 'package:minifeed/repository/comment/in_memory_comment_repository.dart';
 import 'package:minifeed/repository/post/in_memory_post_repository.dart';
 import 'package:minifeed/repository/post/post_repository.dart';
 import 'package:minifeed/repository/repository_scope.dart';
+import 'package:minifeed/screens/detail_screen.dart';
 import 'package:minifeed/widgets/post_card.dart';
 
 void main() {
@@ -42,11 +43,14 @@ void main() {
     await tester.pumpAndSettle();
 
     // then
-    final route = ModalRoute.of(tester.element(find.text('상세')))!;
-    expect(route.settings.arguments, {
-      'postId': 'post-0',
-      'focusComment': false,
-    });
+    final detail = tester.widget<DetailScreen>(find.byType(DetailScreen));
+    expect(detail.postId, 'post-0');
+    expect(detail.focusComment, isFalse);
+    expect(find.text('게시글'), findsOneWidget);
+    expect(find.text('게시글 0 본문'), findsOneWidget);
+    final input = tester.widget<TextField>(find.byType(TextField));
+    expect(input.focusNode!.hasFocus, isFalse);
+    expect(tester.testTextInput.isVisible, isFalse);
   });
 
   testWidgets('댓글을 누르면 해당 게시글의 댓글 진입을 상세로 전달한다', (tester) async {
@@ -59,11 +63,14 @@ void main() {
     await tester.pumpAndSettle();
 
     // then
-    final route = ModalRoute.of(tester.element(find.text('상세')))!;
-    expect(route.settings.arguments, {
-      'postId': 'post-0',
-      'focusComment': true,
-    });
+    final detail = tester.widget<DetailScreen>(find.byType(DetailScreen));
+    expect(detail.postId, 'post-0');
+    expect(detail.focusComment, isTrue);
+    expect(find.text('게시글'), findsOneWidget);
+    expect(find.text('게시글 0 본문'), findsOneWidget);
+    final input = tester.widget<TextField>(find.byType(TextField));
+    expect(input.focusNode!.hasFocus, isTrue);
+    expect(tester.testTextInput.isVisible, isTrue);
   });
 
   testWidgets('상세 화면에서 화살표를 누르면 피드로 돌아온다', (tester) async {

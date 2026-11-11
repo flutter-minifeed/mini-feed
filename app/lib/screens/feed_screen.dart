@@ -82,12 +82,9 @@ class _FeedScreenState extends State<FeedScreen> {
   void _openDetail(Post post, {bool focusComment = false}) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        // #9 연결용 전달값. 본문 진입과 댓글 진입을 구분한다.
-        settings: RouteSettings(
-          name: '/posts/${post.id}',
-          arguments: {'postId': post.id, 'focusComment': focusComment},
-        ),
-        builder: (_) => const DetailScreen(),
+        settings: RouteSettings(name: '/posts/${post.id}'),
+        builder: (_) =>
+            DetailScreen(postId: post.id, focusComment: focusComment),
       ),
     );
   }
