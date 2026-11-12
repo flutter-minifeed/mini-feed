@@ -71,6 +71,23 @@ void main() {
     expect(_counterColor(tester, '299 / 300'), isNot(_errorColor(tester)));
   });
 
+  testWidgets('글자 수가 바뀌면 스크린리더가 카운터를 읽도록 표시된다', (tester) async {
+    // given: 테스트에서는 접근성 정보를 켜야 Semantics를 확인할 수 있다.
+    final semantics = tester.ensureSemantics();
+    await pumpWriteScreen(tester);
+
+    // when
+    await tester.enterText(find.byType(TextField), '안녕');
+    await tester.pump();
+
+    // then
+    expect(
+      tester.getSemantics(find.text('2 / 300')),
+      isSemantics(label: '2 / 300', isLiveRegion: true),
+    );
+    semantics.dispose();
+  });
+
   testWidgets('글자를 입력하면 게시가 가능합니다', (tester) async {
     // given
     await pumpWriteScreen(tester);

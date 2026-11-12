@@ -163,12 +163,17 @@ class _WriteScreenState extends State<WriteScreen> {
                   maxLength,
                 }) => null,
               ),
-              Text(
-                '$length / $maxPostLength',
-                style: text.labelSmall?.copyWith(
-                  color: length >= maxPostLength
-                      ? colors.error
-                      : colors.onSurfaceVariant,
+              // TextField 밖에 그려서 기본 카운터처럼 바뀔 때마다 TalkBack이 읽도록 표시한다.
+              Semantics(
+                container: true,
+                liveRegion: true,
+                child: Text(
+                  '$length / $maxPostLength',
+                  style: text.labelSmall?.copyWith(
+                    color: length >= maxPostLength
+                        ? colors.error
+                        : colors.onSurfaceVariant,
+                  ),
                 ),
               ),
             ],
