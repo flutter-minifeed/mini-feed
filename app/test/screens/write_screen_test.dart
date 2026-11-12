@@ -88,6 +88,21 @@ void main() {
     semantics.dispose();
   });
 
+  testWidgets('키보드를 내린 뒤 글 아래 빈 곳을 누르면 키보드가 다시 올라온다', (tester) async {
+    // given: 입력칸에서 포커스가 빠져 키보드가 내려간 상태
+    await pumpWriteScreen(tester);
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pump();
+    expect(tester.testTextInput.isVisible, isFalse);
+
+    // when: 입력칸이 아닌 화면 아래쪽을 누른다.
+    await tester.tapAt(const Offset(400, 500));
+    await tester.pump();
+
+    // then
+    expect(tester.testTextInput.isVisible, isTrue);
+  });
+
   testWidgets('글자를 입력하면 게시가 가능합니다', (tester) async {
     // given
     await pumpWriteScreen(tester);

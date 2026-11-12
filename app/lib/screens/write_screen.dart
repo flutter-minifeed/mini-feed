@@ -16,14 +16,26 @@ class _WriteScreenState extends State<WriteScreen> {
   // 다시 그릴 때 새로 생성하지 않도록 build 밖에서 생성한다.
   final _controller = TextEditingController();
 
+  // 글 아래 빈 곳을 눌렀을 때 입력칸을 찾아 키보드를 올리는 데 쓴다.
+  final _focusNode = FocusNode();
+
   // 저장소에 저장하는 중인지. 이 동안 게시 버튼 및 닫기를 막는다.
   bool _isSaving = false;
 
-  // 화면이 닫힐 때 한 번 호출된다. 직접 만든 컨트롤러를 해제한다.
+  // 화면이 닫힐 때 한 번 호출된다. 직접 만든 컨트롤러·포커스를 해제한다.
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
+  }
+
+  // 입력칸을 직접 누른 것과 같게 처리한다. 포커스가 없으면 포커스를 주고,
+  // Android 뒤로가기로 키보드만 내린 상태(포커스는 남음)면 키보드를 다시 올린다.
+  void _showKeyboard() {
+    _focusNode.context
+        ?.findAncestorStateOfType<EditableTextState>()
+        ?.requestKeyboard();
   }
 
   // 저장할 본문. 앞뒤 공백만 지우고 중간 줄바꿈은 그대로 둔다.
@@ -128,55 +140,64 @@ class _WriteScreenState extends State<WriteScreen> {
             ),
           ],
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            spacing: 8,
-            children: [
-              TextField(
-                controller: _controller, // 입력 내용이 _controller.text로 들어간다.
-                autofocus: true, // 화면이 열리면 바로 키보드가 올라온다.
-                // 300자에서 입력을 막고, 더 긴 글을 붙여넣으면 300자까지만 남긴다.
-                maxLength: maxPostLength,
-                maxLines: null, // 줄 수 제한이 없고 내용에 따라 늘어난다.
-                keyboardType:
-                    TextInputType.multiline, // 키보드에 줄바꿈(엔터) 키가 나오도록 합니다.
-                style: text.bodyLarge,
-                decoration: InputDecoration(
-                  hintText: '무슨 생각을 하고 있나요?', // 비어 있을 때 흐리게 보이는 안내 문구
-                  hintStyle: text.bodyLarge?.copyWith(
-                    color: colors.onSurfaceVariant,
+        // 입력칸은 글 높이만큼만 차지해서, 아래 빈 곳을 눌러도 키보드가 올라오게 한다.
+        // Scaffold 본문은 글 높이로 줄어들므로 SizedBox.expand로 화면 끝까지 늘린다.
+        body: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: _showKeyboard,
+          child: SizedBox.expand(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                spacing: 8,
+                children: [
+                  TextField(
+                    controller: _controller, // 입력 내용이 _controller.text로 들어간다.
+                    focusNode: _focusNode,
+                    autofocus: true, // 화면이 열리면 바로 키보드가 올라온다.
+                    // 300자에서 입력을 막고, 더 긴 글을 붙여넣으면 300자까지만 남긴다.
+                    maxLength: maxPostLength,
+                    maxLines: null, // 줄 수 제한이 없고 내용에 따라 늘어난다.
+                    keyboardType:
+                        TextInputType.multiline, // 키보드에 줄바꿈(엔터) 키가 나오도록 합니다.
+                    style: text.bodyLarge,
+                    decoration: InputDecoration(
+                      hintText: '무슨 생각을 하고 있나요?', // 비어 있을 때 흐리게 보이는 안내 문구
+                      hintStyle: text.bodyLarge?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                      border: InputBorder.none, // 입력칸 밑줄을 없앤다.
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    // 글자가 바뀔 때마다 호출. 빈 setState()로 build()를 다시 실행하며
+                    // 게시 버튼 활성 여부와 카운터를 새 입력 기준으로 다시 그립니다.
+                    onChanged: (_) => setState(() {}),
+                    // 기본 카운터는 입력칸과의 간격이 4라 시안(8)과 달라서 숨기고 아래에 직접 그린다.
+                    buildCounter: (
+                      context, {
+                      required currentLength,
+                      required isFocused,
+                      maxLength,
+                    }) => null,
                   ),
-                  border: InputBorder.none, // 입력칸 밑줄을 없앤다.
-                  isDense: true,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                // 글자가 바뀔 때마다 호출. 빈 setState()로 build()를 다시 실행하며
-                // 게시 버튼 활성 여부와 카운터를 새 입력 기준으로 다시 그립니다.
-                onChanged: (_) => setState(() {}),
-                // 기본 카운터는 입력칸과의 간격이 4라 시안(8)과 달라서 숨기고 아래에 직접 그린다.
-                buildCounter: (
-                  context, {
-                  required currentLength,
-                  required isFocused,
-                  maxLength,
-                }) => null,
-              ),
-              // TextField 밖에 그려서 기본 카운터처럼 바뀔 때마다 TalkBack이 읽도록 표시한다.
-              Semantics(
-                container: true,
-                liveRegion: true,
-                child: Text(
-                  '$length / $maxPostLength',
-                  style: text.labelSmall?.copyWith(
-                    color: length >= maxPostLength
-                        ? colors.error
-                        : colors.onSurfaceVariant,
+                  // TextField 밖에 그려서 기본 카운터처럼 바뀔 때마다 TalkBack이 읽도록 표시한다.
+                  Semantics(
+                    container: true,
+                    liveRegion: true,
+                    child: Text(
+                      '$length / $maxPostLength',
+                      style: text.labelSmall?.copyWith(
+                        color: length >= maxPostLength
+                            ? colors.error
+                            : colors.onSurfaceVariant,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
