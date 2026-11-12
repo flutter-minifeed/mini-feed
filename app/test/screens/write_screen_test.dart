@@ -68,7 +68,7 @@ void main() {
     await tester.pump();
 
     // then
-    expect(_counterColor(tester, '299/300'), isNot(_errorColor(tester)));
+    expect(_counterColor(tester, '299 / 300'), isNot(_errorColor(tester)));
   });
 
   testWidgets('글자를 입력하면 게시가 가능합니다', (tester) async {
@@ -92,7 +92,7 @@ void main() {
     await tester.pump();
 
     // then
-    expect(_counterColor(tester, '300/300'), _errorColor(tester));
+    expect(_counterColor(tester, '300 / 300'), _errorColor(tester));
   });
 
   testWidgets('한글 301자를 붙여넣으면 300자까지만 남는다', (tester) async {
@@ -106,7 +106,7 @@ void main() {
     // then
     final field = tester.widget<TextField>(find.byType(TextField));
     expect(field.controller!.text, '가' * 300);
-    expect(find.text('300/300'), findsOneWidget);
+    expect(find.text('300 / 300'), findsOneWidget);
   });
 
   testWidgets('iOS에서 한글 조합 중 301자가 되면 게시할 수 없다', (tester) async {
@@ -254,23 +254,23 @@ void main() {
   });
 }
 
-// 화면에서 '게시' 텍스트를 가진 TextButton을 찾는 조건
-final _postButton = find.widgetWithText(TextButton, '게시');
+// 상단 바의 게시 버튼을 찾는 조건. FilledButton.icon은 FilledButton의 하위 클래스라
+// byType(정확한 타입 비교)으로는 찾지 못해 is로 찾는다.
+final _postButton = find.byWidgetPredicate((widget) => widget is FilledButton);
 
 /// '게시' 버튼이 눌리는 상태인지 확인한다.
 bool _canPost(WidgetTester tester) {
   // 조건에 맞는 실제 버튼 위젯을 꺼낸다.
-  final button = tester.widget<TextButton>(_postButton);
+  final button = tester.widget<FilledButton>(_postButton);
 
   // onPressed가 null이면 Flutter가 버튼을 비활성(회색)으로 그린다.
   return button.onPressed != null;
 }
 
-/// 카운터 글자(예: '300/300')의 색을 꺼낸다.
+/// 카운터 글자(예: '300 / 300')의 색을 꺼낸다.
 Color? _counterColor(WidgetTester tester, String counter) {
   final counterText = tester.widget<Text>(find.text(counter));
 
-  // 기본색일 때는 style을 null로 뒀으므로 색도 null이 된다.
   return counterText.style?.color;
 }
 
