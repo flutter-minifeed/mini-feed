@@ -14,6 +14,8 @@ import 'package:minifeed/repository/repository_scope.dart';
 import 'package:minifeed/screens/detail_screen.dart';
 import 'package:minifeed/widgets/post_card.dart';
 
+import 'helpers/test_app.dart';
+
 void main() {
   testWidgets('앱을 켜면 저장소의 게시글과 작성자, 상대 시간이 보인다', (tester) async {
     // given
@@ -75,10 +77,18 @@ void main() {
 
   testWidgets('상세 화면에서 화살표를 누르면 피드로 돌아온다', (tester) async {
     // given
-    await tester.pumpWidget(_app(_repository()));
+    await pumpApp(tester);
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('body-post-0')));
+    await tester.tap(find.byTooltip('글쓰기'));
     await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '게시글 0 본문');
+    await tester.pump();
+    await tester.tap(find.text('게시'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('게시글 0 본문'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(DetailScreen), findsOneWidget);
 
     // when
     await tester.tap(find.byType(BackButton));
