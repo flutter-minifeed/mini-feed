@@ -50,8 +50,12 @@ class FakePostRepository implements PostRepository {
 }
 
 class FakeCommentRepository implements CommentRepository {
+  /// 테스트가 넣어 두는 댓글. 넣은 순서(오래된 순)대로 돌려준다.
+  final List<Comment> comments = [];
+
   @override
-  Future<List<Comment>> getComments(String postId) async => [];
+  Future<List<Comment>> getComments(String postId) async =>
+      comments.where((comment) => comment.postId == postId).toList();
 }
 
 /// 가짜 저장소를 넣은 앱을 띄우고, 검사할 수 있게 게시글 저장소를 돌려준다.
