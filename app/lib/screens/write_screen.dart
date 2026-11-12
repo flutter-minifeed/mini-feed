@@ -26,10 +26,17 @@ class _WriteScreenState extends State<WriteScreen> {
     super.dispose();
   }
 
-  // 공백 및 줄바꿈만 있으면 버려도 잃을 내용이 없으므로 빈 본문으로 봅니다.
-  bool get _hasText => _controller.text.trim().isNotEmpty;
+  // 저장할 본문. 앞뒤 공백만 지우고 중간 줄바꿈은 그대로 둔다.
+  String get _body => _controller.text.trim();
 
-  bool get _canPost => !_isPosting && _hasText;
+  // 공백 및 줄바꿈만 있으면 버려도 잃을 내용이 없으므로 빈 본문으로 봅니다.
+  bool get _hasText => _body.isNotEmpty;
+
+  // iOS·웹은 한글 조합이 끝날 때까지 maxLength를 넘는 입력을 허용하므로
+  // 화면 입력 제한과 별도로 저장할 본문 길이를 다시 확인한다.
+  bool get _withinLimit => _body.characters.length <= maxPostLength;
+
+  bool get _canPost => !_isPosting && _hasText && _withinLimit;
 
   // 닫기 확인 창을 띄우고, 버리기를 고르면 true를 돌려준다.
   Future<bool> _confirmDiscard() async {
@@ -63,8 +70,8 @@ class _WriteScreenState extends State<WriteScreen> {
   }
 
   Future<void> _submit() async {
-    // 같은 프레임에 두 번 눌려도 요청은 한 번만 보낸다.
-    if (_isPosting) return;
+    // 같은 프레임에 두 번 눌리거나 300자를 넘은 상태면 보내지 않는다.
+    if (!_canPost) return;
     setState(() => _isPosting = true);
 
     // await 뒤에는 화면이 닫혔을 수 있어 context에서 필요한 것을 미리 꺼내 둔다.
@@ -72,8 +79,7 @@ class _WriteScreenState extends State<WriteScreen> {
     final navigator = Navigator.of(context);
 
     try {
-      // 앞뒤 공백만 지우고 중간 줄바꿈은 그대로 저장한다.
-      final post = await repository.addPost(_controller.text.trim());
+      final post = await repository.addPost(_body);
 
       // 만든 글을 결과로 돌려줘 피드가 상단 갱신에 쓸 수 있게 한다.
       navigator.pop(post);

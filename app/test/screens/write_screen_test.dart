@@ -109,6 +109,28 @@ void main() {
     expect(find.text('300/300'), findsOneWidget);
   });
 
+  testWidgets('iOS에서 한글 조합 중 301자가 되면 게시할 수 없다', (tester) async {
+    // given
+    await pumpWriteScreen(tester);
+    await tester.showKeyboard(find.byType(TextField));
+
+    // when: 301번째 글자를 아직 조합 중인 상태
+    // iOS는 조합이 끝날 때까지 maxLength를 넘는 입력을 허용한다.
+    tester.testTextInput.updateEditingValue(
+      TextEditingValue(
+        text: '가' * 301,
+        selection: const TextSelection.collapsed(offset: 301),
+        composing: const TextRange(start: 300, end: 301),
+      ),
+    );
+    await tester.pump();
+
+    // then
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.controller!.text, hasLength(301));
+    expect(_canPost(tester), isFalse);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
+
   testWidgets('게시하면 앞뒤 공백만 지운 본문이 저장되고 화면이 닫힌다', (tester) async {
     // given
     final repository = await pumpWriteScreen(tester);
