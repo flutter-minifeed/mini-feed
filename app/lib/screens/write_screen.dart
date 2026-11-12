@@ -26,9 +26,41 @@ class _WriteScreenState extends State<WriteScreen> {
     super.dispose();
   }
 
-  // 게시 가능 여부. 앞뒤 공백 및 줄바꿈을 지우고 남는 글자가 있어야 한다.
-  // get으로 만들어서 _canPost를 읽을 때마다 현재 입력으로 다시 계산한다.
-  bool get _canPost => !_isPosting && _controller.text.trim().isNotEmpty;
+  // 공백 및 줄바꿈만 있으면 버려도 잃을 내용이 없으므로 빈 본문으로 봅니다.
+  bool get _hasText => _controller.text.trim().isNotEmpty;
+
+  bool get _canPost => !_isPosting && _hasText;
+
+  // 닫기 확인 창을 띄우고, 버리기를 고르면 true를 돌려준다.
+  Future<bool> _confirmDiscard() async {
+    final discard = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('작성 중인 글을 버릴까요?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('계속 쓰기'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('버리기'),
+          ),
+        ],
+      ),
+    );
+
+    // 창 바깥을 눌러 닫으면 null이 오고, 계속 쓰기와 같게 본다.
+    return discard ?? false;
+  }
+
+  // X·뒤로가기·pop이 일어날 때마다 호출된다. 실제로 닫혔으면 didPop이 true다.
+  Future<void> _onPopBlocked(bool didPop, Object? result) async {
+    // 이미 닫혔거나(게시 성공) 게시 중이면 확인 창을 띄우지 않는다.
+    if (didPop || _isPosting) return;
+    final discard = await _confirmDiscard();
+    if (discard && mounted) Navigator.of(context).pop();
+  }
 
   Future<void> _submit() async {
     // 같은 프레임에 두 번 눌려도 요청은 한 번만 보낸다.
@@ -54,9 +86,10 @@ class _WriteScreenState extends State<WriteScreen> {
   // setState()가 호출될 때마다 다시 실행된다.
   @override
   Widget build(BuildContext context) {
-    // 게시 중에는 X 및 Android 뒤로가기로 닫히지 않게 막는다.
+    // 본문이 있거나 게시 중이면 X·Android 뒤로가기로 바로 닫히지 않게 막는다.
     return PopScope(
-      canPop: !_isPosting,
+      canPop: !_isPosting && !_hasText,
+      onPopInvokedWithResult: _onPopBlocked,
       child: Scaffold(
         appBar: AppBar(
           // 피드에서 fullscreenDialog: true로 열어서 AppBar가 X버튼을 자동으로 만들어준다.

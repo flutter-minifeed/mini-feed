@@ -166,6 +166,70 @@ void main() {
     repository.addGate!.complete();
     await tester.pumpAndSettle();
   });
+
+  testWidgets('공백만 있는 본문은 X를 누르면 확인 없이 닫힌다', (tester) async {
+    // given
+    await pumpWriteScreen(tester);
+    await tester.enterText(find.byType(TextField), '  \n ');
+    await tester.pump();
+
+    // when
+    await tester.tap(find.byType(CloseButton));
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(WriteScreen), findsNothing);
+  });
+
+  testWidgets('본문이 있으면 X를 눌렀을 때 계속 쓰기를 고르면 입력이 남는다', (tester) async {
+    // given
+    await pumpWriteScreen(tester);
+    await tester.enterText(find.byType(TextField), '쓰던 글');
+    await tester.pump();
+
+    // when
+    await tester.tap(find.byType(CloseButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('계속 쓰기'));
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.byType(WriteScreen), findsOneWidget);
+    expect(find.text('쓰던 글'), findsOneWidget);
+  });
+
+  testWidgets('본문이 있으면 X를 눌렀을 때 버리기를 고르면 닫힌다', (tester) async {
+    // given
+    final repository = await pumpWriteScreen(tester);
+    await tester.enterText(find.byType(TextField), '쓰던 글');
+    await tester.pump();
+
+    // when
+    await tester.tap(find.byType(CloseButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('버리기'));
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.byType(WriteScreen), findsNothing);
+    expect(repository.addedBodies, isEmpty);
+  });
+
+  testWidgets('본문이 있으면 Android 뒤로가기도 확인 창을 띄운다', (tester) async {
+    // given
+    await pumpWriteScreen(tester);
+    await tester.enterText(find.byType(TextField), '쓰던 글');
+    await tester.pump();
+
+    // when: 시스템 뒤로가기 신호를 보낸다.
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.text('작성 중인 글을 버릴까요?'), findsOneWidget);
+    expect(find.byType(WriteScreen), findsOneWidget);
+  });
 }
 
 // 화면에서 '게시' 텍스트를 가진 TextButton을 찾는 조건
