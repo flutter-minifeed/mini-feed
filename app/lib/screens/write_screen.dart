@@ -61,6 +61,9 @@ class _WriteScreenState extends State<WriteScreen> {
         // 아이콘 기본색은 secondary인데, 테마에 secondary를 정하지 않아 primary로 지정한다.
         icon: Icon(Icons.edit_off, color: colors.primary),
         title: const Text('작성 중인 글을 버릴까요?'),
+        // 본문 기본 스타일(bodyMedium)에는 색이 없어 검정으로 그려지므로 시안의 회색을 지정한다.
+        contentTextStyle: Theme.of(context).textTheme.bodyMedium
+            ?.copyWith(color: colors.onSurfaceVariant),
         content: const Text(
           '닫으면 지금까지 쓴 글이 사라져요. 임시 저장은 되지 않아요.',
           textAlign: TextAlign.center,
