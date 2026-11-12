@@ -72,7 +72,7 @@ class _WriteScreenState extends State<WriteScreen> {
   }
 
   // X·뒤로가기·pop이 일어날 때마다 호출된다. 실제로 닫혔으면 didPop이 true다.
-  Future<void> _onPopBlocked(bool didPop, Object? result) async {
+  Future<void> _onPopInvokedWithResult(bool didPop, Object? result) async {
     // 이미 닫혔거나(게시 성공) 게시 중이면 확인 창을 띄우지 않는다.
     if (didPop || _isSaving) return;
     final discard = await _confirmDiscard();
@@ -110,7 +110,7 @@ class _WriteScreenState extends State<WriteScreen> {
     // 본문이 있거나 게시 중이면 X·Android 뒤로가기로 바로 닫히지 않게 막는다.
     return PopScope(
       canPop: !_isSaving && !_hasText,
-      onPopInvokedWithResult: _onPopBlocked,
+      onPopInvokedWithResult: _onPopInvokedWithResult,
       child: Scaffold(
         appBar: AppBar(
           toolbarHeight: 64,
