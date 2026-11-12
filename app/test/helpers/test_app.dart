@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:minifeed/main.dart';
@@ -19,6 +21,9 @@ class FakePostRepository implements PostRepository {
   /// addPost가 받은 본문. 공백 제거·중복 요청 검사에 쓴다.
   final List<String> addedBodies = [];
 
+  /// 값을 넣으면 addPost가 이 Completer가 끝날 때까지 멈춘다. 게시 중 상태 검사에 쓴다.
+  Completer<void>? addGate;
+
   @override
   Future<List<Post>> getPosts() async => List.unmodifiable(posts);
 
@@ -29,6 +34,7 @@ class FakePostRepository implements PostRepository {
   @override
   Future<Post> addPost(String body) async {
     addedBodies.add(body);
+    await addGate?.future; // addGate가 없으면(null) 바로 넘어간다.
     final post = Post(
       id: 'fake-${addedBodies.length}',
       author: testUser,

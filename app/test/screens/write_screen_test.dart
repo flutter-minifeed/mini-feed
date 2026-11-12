@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minifeed/repository/repository_scope.dart';
@@ -5,18 +7,33 @@ import 'package:minifeed/screens/write_screen.dart';
 
 import '../helpers/test_app.dart';
 
-// 피드의 임시 '글쓰기 열기' 버튼은 #7에서 바뀌므로 글쓰기 화면을 바로 띄운다.
-// 다음 커밋에서 addedBodies를 검사하려고 가짜 저장소 타입 그대로 돌려준다.
+// 빈 화면 위에 글쓰기 화면을 fullscreenDialog로 엽니다. 피드에서 여는 방식과 같아서 X 버튼도 똑같이 생깁니다.
 Future<FakePostRepository> pumpWriteScreen(WidgetTester tester) async {
   final postRepository = FakePostRepository();
   final commentRepository = FakeCommentRepository();
+  // 피드처럼 빈 화면 위에 글쓰기를 띄워야 게시 후 닫히는지 확인할 수 있다.
+  // navigatorKey: 테스트 코드에서 context 없이 앱의 Navigator를 꺼내 쓰기 위한 열쇠.
+  final navigatorKey = GlobalKey<NavigatorState>();
+
   await tester.pumpWidget(
     RepositoryScope(
       postRepository: postRepository,
       commentRepository: commentRepository,
-      child: const MaterialApp(home: WriteScreen()),
+      child: MaterialApp(navigatorKey: navigatorKey, home: const Scaffold()),
     ),
   );
+
+  // 빈 화면(home) 위에 글쓰기 화면을 한 장 쌓는다. 피드의 '글쓰기 열기'와 같은 방식이다.
+  // currentState: navigatorKey가 연결된 Navigator. pumpWidget 뒤라 null이 아니어서 !를 붙인다.
+  navigatorKey.currentState!.push(
+    MaterialPageRoute<void>(
+      // 아래에서 위로 올라오는 전체 화면 창으로 열고, AppBar 왼쪽에 X 버튼이 생긴다.
+      fullscreenDialog: true,
+      builder: (_) => const WriteScreen(),
+    ),
+  );
+  // 화면 전환 애니메이션이 끝날 때까지 그려야 글쓰기 화면을 찾을 수 있다.
+  await tester.pumpAndSettle();
 
   return postRepository;
 }
@@ -90,6 +107,64 @@ void main() {
     final field = tester.widget<TextField>(find.byType(TextField));
     expect(field.controller!.text, '가' * 300);
     expect(find.text('300/300'), findsOneWidget);
+  });
+
+  testWidgets('게시하면 앞뒤 공백만 지운 본문이 저장되고 화면이 닫힌다', (tester) async {
+    // given
+    final repository = await pumpWriteScreen(tester);
+    await tester.enterText(find.byType(TextField), '  첫 줄\n\n둘째 줄  ');
+    await tester.pump();
+
+    // when
+    await tester.tap(_postButton);
+    await tester.pumpAndSettle();
+
+    // then
+    expect(repository.addedBodies, ['첫 줄\n\n둘째 줄']);
+    expect(find.byType(WriteScreen), findsNothing);
+  });
+
+  testWidgets('게시 중에는 다시 눌러도 한 번만 저장한다', (tester) async {
+    // given: 저장이 끝나지 않고 멈춰 있는 상태
+    final repository = await pumpWriteScreen(tester);
+    repository.addGate = Completer<void>();
+    await tester.enterText(find.byType(TextField), '안녕');
+    await tester.pump();
+
+    // when
+    await tester.tap(_postButton);
+    await tester.pump();
+    await tester.tap(_postButton);
+    await tester.pump();
+
+    // then
+    expect(repository.addedBodies, hasLength(1));
+    expect(_canPost(tester), isFalse);
+
+    // 저장이 끝나면 화면이 닫힌다.
+    repository.addGate!.complete();
+    await tester.pumpAndSettle();
+    expect(find.byType(WriteScreen), findsNothing);
+  });
+
+  testWidgets('게시 중에는 X를 눌러도 닫히지 않는다', (tester) async {
+    // given: 저장이 끝나지 않고 멈춰 있는 상태
+    final repository = await pumpWriteScreen(tester);
+    repository.addGate = Completer<void>();
+    await tester.enterText(find.byType(TextField), '안녕');
+    await tester.pump();
+    await tester.tap(_postButton);
+    await tester.pump();
+
+    // when
+    await tester.tap(find.byType(CloseButton));
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.byType(WriteScreen), findsOneWidget);
+
+    repository.addGate!.complete();
+    await tester.pumpAndSettle();
   });
 }
 
