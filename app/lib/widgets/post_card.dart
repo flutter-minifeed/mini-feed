@@ -1,22 +1,26 @@
 import 'package:flutter/material.dart';
 
 import '../models/post.dart';
-import '../theme/app_theme.dart';
 import '../utils/relative_time.dart';
+import 'user_avatar.dart';
 
 /// 피드의 게시글 한 건. 본문과 댓글은 서로 다른 상세 진입을 전달한다.
+///
+/// 상세 화면도 같은 카드를 쓰며, 이미 상세라서 [onOpen]을 넘기지 않는다.
 class PostCard extends StatelessWidget {
   const PostCard({
     super.key,
     required this.post,
     required this.now,
-    required this.onOpen,
+    this.onOpen,
     required this.onComments,
   });
 
   final Post post;
   final DateTime now;
-  final VoidCallback onOpen;
+
+  /// 본문을 눌렀을 때 할 일. null이면 본문을 눌러도 반응하지 않는다.
+  final VoidCallback? onOpen;
   final VoidCallback onComments;
 
   @override
@@ -39,15 +43,7 @@ class PostCard extends StatelessWidget {
             Row(
               spacing: 12,
               children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundColor: userColors[author.colorIndex],
-                  foregroundColor: userOnColor,
-                  child: Text(
-                    author.nickName.characters.firstOrNull ?? '',
-                    style: text.titleMedium?.copyWith(color: userOnColor),
-                  ),
-                ),
+                UserAvatar(author: author),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
