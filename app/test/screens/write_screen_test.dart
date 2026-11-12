@@ -162,6 +162,7 @@ void main() {
     // then
     expect(repository.addedBodies, hasLength(1));
     expect(_canPost(tester), isFalse);
+    expect(find.text('게시 중…'), findsOneWidget);
 
     // 저장이 끝나면 화면이 닫힌다.
     repository.addGate!.complete();

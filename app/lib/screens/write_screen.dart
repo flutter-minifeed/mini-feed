@@ -40,10 +40,19 @@ class _WriteScreenState extends State<WriteScreen> {
 
   // 닫기 확인 창을 띄우고, 버리기를 고르면 true를 돌려준다.
   Future<bool> _confirmDiscard() async {
+    final colors = Theme.of(context).colorScheme;
     final discard = await showDialog<bool>(
       context: context,
+      // 기본 배경막(검정 54%)은 시안의 scrim(검정 32%)보다 진하다.
+      barrierColor: colors.scrim.withValues(alpha: 0.32),
       builder: (dialogContext) => AlertDialog(
+        // 아이콘 기본색은 secondary인데, 테마에 secondary를 정하지 않아 primary로 지정한다.
+        icon: Icon(Icons.edit_off, color: colors.primary),
         title: const Text('작성 중인 글을 버릴까요?'),
+        content: const Text(
+          '닫으면 지금까지 쓴 글이 사라져요. 임시 저장은 되지 않아요.',
+          textAlign: TextAlign.center,
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
@@ -51,6 +60,7 @@ class _WriteScreenState extends State<WriteScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
+            style: TextButton.styleFrom(foregroundColor: colors.error),
             child: const Text('버리기'),
           ),
         ],
@@ -113,8 +123,8 @@ class _WriteScreenState extends State<WriteScreen> {
             FilledButton.icon(
               // onPressed가 null이면 Flutter가 버튼을 비활성(회색)으로 그린다.
               onPressed: _canPost ? _submit : null,
-              icon: const Icon(Icons.send),
-              label: const Text('게시'),
+              icon: Icon(_isPosting ? Icons.hourglass_top : Icons.send),
+              label: Text(_isPosting ? '게시 중…' : '게시'),
             ),
           ],
         ),
@@ -134,7 +144,7 @@ class _WriteScreenState extends State<WriteScreen> {
                     TextInputType.multiline, // 키보드에 줄바꿈(엔터) 키가 나오도록 합니다.
                 style: text.bodyLarge,
                 decoration: InputDecoration(
-                  hintText: '내용을 입력하세요', // 비어 있을 때 흐리게 보이는 안내 문구
+                  hintText: '무슨 생각을 하고 있나요?', // 비어 있을 때 흐리게 보이는 안내 문구
                   hintStyle: text.bodyLarge?.copyWith(
                     color: colors.onSurfaceVariant,
                   ),
