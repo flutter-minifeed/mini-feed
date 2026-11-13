@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../models/post.dart';
-import '../theme/app_theme.dart';
 import '../utils/relative_time.dart';
+import 'author_tile.dart';
 
 /// 피드의 게시글 한 건. 본문과 댓글은 서로 다른 상세 진입을 전달한다.
 class PostCard extends StatelessWidget {
@@ -24,7 +24,6 @@ class PostCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final text = theme.textTheme;
-    final author = post.author;
     return Ink(
       decoration: BoxDecoration(
         color: colors.surface,
@@ -39,32 +38,10 @@ class PostCard extends StatelessWidget {
             Row(
               spacing: 12,
               children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundColor: userColors[author.colorIndex],
-                  foregroundColor: userOnColor,
-                  child: Text(
-                    author.nickName.characters.firstOrNull ?? '',
-                    style: text.titleMedium?.copyWith(color: userOnColor),
-                  ),
-                ),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        author.nickName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: text.titleMedium,
-                      ),
-                      Text(
-                        relativeTime(post.createdAt, now: now),
-                        style: text.bodySmall?.copyWith(
-                          color: colors.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
+                  child: AuthorTile(
+                    author: post.author,
+                    subtitle: relativeTime(post.createdAt, now: now),
                   ),
                 ),
                 SizedBox(
