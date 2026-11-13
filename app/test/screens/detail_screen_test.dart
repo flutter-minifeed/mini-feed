@@ -30,6 +30,19 @@ void main() {
     expect(find.text('테스트 댓글'), findsOneWidget);
   });
 
+  testWidgets('상세에서 본문을 눌러도 다른 화면이 열리지 않는다', (tester) async {
+    // given
+    await _openDetail(tester);
+
+    // when
+    await tester.tap(find.text('테스트 본문'));
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.byType(DetailScreen), findsOneWidget);
+    expect(tester.testTextInput.isVisible, isFalse);
+  });
+
   testWidgets('카드 본문으로 열면 댓글 입력창에 포커스가 가지 않는다', (tester) async {
     // when
     await _openDetail(tester);
