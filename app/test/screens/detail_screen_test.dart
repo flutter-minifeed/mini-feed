@@ -2,22 +2,45 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:minifeed/models/author.dart';
+import 'package:minifeed/models/comment.dart';
+import 'package:minifeed/models/post.dart';
+import 'package:minifeed/repository/repository_scope.dart';
 import 'package:minifeed/screens/detail_screen.dart';
 
-import '../test_repositories.dart';
+import '../helpers/test_app.dart';
 
 void main() {
-  testWidgets('게시글 ID로 열면 같은 글의 닉네임·본문·개수와 댓글이 보인다', (tester) async {
+  testWidgets('게시글 ID로 열면 같은 글의 작성자·상대 시간·본문·개수와 댓글이 보인다', (tester) async {
     // when
     await _openDetail(tester);
 
-    // then
+    // then: 게시글
+    expect(find.text('졸'), findsOneWidget); // 아바타 첫 글자
     expect(find.text('졸린 판다'), findsOneWidget);
+    expect(find.text('12분 전'), findsOneWidget);
     expect(find.text('테스트 본문'), findsOneWidget);
     expect(find.text('3'), findsOneWidget); // 좋아요 수
+
+    // then: 댓글
     expect(find.text('댓글 1'), findsOneWidget);
+    expect(find.text('낮'), findsOneWidget);
     expect(find.text('낮잠 자는 물개'), findsOneWidget);
+    expect(find.text('10분 전'), findsOneWidget);
     expect(find.text('테스트 댓글'), findsOneWidget);
+  });
+
+  testWidgets('상세에서 본문을 눌러도 다른 화면이 열리지 않는다', (tester) async {
+    // given
+    await _openDetail(tester);
+
+    // when
+    await tester.tap(find.text('테스트 본문'));
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.byType(DetailScreen), findsOneWidget);
+    expect(tester.testTextInput.isVisible, isFalse);
   });
 
   testWidgets('카드 본문으로 열면 댓글 입력창에 포커스가 가지 않는다', (tester) async {
@@ -107,15 +130,43 @@ void main() {
   }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 }
 
-// 테스트용 저장소 위에 상세 화면만 띄우고, 글을 다 불러올 때까지 기다린다.
+const _postId = 'post-1';
+
+// 가짜 저장소에 글 1개와 댓글 1개를 넣고 상세 화면만 띄운 뒤, 다 불러올 때까지 기다린다.
 Future<void> _openDetail(
   WidgetTester tester, {
-  String postId = testPostId,
+  String postId = _postId,
   bool focusComment = false,
 }) async {
+  final now = DateTime.now();
+  final postRepository = FakePostRepository()
+    ..posts.add(
+      Post(
+        id: _postId,
+        author: const Author(id: 'user-1', nickName: '졸린 판다', colorIndex: 2),
+        body: '테스트 본문',
+        createdAt: now.subtract(const Duration(minutes: 12)),
+        likeCount: 3,
+        commentCount: 1,
+        likedByMe: false,
+      ),
+    );
+  final commentRepository = FakeCommentRepository()
+    ..comments.add(
+      Comment(
+        id: 'comment-1',
+        postId: _postId,
+        author: const Author(id: 'user-2', nickName: '낮잠 자는 물개', colorIndex: 3),
+        body: '테스트 댓글',
+        createdAt: now.subtract(const Duration(minutes: 10)),
+      ),
+    );
+
   await tester.pumpWidget(
-    withTestRepositories(
-      MaterialApp(
+    RepositoryScope(
+      postRepository: postRepository,
+      commentRepository: commentRepository,
+      child: MaterialApp(
         home: DetailScreen(postId: postId, focusComment: focusComment),
       ),
     ),
