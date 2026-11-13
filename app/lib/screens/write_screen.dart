@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:minifeed/repository/repository_scope.dart';
+import 'package:minifeed/widgets/author_tile.dart';
 
 /// 게시글 본문 최대 글자 수. 이모지 및 한글도 보이는 글자 하나를 1자로 세게 됩니다.
 const maxPostLength = 300;
@@ -155,6 +156,16 @@ class _WriteScreenState extends State<WriteScreen> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 spacing: 8,
                 children: [
+                  // 시안은 작성자 줄과 입력칸 사이가 12라 Column 간격(8)에 4를 더한다.
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: AuthorTile(
+                      author: RepositoryScope.of(context)
+                          .postRepository
+                          .currentUser,
+                      subtitle: '이 기기의 익명 닉네임 · 바꿀 수 없어요',
+                    ),
+                  ),
                   TextField(
                     controller: _controller, // 입력 내용이 _controller.text로 들어간다.
                     focusNode: _focusNode,

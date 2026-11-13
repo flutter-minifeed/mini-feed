@@ -39,6 +39,14 @@ Future<FakePostRepository> pumpWriteScreen(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('글쓰기를 열면 새 글의 작성자 닉네임이 보인다', (tester) async {
+    // when
+    await pumpWriteScreen(tester);
+
+    // then
+    expect(find.text(testUser.nickName), findsOneWidget);
+  });
+
   testWidgets('본문이 비어 있으면 게시할 수 없다', (tester) async {
     // when
     await pumpWriteScreen(tester);
