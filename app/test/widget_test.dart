@@ -254,6 +254,9 @@ class _ReadOverrideRepository implements PostRepository {
   final Future<List<Post>> Function() read;
 
   @override
+  Author get currentUser => original.currentUser;
+
+  @override
   Future<List<Post>> getPosts() => read();
 
   @override
