@@ -24,7 +24,7 @@
 | 항목 | 실제 기록 |
 | --- | --- |
 | 실행 날짜·검사자 | 2026-11-13 · sxngwxn의 Galaxy Note10 5G, Codex 로컬 실행 보조 |
-| 실제 실행한 앱의 Git 커밋 | `36007e1b9e0966ee5298930120998bef06e3bfb8`. #11 브랜치에 main을 로컬 병합했으며 앱 소스 차이 없음. 병합 커밋은 미작성 |
+| 실제 실행한 앱의 Git 커밋 | `36007e1b9e0966ee5298930120998bef06e3bfb8`. #11 브랜치 `de02be8`의 app/과 같은 소스로 확인했다. |
 | APK 빌드·설치 방법 | `flutter build apk --debug --no-pub` 성공 → USB adb 설치 성공 → `com.minifeed/.MainActivity` 실행 성공 |
 | Android 기기 모델·OS 버전 | Galaxy Note10 5G (SM-N971N), Android 12 (API 31), 1080×2280 |
 | Flutter·Dart 버전 | 실제 `flutter doctor -v`에서 Flutter 3.47.9 stable / Dart 3.13.7 확인 |
@@ -126,3 +126,53 @@ Chrome에서 별도로 확인한 결과가 생기면 아래에 남깁니다. And
 - USB 연결이 검사 중 여러 차례 끊겨 재연결·사용자 디버깅 허용 후 재개했습니다.
 - 첫 입력 제한 검사 시도는 연결 중단과 설정 화면 전환으로 판정에서 제외했습니다. 사용자가 설정을 마친 뒤 앱으로 복귀해 빈 글·공백·299/300/301번째 입력과 한글 조합을 다시 확인했습니다.
 - 299자 입력 명령은 시간 초과로 실제 289자에서 중단됐습니다. 실제 글자 수를 확인한 뒤 10자를 더해 299자부터 경계 검사를 진행했습니다.
+
+## 2026-11-13 PR #54 추가 실기기 검증
+
+[titanfall7274의 PR #54](https://github.com/flutter-minifeed/mini-feed/pull/54)의 `4a45176fff48956de39c8abdf73113646a70a2e7`을 별도 로컬 작업 폴더에서 빌드해 확인했습니다. 이 절의 결과는 해당 PR 커밋을 대상으로 합니다.
+
+| 항목 | 확인한 결과 |
+| --- | --- |
+| 실행 환경 | Galaxy Note10 5G (SM-N971N), Android 12 / API 31, USB 설치·실행 |
+| Flutter / Dart | 3.47.9 stable / 3.13.7 |
+| 분석·테스트 | `flutter analyze --no-pub` 오류 없음, `flutter test --no-pub` 66개 통과 |
+| Android 빌드 | `flutter build apk --debug --no-pub` 성공. SDK XML 버전 차이 경고 출력 |
+| APK SHA-256 | `692c8c015bc2771567f0fa1028566132cea46e6a6b3c7bc59fc3f5d1687062f9` |
+| 앱 실행 기록 | 해당 앱 PID에서 Flutter 예외·RenderFlex overflow·FATAL EXCEPTION 검색 결과 0줄 |
+
+### 화면과 동작
+
+- 피드의 작성자 아바타·닉네임·작성 시각 표시를 확인했습니다.
+- 글쓰기에 `새 글` 제목, 작성자 `처음 온 펭귄`, 익명 닉네임 안내가 표시됩니다.
+- 빈 입력에서 게시 버튼 비활성을 확인했습니다. 시험용 본문 `Review54-phone-check` 20자를 입력하면 `20 / 300`과 활성 게시 버튼이 표시됩니다.
+- Android 뒤로가기로 키보드를 내린 후 글 아래 빈 곳을 누르면 다시 열립니다.
+- 게시 후 피드 최상단에 같은 본문과 `방금 전`이 표시됩니다.
+- 본문 선택 시 같은 글의 상세가 표시됩니다. 댓글 버튼으로 진입하면 입력창과 키보드가 표시됩니다.
+- X로 작성 취소 확인 창이 열립니다. `계속 쓰기` 선택 시 본문이 유지되고 `버리기` 선택 시 피드로 복귀합니다.
+- 299자 회색 카운터, 300자 빨간 카운터를 확인했습니다. 301번째 영문 입력은 차단되고 본문 300자가 유지됩니다.
+
+### 캡처
+
+각 이미지는 위 PR 커밋의 debug APK를 실행한 휴대폰 원본입니다.
+
+| 화면 | 파일 |
+| --- | --- |
+| 게시 후 피드 | [feed.png](../screenshots/pr-54-review/feed.png) |
+| 빈 글쓰기 | [write-empty.png](../screenshots/pr-54-review/write-empty.png) |
+| 본문으로 상세 진입 | [detail.png](../screenshots/pr-54-review/detail.png) |
+| 댓글 버튼으로 상세 진입 | [detail-keyboard.png](../screenshots/pr-54-review/detail-keyboard.png) |
+| 작성 취소 확인 창 | [discard.png](../screenshots/pr-54-review/discard.png) |
+| 300자 입력 | [write-300.png](../screenshots/pr-54-review/write-300.png) |
+
+### 이어서 확인할 항목
+
+- #54·#55가 반영된 앱에서 최종 화면·실행 결과·캡처·AI 누적본·제출 ZIP을 갱신합니다.
+- 이번 #54 버전의 한글 조합 경계 입력과 301자 실제 붙여넣기는 추가 확인이 필요합니다.
+- TalkBack 실제 음성 출력, 다른 기기·화면 배율, Figma 치수·색상 정밀 대조는 미확인입니다.
+
+## AuthorTile 로컬 코드 반영
+
+- 2026-11-13 사용자 요청으로 PR #54의 작성자 줄 공통 위젯 변경을 현재 작업 폴더에 적용했습니다.
+- 기준은 main 36007e1이며, app/lib/widgets/author_tile.dart와 app/lib/widgets/post_card.dart는 PR #54의 4a45176 원본과 파일 내용이 같습니다.
+- flutter analyze --no-pub 오류 없음, flutter test --no-pub 전체 63개 통과, git diff --check 통과.
+- 이 로컬 조합의 Android 빌드·실기기 검사는 미실행입니다. 앞 절의 실기기 사진은 각각 명시된 main 및 PR #54 커밋에서 촬영했습니다.
