@@ -21,8 +21,10 @@ class UserAvatar extends StatelessWidget {
       child: Text(
         author.nickName.characters.firstOrNull ?? '',
         // Figma 글자 크기는 반지름의 0.8배다(반지름 20 → 16, 16 → 13).
-        style: Theme.of(context).textTheme.titleMedium
-            ?.copyWith(color: userOnColor, fontSize: radius * 0.8),
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          color: userOnColor,
+          fontSize: (radius * 0.8).roundToDouble(),
+        ),
       ),
     );
   }
