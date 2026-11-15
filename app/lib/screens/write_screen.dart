@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:minifeed/repository/repository_scope.dart';
+import 'package:minifeed/widgets/author_tile.dart';
 
 /// 게시글 본문 최대 글자 수. 이모지 및 한글도 보이는 글자 하나를 1자로 세게 됩니다.
 const maxPostLength = 300;
@@ -16,14 +17,26 @@ class _WriteScreenState extends State<WriteScreen> {
   // 다시 그릴 때 새로 생성하지 않도록 build 밖에서 생성한다.
   final _controller = TextEditingController();
 
-  // 저장소에 저장하는 중인지. 이 동안 게시 버튼 및 닫기를 막는다.
-  bool _isPosting = false;
+  // 글 아래 빈 곳을 눌렀을 때 입력칸을 찾아 키보드를 올리는 데 쓴다.
+  final _focusNode = FocusNode();
 
-  // 화면이 닫힐 때 한 번 호출된다. 직접 만든 컨트롤러를 해제한다.
+  // 저장소에 저장하는 중인지. 이 동안 게시 버튼 및 닫기를 막는다.
+  bool _isSaving = false;
+
+  // 화면이 닫힐 때 한 번 호출된다. 직접 만든 컨트롤러·포커스를 해제한다.
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
+  }
+
+  // 입력칸을 직접 누른 것과 같게 처리한다. 포커스가 없으면 포커스를 주고,
+  // Android 뒤로가기로 키보드만 내린 상태(포커스는 남음)면 키보드를 다시 올린다.
+  void _showKeyboard() {
+    _focusNode.context
+        ?.findAncestorStateOfType<EditableTextState>()
+        ?.requestKeyboard();
   }
 
   // 저장할 본문. 앞뒤 공백만 지우고 중간 줄바꿈은 그대로 둔다.
@@ -36,14 +49,26 @@ class _WriteScreenState extends State<WriteScreen> {
   // 화면 입력 제한과 별도로 저장할 본문 길이를 다시 확인한다.
   bool get _withinLimit => _body.characters.length <= maxPostLength;
 
-  bool get _canPost => !_isPosting && _hasText && _withinLimit;
+  bool get _canPost => !_isSaving && _hasText && _withinLimit;
 
   // 닫기 확인 창을 띄우고, 버리기를 고르면 true를 돌려준다.
   Future<bool> _confirmDiscard() async {
+    final colors = Theme.of(context).colorScheme;
     final discard = await showDialog<bool>(
       context: context,
+      // 기본 배경막(검정 54%)은 시안의 scrim(검정 32%)보다 진하다.
+      barrierColor: colors.scrim.withValues(alpha: 0.32),
       builder: (dialogContext) => AlertDialog(
+        // 아이콘 기본색은 secondary인데, 테마에 secondary를 정하지 않아 primary로 지정한다.
+        icon: Icon(Icons.edit_off, color: colors.primary),
         title: const Text('작성 중인 글을 버릴까요?'),
+        // 본문 기본 스타일(bodyMedium)에는 색이 없어 검정으로 그려지므로 시안의 회색을 지정한다.
+        contentTextStyle: Theme.of(context).textTheme.bodyMedium
+            ?.copyWith(color: colors.onSurfaceVariant),
+        content: const Text(
+          '닫으면 지금까지 쓴 글이 사라져요. 임시 저장은 되지 않아요.',
+          textAlign: TextAlign.center,
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
@@ -51,6 +76,7 @@ class _WriteScreenState extends State<WriteScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
+            style: TextButton.styleFrom(foregroundColor: colors.error),
             child: const Text('버리기'),
           ),
         ],
@@ -62,9 +88,9 @@ class _WriteScreenState extends State<WriteScreen> {
   }
 
   // X·뒤로가기·pop이 일어날 때마다 호출된다. 실제로 닫혔으면 didPop이 true다.
-  Future<void> _onPopBlocked(bool didPop, Object? result) async {
+  Future<void> _onPopInvokedWithResult(bool didPop, Object? result) async {
     // 이미 닫혔거나(게시 성공) 게시 중이면 확인 창을 띄우지 않는다.
-    if (didPop || _isPosting) return;
+    if (didPop || _isSaving) return;
     final discard = await _confirmDiscard();
     if (discard && mounted) Navigator.of(context).pop();
   }
@@ -72,7 +98,7 @@ class _WriteScreenState extends State<WriteScreen> {
   Future<void> _submit() async {
     // 같은 프레임에 두 번 눌리거나 300자를 넘은 상태면 보내지 않는다.
     if (!_canPost) return;
-    setState(() => _isPosting = true);
+    setState(() => _isSaving = true);
 
     // await 뒤에는 화면이 닫혔을 수 있어 context에서 필요한 것을 미리 꺼내 둔다.
     final repository = RepositoryScope.of(context).postRepository;
@@ -85,65 +111,107 @@ class _WriteScreenState extends State<WriteScreen> {
       navigator.pop(post);
     } finally {
       // 실패하면 본문은 그대로 두고 다시 게시할 수 있게 한다. 실패 안내는 MP2 #14
-      if (mounted) setState(() => _isPosting = false);
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
   // setState()가 호출될 때마다 다시 실행된다.
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    // maxLength와 같은 기준(보이는 글자 수)으로 센다.
+    final length = _controller.text.characters.length;
+
     // 본문이 있거나 게시 중이면 X·Android 뒤로가기로 바로 닫히지 않게 막는다.
     return PopScope(
-      canPop: !_isPosting && !_hasText,
-      onPopInvokedWithResult: _onPopBlocked,
+      canPop: !_isSaving && !_hasText,
+      onPopInvokedWithResult: _onPopInvokedWithResult,
       child: Scaffold(
         appBar: AppBar(
-          // 피드에서 fullscreenDialog: true로 열어서 AppBar가 X버튼을 자동으로 만들어준다.
-          title: const Text('글쓰기'),
-          // 상단 바 오른쪽에 놓이는 버튼들
+          toolbarHeight: 64,
+          // CloseButton은 누르면 maybePop을 불러 PopScope 확인 흐름을 그대로 탄다.
+          leading: CloseButton(color: colors.onSurfaceVariant),
+          titleSpacing: 0,
+          title: const Text('새 글'),
+          actionsPadding: const EdgeInsets.only(right: 16),
           actions: [
-            TextButton(
+            FilledButton.icon(
               // onPressed가 null이면 Flutter가 버튼을 비활성(회색)으로 그린다.
               onPressed: _canPost ? _submit : null,
-              child: const Text('게시'),
+              icon: Icon(_isSaving ? Icons.hourglass_top : Icons.send),
+              label: Text(_isSaving ? '게시 중…' : '게시'),
             ),
           ],
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: TextField(
-            controller: _controller, // 입력 내용이 _controller.text로 들어간다.
-            autofocus: true, // 화면이 열리면 바로 키보드가 올라온다.
-            // 300자에서 입력을 막고, 더 긴 글을 붙여넣으면 300자까지만 남긴다.
-            maxLength: maxPostLength,
-            maxLines: null, // 줄 수 제한이 없고 내용에 따라 늘어난다.
-            expands: true, // 입력칸이 남은 화면 높이를 모두 채운다.
-            keyboardType: TextInputType.multiline, // 키보드에 줄바꿈(엔터) 키가 나오도록 합니다.
-            // expands일 때 없으면 커서가 칸의 세로 가운데에서 시작합니다.
-            textAlignVertical: TextAlignVertical.top,
-            decoration: const InputDecoration(
-              hintText: '내용을 입력하세요', // 비어 있을 때 흐리게 보이는 안내 문구
-              border: InputBorder.none, // 입력칸 밑줄을 없앤다.
+        // 입력칸은 글 높이만큼만 차지해서, 아래 빈 곳을 눌러도 키보드가 올라오게 한다.
+        // Scaffold 본문은 글 높이로 줄어들므로 SizedBox.expand로 화면 끝까지 늘린다.
+        body: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: _showKeyboard,
+          child: SizedBox.expand(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                spacing: 8,
+                children: [
+                  // 시안은 작성자 줄과 입력칸 사이가 12라 Column 간격(8)에 4를 더한다.
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: AuthorTile(
+                      author: RepositoryScope.of(context)
+                          .postRepository
+                          .currentUser,
+                      subtitle: '이 기기의 익명 닉네임 · 바꿀 수 없어요',
+                    ),
+                  ),
+                  TextField(
+                    controller: _controller, // 입력 내용이 _controller.text로 들어간다.
+                    focusNode: _focusNode,
+                    autofocus: true, // 화면이 열리면 바로 키보드가 올라온다.
+                    // 300자에서 입력을 막고, 더 긴 글을 붙여넣으면 300자까지만 남긴다.
+                    maxLength: maxPostLength,
+                    maxLines: null, // 줄 수 제한이 없고 내용에 따라 늘어난다.
+                    keyboardType:
+                        TextInputType.multiline, // 키보드에 줄바꿈(엔터) 키가 나오도록 합니다.
+                    style: text.bodyLarge,
+                    decoration: InputDecoration(
+                      hintText: '무슨 생각을 하고 있나요?', // 비어 있을 때 흐리게 보이는 안내 문구
+                      hintStyle: text.bodyLarge?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                      border: InputBorder.none, // 입력칸 밑줄을 없앤다.
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    // 글자가 바뀔 때마다 호출. 빈 setState()로 build()를 다시 실행하며
+                    // 게시 버튼 활성 여부와 카운터를 새 입력 기준으로 다시 그립니다.
+                    onChanged: (_) => setState(() {}),
+                    // 기본 카운터는 입력칸과의 간격이 4라 시안(8)과 달라서 숨기고 아래에 직접 그린다.
+                    buildCounter: (
+                      context, {
+                      required currentLength,
+                      required isFocused,
+                      maxLength,
+                    }) => null,
+                  ),
+                  // TextField 밖에 그려서 기본 카운터처럼 바뀔 때마다 TalkBack이 읽도록 표시한다.
+                  Semantics(
+                    container: true,
+                    liveRegion: true,
+                    child: Text(
+                      '$length / $maxPostLength',
+                      style: text.labelSmall?.copyWith(
+                        color: length >= maxPostLength
+                            ? colors.error
+                            : colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            // 글자가 바뀔 때마다 호출. 빈 setState()로 build()를 다시 실행하며
-            // 게시 버튼 활성 여부와 카운터를 새 입력 기준으로 다시 그립니다.
-            onChanged: (_) => setState(() {}),
-            // 입력칸 오른쪽 아래 글자 수 표시를 직접 만듭니다.
-            // 기본 카운터는 300자가 돼도 색이 안 바뀌기 때문
-            buildCounter:
-                (
-                  context, {
-                  required currentLength, // 지금 글자 수
-                  required isFocused, // 입력칸에 커서가 있는지
-                  maxLength,
-                }) {
-                  return Text(
-                    '$currentLength/$maxPostLength',
-                    style: currentLength >= maxPostLength
-                        ? TextStyle(color: Theme.of(context).colorScheme.error)
-                        : null,
-                  );
-                },
           ),
         ),
       ),

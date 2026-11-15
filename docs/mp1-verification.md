@@ -176,3 +176,10 @@ Chrome에서 별도로 확인한 결과가 생기면 아래에 남깁니다. And
 - 기준은 main 36007e1이며, app/lib/widgets/author_tile.dart와 app/lib/widgets/post_card.dart는 PR #54의 4a45176 원본과 파일 내용이 같습니다.
 - flutter analyze --no-pub 오류 없음, flutter test --no-pub 전체 63개 통과, git diff --check 통과.
 - 이 로컬 조합의 Android 빌드·실기기 검사는 미실행입니다. 앞 절의 실기기 사진은 각각 명시된 main 및 PR #54 커밋에서 촬영했습니다.
+
+## 2026-11-15 리뷰 반영
+
+- #54가 병합된 main 4cbf358을 로컬 #11 브랜치에 충돌 없이 반영했습니다. #55는 확인 시점 병합 전입니다.
+- README의 화면 구성 절에 앱 실행·게시 성공·작성 취소·본문 및 댓글 상세 진입·피드 복귀 흐름을 추가했습니다.
+- 지호님의 모든 PR 병합 후 최종 README 갱신 요청은 #55 반영 후 상세 화면 설명을 다시 확인해 마무리합니다.
+- 병합 후 flutter analyze --no-pub 오류 없음, flutter test --no-pub 66개 통과. 현재 app/은 main 4cbf358과 같습니다.

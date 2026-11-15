@@ -39,6 +39,14 @@ Future<FakePostRepository> pumpWriteScreen(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('글쓰기를 열면 새 글의 작성자 닉네임이 보인다', (tester) async {
+    // when
+    await pumpWriteScreen(tester);
+
+    // then
+    expect(find.text(testUser.nickName), findsOneWidget);
+  });
+
   testWidgets('본문이 비어 있으면 게시할 수 없다', (tester) async {
     // when
     await pumpWriteScreen(tester);
@@ -68,7 +76,39 @@ void main() {
     await tester.pump();
 
     // then
-    expect(_counterColor(tester, '299/300'), isNot(_errorColor(tester)));
+    expect(_counterColor(tester, '299 / 300'), isNot(_errorColor(tester)));
+  });
+
+  testWidgets('글자 수가 바뀌면 스크린리더가 카운터를 읽도록 표시된다', (tester) async {
+    // given: 테스트에서는 접근성 정보를 켜야 Semantics를 확인할 수 있다.
+    final semantics = tester.ensureSemantics();
+    await pumpWriteScreen(tester);
+
+    // when
+    await tester.enterText(find.byType(TextField), '안녕');
+    await tester.pump();
+
+    // then
+    expect(
+      tester.getSemantics(find.text('2 / 300')),
+      isSemantics(label: '2 / 300', isLiveRegion: true),
+    );
+    semantics.dispose();
+  });
+
+  testWidgets('키보드를 내린 뒤 글 아래 빈 곳을 누르면 키보드가 다시 올라온다', (tester) async {
+    // given: 입력칸에서 포커스가 빠져 키보드가 내려간 상태
+    await pumpWriteScreen(tester);
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pump();
+    expect(tester.testTextInput.isVisible, isFalse);
+
+    // when: 입력칸이 아닌 화면 아래쪽을 누른다.
+    await tester.tapAt(const Offset(400, 500));
+    await tester.pump();
+
+    // then
+    expect(tester.testTextInput.isVisible, isTrue);
   });
 
   testWidgets('글자를 입력하면 게시가 가능합니다', (tester) async {
@@ -92,7 +132,7 @@ void main() {
     await tester.pump();
 
     // then
-    expect(_counterColor(tester, '300/300'), _errorColor(tester));
+    expect(_counterColor(tester, '300 / 300'), _errorColor(tester));
   });
 
   testWidgets('한글 301자를 붙여넣으면 300자까지만 남는다', (tester) async {
@@ -106,7 +146,7 @@ void main() {
     // then
     final field = tester.widget<TextField>(find.byType(TextField));
     expect(field.controller!.text, '가' * 300);
-    expect(find.text('300/300'), findsOneWidget);
+    expect(find.text('300 / 300'), findsOneWidget);
   });
 
   testWidgets('iOS에서 한글 조합 중 301자가 되면 게시할 수 없다', (tester) async {
@@ -162,6 +202,7 @@ void main() {
     // then
     expect(repository.addedBodies, hasLength(1));
     expect(_canPost(tester), isFalse);
+    expect(find.text('게시 중…'), findsOneWidget);
 
     // 저장이 끝나면 화면이 닫힌다.
     repository.addGate!.complete();
@@ -254,23 +295,23 @@ void main() {
   });
 }
 
-// 화면에서 '게시' 텍스트를 가진 TextButton을 찾는 조건
-final _postButton = find.widgetWithText(TextButton, '게시');
+// 상단 바의 게시 버튼을 찾는 조건. FilledButton.icon은 FilledButton의 하위 클래스라
+// byType(정확한 타입 비교)으로는 찾지 못해 is로 찾는다.
+final _postButton = find.byWidgetPredicate((widget) => widget is FilledButton);
 
 /// '게시' 버튼이 눌리는 상태인지 확인한다.
 bool _canPost(WidgetTester tester) {
   // 조건에 맞는 실제 버튼 위젯을 꺼낸다.
-  final button = tester.widget<TextButton>(_postButton);
+  final button = tester.widget<FilledButton>(_postButton);
 
   // onPressed가 null이면 Flutter가 버튼을 비활성(회색)으로 그린다.
   return button.onPressed != null;
 }
 
-/// 카운터 글자(예: '300/300')의 색을 꺼낸다.
+/// 카운터 글자(예: '300 / 300')의 색을 꺼낸다.
 Color? _counterColor(WidgetTester tester, String counter) {
   final counterText = tester.widget<Text>(find.text(counter));
 
-  // 기본색일 때는 style을 null로 뒀으므로 색도 null이 된다.
   return counterText.style?.color;
 }
 

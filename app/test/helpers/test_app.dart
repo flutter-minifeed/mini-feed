@@ -25,6 +25,9 @@ class FakePostRepository implements PostRepository {
   Completer<void>? addGate;
 
   @override
+  Author get currentUser => testUser;
+
+  @override
   Future<List<Post>> getPosts() async => List.unmodifiable(posts);
 
   @override
