@@ -212,7 +212,7 @@ Chrome에서 별도로 확인한 결과가 생기면 아래에 남깁니다. And
 | 빈 글·공백 | 빈 글 게시 버튼 비활성, 눌러도 화면 유지. 공백 3자 입력 시 `3 / 300`, 게시 비활성 | 통과 | [빈 글](../screenshots/main-ddd04b4/write-empty.png) · [공백](../screenshots/main-ddd04b4/write-spaces.png) |
 | 300자 경계 | 영문 299자 `299 / 300` 게시 활성, 300번째 입력 시 빨간 `300 / 300`, 301번째 `C` 입력 차단·본문 300자 유지 | 통과 | [299자](../screenshots/main-ddd04b4/write-299.png) · [301번째 차단](../screenshots/main-ddd04b4/write-301-blocked.png) |
 | 한글 조합 | 삼성 키보드로 299자 뒤 ㄱ → 가 → 각 입력. 조합 중에도 `300 / 300`을 넘지 않고 마지막 글자만 바뀜 | 통과 | [한글 조합](../screenshots/main-ddd04b4/write-korean-300.png) |
-| 301자 붙여넣기 | adb로는 클립보드를 채울 수 없어 titanfall7274가 폰에서 직접 301자를 붙여넣어 확인. 정상 동작 | 통과 — 사용자 직접 확인 | 캡처 없음 |
+| 301자 붙여넣기 | adb로는 클립보드를 채울 수 없어 titanfall7274가 폰에서 예시 301자(끝 글자 `끝`)를 직접 붙여넣음. 카운터 `300 / 300`, 본문은 `차`로 끝나 301번째 글자가 잘림 | 통과 — 사용자 직접 확인 | [301자 붙여넣기](../screenshots/main-ddd04b4/write-paste-301.jpg) |
 | 작성 취소 확인 | X로 확인 창 표시 → 계속 쓰기 시 300자 유지. 키보드를 내린 뒤 Android 뒤로가기로 확인 창 표시 → 버리기 시 피드 복귀, 새 글 추가 없음 | 통과 | [취소 확인](../screenshots/main-ddd04b4/discard.png) |
 | 새 글 게시·공백 처리 | 앞뒤 공백 2칸과 중간 줄바꿈이 있는 25자 입력 후 게시 버튼을 연달아 2회 탭(13:57:50 KST). 피드 최상단에 1개만 추가, 앞뒤 공백 제거·줄바꿈 유지, `방금 전` 표시 | 통과 | [게시 후 피드](../screenshots/main-ddd04b4/feed-new-post.png) |
 | 새 글 상세 | 새 글 본문으로 상세 진입, 같은 본문·작성자·`방금 전`·댓글 0개 표시 | 통과 | [새 글 상세](../screenshots/main-ddd04b4/detail-new-post.png) |
