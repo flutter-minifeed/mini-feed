@@ -2,8 +2,9 @@
 
 - 관련 이슈 [#11](https://github.com/flutter-minifeed/mini-feed/issues/11)
 - 제출 기준 [MP1 완료 기준](mp1.md)
-- 갱신 날짜 2026-11-13
+- 갱신 날짜 2026-11-16
 - 앱 소스 기준 커밋 `36007e1b9e0966ee5298930120998bef06e3bfb8` (#8 PR #50 병합 포함)
+- 최신 main 재검증 — #54·#55가 병합된 main `ddd04b4`를 2026-11-16 Galaxy S23 Ultra에서 다시 확인했습니다. 결과는 [2026-11-16 최신 main 실기기 검증](#2026-11-16-최신-main-실기기-검증)에 있습니다.
 - 현재 상태 — 현재 main의 자동 검사와 주요 실기기 흐름·캡처 완료. T09~T13 번호별 원문 대조, 실제 301자 붙여넣기, 팀원 설명 확인이 남아 있습니다. T15는 GitHub #9의 명시 범위로 통과를 확인했습니다.
 
 ## 실행 전에 확인할 항목
@@ -183,3 +184,40 @@ Chrome에서 별도로 확인한 결과가 생기면 아래에 남깁니다. And
 - README의 화면 구성 절에 앱 실행·게시 성공·작성 취소·본문 및 댓글 상세 진입·피드 복귀 흐름을 추가했습니다.
 - 지호님의 모든 PR 병합 후 최종 README 갱신 요청은 #55 반영 후 상세 화면 설명을 다시 확인해 마무리합니다.
 - 병합 후 flutter analyze --no-pub 오류 없음, flutter test --no-pub 66개 통과. 현재 app/은 main 4cbf358과 같습니다.
+
+## 2026-11-16 최신 main 실기기 검증
+
+#54·#55가 병합된 main `ddd04b48aee207503a26879795a7cf63b9eab280`을 별도 작업 폴더에서 빌드해 확인했습니다. 이 절의 결과는 해당 커밋만을 대상으로 하며, 앞 절의 `36007e1`·PR #54 결과를 대신하지 않습니다. 이 #11 브랜치에는 아직 #55가 반영되지 않았습니다.
+
+| 항목 | 확인한 결과 |
+| --- | --- |
+| 실행 날짜·검사자 | 2026-11-16 · titanfall7274의 Galaxy S23 Ultra, Claude Code 로컬 실행 보조 |
+| 실행 환경 | Galaxy S23 Ultra (SM-S918N), Android 16 / API 36, 1440×3088 |
+| 설치 방법 | Tailscale 경유 무선 adb(`adb connect <기기 Tailscale IP>:5555`) → `adb install -r` 성공 → `com.minifeed/.MainActivity` 실행 |
+| Flutter / Dart | 3.47.2 stable / 3.13.2 — 팀 기준 3.47.9 / 3.13.7과 다름 |
+| 분석·테스트 | `flutter analyze` 오류 없음, `flutter test` 67개 통과 |
+| Android 빌드 | `flutter build apk --debug` 성공. SDK XML 버전 차이 경고 출력 |
+| APK SHA-256 | `0e2a3b589e2d3623927cf5ae3af59287bb5030cc6497c8ce0a35848da9da5944` |
+| 앱 실행 기록 | 앱 PID logcat에서 exception·RenderFlex·overflow·FATAL 검색 결과 0줄, 전체 logcat FATAL EXCEPTION 0줄 |
+
+### 기능별 결과
+
+| 점검 | 실제 결과 | 판정 | 캡처 |
+| --- | --- | --- | --- |
+| 피드 표시·스크롤 | 최상단 post-01, 마지막 post-50 본문이 JSON과 일치. 끝까지 스크롤 가능. 작성자 아바타·닉네임·날짜 표시 | 통과 | [피드](../screenshots/main-ddd04b4/feed.png) · [목록 끝](../screenshots/main-ddd04b4/feed-bottom.png) |
+| 본문 → 상세 → 뒤로 | post-01 본문으로 상세 진입, 같은 본문·댓글 1개 표시, 키보드 자동 표시 없음(mInputShown=false). Android 뒤로가기로 피드 복귀 | 통과 | [상세](../screenshots/main-ddd04b4/detail.png) |
+| 댓글 아이콘 → 상세 (T15 범위) | post-01 댓글 버튼으로 같은 상세 진입. 입력창 포커스·키보드 표시(mInputShown=true), 입력창 가림 없음. 상단 화살표로 피드 복귀 | 통과 | [댓글 진입](../screenshots/main-ddd04b4/detail-keyboard.png) |
+| 빈 글·공백 | 빈 글 게시 버튼 비활성, 눌러도 화면 유지. 공백 3자 입력 시 `3 / 300`, 게시 비활성 | 통과 | [빈 글](../screenshots/main-ddd04b4/write-empty.png) · [공백](../screenshots/main-ddd04b4/write-spaces.png) |
+| 300자 경계 | 영문 299자 `299 / 300` 게시 활성, 300번째 입력 시 빨간 `300 / 300`, 301번째 `C` 입력 차단·본문 300자 유지 | 통과 | [299자](../screenshots/main-ddd04b4/write-299.png) · [301번째 차단](../screenshots/main-ddd04b4/write-301-blocked.png) |
+| 한글 조합 | 삼성 키보드로 299자 뒤 ㄱ → 가 → 각 입력. 조합 중에도 `300 / 300`을 넘지 않고 마지막 글자만 바뀜 | 통과 | [한글 조합](../screenshots/main-ddd04b4/write-korean-300.png) |
+| 301자 붙여넣기 | adb로 클립보드를 채울 수 없어 미실행 | 미실행 | 없음 |
+| 작성 취소 확인 | X로 확인 창 표시 → 계속 쓰기 시 300자 유지. 키보드를 내린 뒤 Android 뒤로가기로 확인 창 표시 → 버리기 시 피드 복귀, 새 글 추가 없음 | 통과 | [취소 확인](../screenshots/main-ddd04b4/discard.png) |
+| 새 글 게시·공백 처리 | 앞뒤 공백 2칸과 중간 줄바꿈이 있는 25자 입력 후 게시 버튼을 연달아 2회 탭(13:57:50 KST). 피드 최상단에 1개만 추가, 앞뒤 공백 제거·줄바꿈 유지, `방금 전` 표시 | 통과 | [게시 후 피드](../screenshots/main-ddd04b4/feed-new-post.png) |
+| 새 글 상세 | 새 글 본문으로 상세 진입, 같은 본문·작성자·`방금 전`·댓글 0개 표시 | 통과 | [새 글 상세](../screenshots/main-ddd04b4/detail-new-post.png) |
+| 더미 데이터 | JSON 게시글 50개·댓글 83개, 이메일·휴대폰 패턴 0건, 연결되지 않은 댓글 postId 0건. 캡처의 상태 표시줄에 개인정보 없음 | 자동 점검 통과, 사람 검토 대기 | 로컬 검색 결과 |
+
+### 남은 항목
+
+- 301자 실제 붙여넣기, T09~T13 원문 번호별 판정, 팀원 설명 확인은 그대로 남아 있습니다.
+- 팀 기준 Flutter 3.47.9로 다시 빌드한 결과가 아닙니다. 제출용 최종 빌드는 3.47.9 환경에서 다시 확인합니다.
+- 루트 `screenshots/`의 제출용 캡처는 아직 `36007e1` 화면입니다. 최신 화면으로 바꿀지는 팀에서 정합니다.
