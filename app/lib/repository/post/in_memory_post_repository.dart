@@ -45,6 +45,7 @@ class InMemoryPostRepository implements PostRepository {
   }
 
   /// 새 글의 작성자. MP2 #12 익명 인증이 생기면 그 결과로 바뀐다.
+  @override
   final Author currentUser;
 
   final List<Post> _posts; // 항상 최신순을 유지한다.
