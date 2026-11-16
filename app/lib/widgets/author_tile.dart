@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/author.dart';
-import '../theme/app_theme.dart';
+import 'user_avatar.dart';
 
 /// 작성자 아바타와 닉네임, 그 아래 한 줄 설명. 피드 카드(작성 시각)와 글쓰기(익명 안내)가 함께 쓴다.
 class AuthorTile extends StatelessWidget {
@@ -17,15 +17,7 @@ class AuthorTile extends StatelessWidget {
     return Row(
       spacing: 12,
       children: [
-        CircleAvatar(
-          radius: 20,
-          backgroundColor: userColors[author.colorIndex],
-          foregroundColor: userOnColor,
-          child: Text(
-            author.nickName.characters.firstOrNull ?? '',
-            style: text.titleMedium?.copyWith(color: userOnColor),
-          ),
-        ),
+        UserAvatar(author: author),
         Flexible(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

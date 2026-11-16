@@ -2,11 +2,14 @@
 
 - 관련 이슈 [#11](https://github.com/flutter-minifeed/mini-feed/issues/11)
 - 제출 기준 [MP1 완료 기준](mp1.md)
-- 갱신 날짜 2026-11-13
-- 앱 소스 기준 커밋 `36007e1b9e0966ee5298930120998bef06e3bfb8` (#8 PR #50 병합 포함)
-- 현재 상태 — 현재 main의 자동 검사와 주요 실기기 흐름·캡처 완료. T09~T13 번호별 원문 대조, 실제 301자 붙여넣기, 팀원 설명 확인이 남아 있습니다. T15는 GitHub #9의 명시 범위로 통과를 확인했습니다.
+- 갱신 날짜 2026-11-16
+- 최신 앱 소스 기준 커밋 `ddd04b48aee207503a26879795a7cf63b9eab280` (#54·#55 병합 포함). 아래 과거 검사 표는 각 절에 적힌 커밋 기준입니다.
+- 최신 main 재검증 — #54·#55가 병합된 main `ddd04b4`를 2026-11-16 Galaxy S23 Ultra에서 다시 확인했습니다. 결과는 [2026-11-16 최신 main 실기기 검증](#2026-11-16-최신-main-실기기-검증)에 있습니다.
+- 현재 상태 — 현재 main의 자동 검사와 주요 실기기 흐름·캡처 완료. T09~T13 번호별 원문 대조, 팀원 설명 확인이 남아 있습니다. 실제 301자 붙여넣기는 2026-11-16 main `ddd04b4`에서 확인했습니다. T15는 GitHub #9의 명시 범위로 통과를 확인했습니다.
 
-## 실행 전에 확인할 항목
+이번 sxngwxn의 최신 결과와 캡처는 [2026-11-16 sxngwxn 최종 실기기 검증](#2026-11-16-sxngwxn-최종-실기기-검증)에 있습니다. 아래 2026-11-13 표는 당시 검사 기록입니다.
+
+## 2026-11-13 실행 전에 확인한 항목
 
 - [x] #8 PR #50이 main에 반영됐으며 위 커밋의 앱 소스와 현재 app/의 차이가 없음을 확인했다.
 - [x] 상세 보완 PR #55와 글쓰기 디자인 PR #54는 2026-11-13 확인 시 미병합이다. 현재 검사는 위 main의 앱을 대상으로 한다.
@@ -183,3 +186,189 @@ Chrome에서 별도로 확인한 결과가 생기면 아래에 남깁니다. And
 - README의 화면 구성 절에 앱 실행·게시 성공·작성 취소·본문 및 댓글 상세 진입·피드 복귀 흐름을 추가했습니다.
 - 지호님의 모든 PR 병합 후 최종 README 갱신 요청은 #55 반영 후 상세 화면 설명을 다시 확인해 마무리합니다.
 - 병합 후 flutter analyze --no-pub 오류 없음, flutter test --no-pub 66개 통과. 현재 app/은 main 4cbf358과 같습니다.
+
+## 2026-11-16 최신 main 실기기 검증
+
+#54·#55가 병합된 main `ddd04b48aee207503a26879795a7cf63b9eab280`을 별도 작업 폴더에서 빌드해 확인했습니다. 이 절의 결과는 해당 커밋만을 대상으로 하며, 앞 절의 `36007e1`·PR #54 결과를 대신하지 않습니다. 해당 검사 기록 작성 시점의 #11 브랜치에는 #55가 반영되기 전이었습니다. 아래 sxngwxn 검증에서는 #55를 로컬에 반영했습니다.
+
+| 항목 | 확인한 결과 |
+| --- | --- |
+| 실행 날짜·검사자 | 2026-11-16 · titanfall7274의 Galaxy S23 Ultra, Claude Code 로컬 실행 보조 |
+| 실행 환경 | Galaxy S23 Ultra (SM-S918N), Android 16 / API 36, 1440×3088 |
+| 설치 방법 | Tailscale 경유 무선 adb(`adb connect <기기 Tailscale IP>:5555`) → `adb install -r` 성공 → `com.minifeed/.MainActivity` 실행 |
+| Flutter / Dart | 3.47.2 stable / 3.13.2 — 팀 기준 3.47.9 / 3.13.7과 다름 |
+| 분석·테스트 | `flutter analyze` 오류 없음, `flutter test` 67개 통과 |
+| Android 빌드 | `flutter build apk --debug` 성공. SDK XML 버전 차이 경고 출력 |
+| APK SHA-256 | `0e2a3b589e2d3623927cf5ae3af59287bb5030cc6497c8ce0a35848da9da5944` |
+| 앱 실행 기록 | 앱 PID logcat에서 exception·RenderFlex·overflow·FATAL 검색 결과 0줄, 전체 logcat FATAL EXCEPTION 0줄 |
+
+### 기능별 결과
+
+| 점검 | 실제 결과 | 판정 | 캡처 |
+| --- | --- | --- | --- |
+| 피드 표시·스크롤 | 최상단 post-01, 마지막 post-50 본문이 JSON과 일치. 끝까지 스크롤 가능. 작성자 아바타·닉네임·날짜 표시 | 통과 | [피드](../screenshots/main-ddd04b4/feed.png) · [목록 끝](../screenshots/main-ddd04b4/feed-bottom.png) |
+| 본문 → 상세 → 뒤로 | post-01 본문으로 상세 진입, 같은 본문·댓글 1개 표시, 키보드 자동 표시 없음(mInputShown=false). Android 뒤로가기로 피드 복귀 | 통과 | [상세](../screenshots/main-ddd04b4/detail.png) |
+| 댓글 아이콘 → 상세 (T15 범위) | post-01 댓글 버튼으로 같은 상세 진입. 입력창 포커스·키보드 표시(mInputShown=true), 입력창 가림 없음. 상단 화살표로 피드 복귀 | 통과 | [댓글 진입](../screenshots/main-ddd04b4/detail-keyboard.png) |
+| 빈 글·공백 | 빈 글 게시 버튼 비활성, 눌러도 화면 유지. 공백 3자 입력 시 `3 / 300`, 게시 비활성 | 통과 | [빈 글](../screenshots/main-ddd04b4/write-empty.png) · [공백](../screenshots/main-ddd04b4/write-spaces.png) |
+| 300자 경계 | 영문 299자 `299 / 300` 게시 활성, 300번째 입력 시 빨간 `300 / 300`, 301번째 `C` 입력 차단·본문 300자 유지 | 통과 | [299자](../screenshots/main-ddd04b4/write-299.png) · [301번째 차단](../screenshots/main-ddd04b4/write-301-blocked.png) |
+| 한글 조합 | 삼성 키보드로 299자 뒤 ㄱ → 가 → 각 입력. 조합 중에도 `300 / 300`을 넘지 않고 마지막 글자만 바뀜 | 통과 | [한글 조합](../screenshots/main-ddd04b4/write-korean-300.png) |
+| 301자 붙여넣기 | adb로는 클립보드를 채울 수 없어 titanfall7274가 폰에서 직접 301자를 붙여넣어 확인. 정상 동작 | 통과 — 사용자 직접 확인 | 캡처 없음 |
+| 작성 취소 확인 | X로 확인 창 표시 → 계속 쓰기 시 300자 유지. 키보드를 내린 뒤 Android 뒤로가기로 확인 창 표시 → 버리기 시 피드 복귀, 새 글 추가 없음 | 통과 | [취소 확인](../screenshots/main-ddd04b4/discard.png) |
+| 새 글 게시·공백 처리 | 앞뒤 공백 2칸과 중간 줄바꿈이 있는 25자 입력 후 게시 버튼을 연달아 2회 탭(13:57:50 KST). 피드 최상단에 1개만 추가, 앞뒤 공백 제거·줄바꿈 유지, `방금 전` 표시 | 통과 | [게시 후 피드](../screenshots/main-ddd04b4/feed-new-post.png) |
+| 새 글 상세 | 새 글 본문으로 상세 진입, 같은 본문·작성자·`방금 전`·댓글 0개 표시 | 통과 | [새 글 상세](../screenshots/main-ddd04b4/detail-new-post.png) |
+| 더미 데이터 | JSON 게시글 50개·댓글 83개, 이메일·휴대폰 패턴 0건, 연결되지 않은 댓글 postId 0건. 캡처의 상태 표시줄에 개인정보 없음 | 자동 점검 통과, 사람 검토 대기 | 로컬 검색 결과 |
+
+### 남은 항목
+
+- T09~T13 원문 번호별 판정, 팀원 설명 확인은 그대로 남아 있습니다.
+- 팀 기준 Flutter 3.47.9로 다시 빌드한 결과가 아닙니다. 제출용 최종 빌드는 3.47.9 환경에서 다시 확인합니다.
+- 루트 `screenshots/`의 제출용 캡처는 아직 `36007e1` 화면입니다. 최신 화면으로 바꿀지는 팀에서 정합니다.
+
+## 2026-11-16 sxngwxn 최종 실기기 검증
+
+PR #53의 실기기 안내에 따라 #54·#55가 포함된 main ddd04b48aee207503a26879795a7cf63b9eab280과 동일한 app/을 검사했습니다. 같은 PR 브랜치의 팀원 문서 추가 커밋 eba0914도 로컬에 함께 반영했습니다. git diff origin/main -- app에 차이가 없음을 확인했습니다.
+
+| 항목 | 실제 기록 |
+| --- | --- |
+| 날짜·검사자 | 2026-11-16 · sxngwxn의 Galaxy Note10 5G, Codex 로컬 실행 보조 |
+| 기기·OS | Galaxy Note10 5G (SM-N971N), Android 12 / API 31, 1080×2280 |
+| Flutter / Dart | 3.47.9 stable / 3.13.7 |
+| 설치 방법 | flutter build apk --debug --no-pub → USB adb install -r → 앱 실행 |
+| 분석·테스트 | flutter analyze --no-pub 오류 없음, flutter test --no-pub 67개 통과 |
+| Android 빌드 | 성공. 기존 SDK XML 버전 차이 경고 출력 |
+| APK SHA-256 | d752dcabd0ae4158b1c336fed6ff96e203328f677767ce2a47c8fc82debb35d7 |
+| 앱 실행 기록 | 첫 검사와 재촬영 후 앱 프로세스의 logcat에서 E/flutter·Unhandled Exception·RenderFlex overflow·FATAL EXCEPTION 일치 0줄 |
+
+### 기능별 결과
+
+| 점검 | 실제 결과 | 판정 | 캡처 |
+| --- | --- | --- | --- |
+| 피드 표시·스크롤 | 첫 글 「아침에 추워서 니트…」와 마지막 글 「우산 같이 쓰고 가자고…」 표시 | 통과 | [feed.png](../screenshots/2026-11-16-sxngwxn/feed.png) · [feed-bottom.png](../screenshots/2026-11-16-sxngwxn/feed-bottom.png) |
+| 본문 → 상세 → 뒤로 | 같은 첫 글 본문·댓글 1개 표시, 키보드 닫힘, 피드 복귀 | 통과 | [detail.png](../screenshots/2026-11-16-sxngwxn/detail.png) |
+| 댓글 아이콘 → 상세(키보드) | 같은 첫 글 상세, 입력창 포커스·키보드 표시, 입력창 가림 없음 | 통과 | [detail-keyboard.png](../screenshots/2026-11-16-sxngwxn/detail-keyboard.png) |
+| 빈 글·공백만 입력 | 빈 글 0 / 300, 공백 3개 입력 시 3 / 300, 두 경우 모두 게시 비활성 | 통과 | [write-empty.png](../screenshots/2026-11-16-sxngwxn/write-empty.png) |
+| 299·300·301자 경계 | A 299개 입력 후 B로 300자, 추가 C 차단, 빨간 300 / 300 유지 | 통과 | [write-301-blocked.png](../screenshots/2026-11-16-sxngwxn/write-301-blocked.png) |
+| 한글 조합 경계 | A 299개 뒤 삼성 한글 키보드로 ㄱ → ㅏ 입력, 마지막 가와 300 / 300 확인 | 통과 | [write-korean-300.png](../screenshots/2026-11-16-sxngwxn/write-korean-300.png) |
+| 301자 붙여넣기 | PR #53 예시 301자를 휴대폰 Chrome에서 복사해 Paste 메뉴로 붙여넣음. 끝은 잘리고 차로 끝나는 300자 유지 | 통과 | [write-paste-301.png](../screenshots/2026-11-16-sxngwxn/write-paste-301.png) |
+| 작성 취소(계속 쓰기·버리기) | X → 확인 창, 계속 쓰기 → A 299개와 가 유지, 다시 X → 버리기 → 피드 복귀 | 통과 | [discard.png](../screenshots/2026-11-16-sxngwxn/discard.png) |
+| 새 글 게시(1개만 추가·공백 처리) | 앞뒤 공백 각 2칸을 포함한 두 줄 37자 입력 후 게시. 공백 제거·줄바꿈 유지, 최상단 1개와 방금 전 표시 | 통과 | [write-before-post.png](../screenshots/2026-11-16-sxngwxn/write-before-post.png) · [feed-new-post.png](../screenshots/2026-11-16-sxngwxn/feed-new-post.png) |
+| 새 글 상세 | Minifeed phone check와 Second line.의 두 줄 본문, 같은 작성자, 댓글 0개 | 통과 | [detail-new-post.png](../screenshots/2026-11-16-sxngwxn/detail-new-post.png) |
+
+### 캡처와 확인 범위
+
+- 위 캡처 12장은 이번 삼성폰 실행의 원본 PNG이며 자르거나 표시를 덧그리지 않았습니다. 해상도와 복사 전후 SHA-256 일치를 확인했습니다.
+- 실제 붙여넣기 입력은 팀원 댓글의 301자 예시를 휴대폰 Chrome의 코드 복사 버튼으로 복사하고, Flutter 입력칸을 길게 눌러 Paste를 선택했습니다. 본문 300자와 마지막 차, 빨간 카운터를 확인했습니다.
+- 최초 한글 자동 입력 시도와 게시 후 피드 촬영에는 입력 누락·이전 화면 캡처가 있었습니다. 한글은 실제 ㄱ → 가와 300자를 다시 확인했고, 피드는 앱을 재실행해 초기 데이터에서 다시 게시한 뒤 화면 갱신을 확인해 촬영했습니다. 위 파일은 재확인한 최종본입니다.
+- 새 글 검사는 시험용 영어 두 줄을 사용했습니다. 한글 조합 경계는 별도 항목에서 삼성 키보드로 확인했습니다.
+- README에서 상세 아바타·상대 시간이 미구현이라는 오래된 문구를 현재 공통 카드 구현에 맞게 고쳤습니다.
+- T09~T13 개별 번호의 원문 대응과 팀원별 담당 흐름 설명은 기존 미확인 상태를 유지합니다. 이번 기능 검사는 PR #53의 명시된 10개 항목을 기준으로 했습니다.
+
+### 다른 팀원의 검증 기록
+
+| 작성자 | 보고한 기기·버전 | 기록과 캡처 |
+| --- | --- | --- |
+| titanfall7274 | Galaxy S23 Ultra / Android 16, main ddd04b4. 이 문서의 해당 절에 Flutter 3.47.2 / Dart 3.13.2로 기록 | 위 최신 main 실기기 검증 절과 screenshots/main-ddd04b4/ |
+| gunzzzang | Galaxy A32 / Android 13, main ddd04b4, Flutter 3.47.9 / Dart 3.13.7 | [원본 댓글](https://github.com/flutter-minifeed/mini-feed/pull/53#issuecomment-6908379511) · [캡처 11장](../screenshots/2026-11-16-gunzzzang/) |
+| UTORY4624 | S25 Ultra / Android 17, main ddd04b4, Flutter 3.47.9 / Dart 3.13.7 | [원본 댓글](https://github.com/flutter-minifeed/mini-feed/pull/53#issuecomment-6913792138) · [캡처 12장](../screenshots/2026-11-16-UTORY4624/) |
+
+팀원의 기기 결과는 원본 문서·댓글에 보고된 내용입니다. 각자의 담당 코드 설명 확인 표와는 별도로 기록합니다.
+
+### 갱신한 제출 검토용 ZIP
+
+minifeed-MP1-review-ddd04b4-20261116.zip을 로컬 임시 폴더에 생성했습니다. 최상위 app/·README.md·screenshots/·prompts_log.md, 129개 파일의 ZIP 무결성을 확인했습니다. 팀원 원본 JPG 23장을 포함해 다시 생성했습니다. 앱 소스는 main ddd04b4와 같습니다. 사용자 최종 검토와 원문 T번호·팀 설명 확인은 기존 미확인 상태입니다.
+
+## 2026-11-16 팀원 검증 자료 취합
+
+PR #53 댓글에 올라온 검사 결과와 원본 사진을 모았습니다. 기기·도구 버전과 검사 판정은 각 작성자의 보고를 옮겼습니다. 사진 파일은 내려받은 원본 JPG이며 해상도·SHA-256과 파일 열기를 확인했습니다.
+
+| 작성자 | 기기·OS | Flutter / Dart | 앱 소스 | 원본 캡처 |
+| --- | --- | --- | --- | --- |
+| sxngwxn | Galaxy Note10 5G / Android 12 | 3.47.9 stable / 3.13.7 | ddd04b4 | [12장](../screenshots/2026-11-16-sxngwxn/) |
+| titanfall7274 | Galaxy S23 Ultra / Android 16 | 3.47.2 stable / 3.13.2 | ddd04b4 | [12장](../screenshots/main-ddd04b4/) |
+| gunzzzang | Galaxy A32 / Android 13 | 3.47.9 / 3.13.7 | ddd04b4 | [11장](../screenshots/2026-11-16-gunzzzang/) |
+| UTORY4624 | S25 Ultra / Android 17 | 3.47.9 stable / 3.13.7 | ddd04b4 | [12장](../screenshots/2026-11-16-UTORY4624/) |
+
+sxngwxn과 titanfall7274의 상세 결과는 위 각 검사 절에 있습니다. 아래는 이번에 취합한 두 팀원의 원본 댓글 내용과 사진입니다.
+
+### gunzzzang
+
+[원본 검사 결과와 첨부 사진](https://github.com/flutter-minifeed/mini-feed/pull/53#issuecomment-6908379511)
+
+| 항목 | 작성자가 보고한 내용 |
+| --- | --- |
+| 날짜 | 2026-11-16 |
+| 앱 커밋 | `ddd04b4` |
+| 기기·OS | Galaxy A32 (SM-A325N), Android 13 |
+| Flutter / Dart | 3.47.9 / 3.13.7 |
+| 설치 방법 | USB (`flutter install --debug`, PATH에 adb 없음) |
+| analyze·test | 오류 없음 / 테스트 67개 통과 |
+
+| 점검 | 결과 | 판정 |
+| --- | --- | --- |
+| 피드 표시·스크롤 | 첫 글 「아침에 추워서 니트…」, 마지막 「우산 같이 쓰고 가자고…」 확인 | 통과 |
+| 본문 → 상세 → 뒤로 | 같은 본문·댓글 1개, 키보드 안 뜸, 뒤로가기로 피드 복귀 | 통과 |
+| 댓글 아이콘 → 상세(키보드) | 입력창 커서·키보드 표시, 입력창 가림 없음 | 통과 |
+| 빈 글·공백만 입력 | `0 / 300`, 게시 버튼 비활성 | 통과 |
+| 299·300·301자 경계 | 300자에서 `300 / 300` 빨간색. 300자 뒤 `ㅣ` 입력 시 천지인 키보드가 마지막 `차`와 조합해 `채`로 바뀌고 글자 수는 300 유지 | 통과 |
+| 한글 조합 경계 | 299자 뒤 `ㄱ`+`ㅐ`가 `개`로 조합, 300 초과 없음 | 통과 |
+| 301자 붙여넣기 | 301자(끝에 `끝`) 붙여넣기 시 `끝`이 잘리고 300자 | 통과 |
+| 작성 취소(계속 쓰기·버리기) | 계속 쓰기 → 내용 유지, 버리기 → 피드 복귀 | 통과 |
+| 새 글 게시(1개만 추가·공백 처리) | 맨 위 1개 추가, 앞 공백 제거·줄바꿈 유지, `방금 전` | 통과 |
+| 새 글 상세 | 같은 본문, 댓글 0개 | 통과 |
+
+| 캡처 | 로컬 원본 |
+| --- | --- |
+| feed | [feed.jpg](../screenshots/2026-11-16-gunzzzang/feed.jpg) |
+| feed-bottom | [feed-bottom.jpg](../screenshots/2026-11-16-gunzzzang/feed-bottom.jpg) |
+| detail | [detail.jpg](../screenshots/2026-11-16-gunzzzang/detail.jpg) |
+| detail-keyboard | [detail-keyboard.jpg](../screenshots/2026-11-16-gunzzzang/detail-keyboard.jpg) |
+| write-empty | [write-empty.jpg](../screenshots/2026-11-16-gunzzzang/write-empty.jpg) |
+| write-301-blocked | [write-301-blocked.jpg](../screenshots/2026-11-16-gunzzzang/write-301-blocked.jpg) |
+| write-korean-300 | [write-korean-300.jpg](../screenshots/2026-11-16-gunzzzang/write-korean-300.jpg) |
+| write-paste-301 | [write-paste-301.jpg](../screenshots/2026-11-16-gunzzzang/write-paste-301.jpg) |
+| discard | [discard.jpg](../screenshots/2026-11-16-gunzzzang/discard.jpg) |
+| feed-new-post | [feed-new-post.jpg](../screenshots/2026-11-16-gunzzzang/feed-new-post.jpg) |
+| detail-new-post | [detail-new-post.jpg](../screenshots/2026-11-16-gunzzzang/detail-new-post.jpg) |
+
+작성자가 보고한 이상한 점은 없음입니다.
+
+### UTORY4624
+
+[원본 검사 결과와 첨부 사진](https://github.com/flutter-minifeed/mini-feed/pull/53#issuecomment-6913792138)
+
+| 항목 | 작성자가 보고한 내용 |
+| --- | --- |
+| 날짜 | 2026-11-16 |
+| 앱 커밋 | `ddd04b4` |
+| 기기·OS | S25 Ultra / Android 17 |
+| Flutter / Dart | 3.47.9 stable / 3.13.7 |
+| 설치 방법 | 무선 adb |
+| analyze·test | 테스트 67개 통과 |
+
+| 점검 | 결과 | 판정 |
+| --- | --- | --- |
+| 피드 표시·스크롤 | 첫 글 「아침에 추워서 니트…」와 마지막 글 「우산 같이 쓰고 가자고…」를 확인했습니다. | 통과 |
+| 본문 → 상세 → 뒤로 | 첫 글의 본문과 댓글 1개가 표시되고 키보드는 닫혀 있었습니다. 뒤로가기 후 피드 복귀도 작동합니다. | 통과 |
+| 댓글 아이콘 → 상세(키보드) | 첫 글 상세에서 키보드가 열리고 댓글 입력창이 가려지지 않았습니다. | 통과 |
+| 빈 글·공백만 입력 | 빈 글에서 `0 / 300`이 표시되고 게시 버튼이 비활성화됐습니다. 공백만 입력해도 숫자가 증가합니다. | 통과 |
+| 299·300·301자 경계 | 300자에서 카운터가 빨간색으로 표시됐습니다. 키보드로 한 글자 더 입력해도 본문과 `300 / 300` 표시가 그대로였습니다. | 통과 |
+| 한글 조합 경계 | 마지막 글자가 `ㄱ`에서 `가`로 조합됐고 카운터는 `300 / 300`을 유지했습니다. | 통과 |
+| 301자 붙여넣기 | 붙여넣기 후 카운터가 `300 / 300`이었고, 본문은 `차`로 끝났습니다. | 통과 |
+| 작성 취소(계속 쓰기·버리기) | X를 누른 뒤 「작성 중인 글을 버릴까요?」 창과 두 버튼을 확인했습니다. | 통과 |
+| 새 글 게시(1개만 추가·공백 처리) | 피드 맨 위에 새 글 1개가 `방금 전`으로 표시됐고 본문 줄바꿈이 유지됐습니다. | 통과 |
+| 새 글 상세 | 피드와 같은 본문 및 줄바꿈이 표시되고 댓글은 0개였습니다. | 통과 |
+
+| 캡처 | 로컬 원본 |
+| --- | --- |
+| feed | [feed.jpg](../screenshots/2026-11-16-UTORY4624/feed.jpg) |
+| feed-bottom | [feed-bottom.jpg](../screenshots/2026-11-16-UTORY4624/feed-bottom.jpg) |
+| detail | [detail.jpg](../screenshots/2026-11-16-UTORY4624/detail.jpg) |
+| detail-keyboard | [detail-keyboard.jpg](../screenshots/2026-11-16-UTORY4624/detail-keyboard.jpg) |
+| write-empty | [write-empty.jpg](../screenshots/2026-11-16-UTORY4624/write-empty.jpg) |
+| write-korean-300-composing | [write-korean-300-composing.jpg](../screenshots/2026-11-16-UTORY4624/write-korean-300-composing.jpg) |
+| write-korean-300 | [write-korean-300.jpg](../screenshots/2026-11-16-UTORY4624/write-korean-300.jpg) |
+| write-paste-301 | [write-paste-301.jpg](../screenshots/2026-11-16-UTORY4624/write-paste-301.jpg) |
+| discard | [discard.jpg](../screenshots/2026-11-16-UTORY4624/discard.jpg) |
+| write-before-post | [write-before-post.jpg](../screenshots/2026-11-16-UTORY4624/write-before-post.jpg) |
+| feed-new-post | [feed-new-post.jpg](../screenshots/2026-11-16-UTORY4624/feed-new-post.jpg) |
+| detail-new-post | [detail-new-post.jpg](../screenshots/2026-11-16-UTORY4624/detail-new-post.jpg) |

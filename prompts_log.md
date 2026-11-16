@@ -2,46 +2,47 @@
 
 ## 취합 기준
 
-- 2026-11-15, #54가 병합된 main 4cbf358의 기록과 #11 로컬 원본을 취합했습니다.
-- 원본 파일 18개의 항목 ID 19건을 수집했습니다. 한 파일의 여러 항목도 각각 포함합니다.
+- 2026-11-16, #54·#55가 병합된 main ddd04b4의 기록과 #11 로컬 원본을 취합했습니다.
+- 원본 파일 20개의 항목 ID 21건을 수집했습니다. 한 파일의 여러 항목도 각각 포함합니다.
 - 원본 작성자·ID·본문·과거 검증 결과를 유지했습니다. 아래 원본 링크는 취합을 위해 추가했습니다.
 - 과거 결과는 당시 기준이며 현재 MP1 검증은 docs/mp1-verification.md에 기록합니다.
-- #55의 추가 원본은 병합 후 제출 전에 다시 확인합니다.
 
 ## 취합 방법
 
 1. ai_logs/의 실제 기록을 항목 ID별로 수집하고 TEMPLATE.md는 제외합니다.
 2. 항목 ID 중복·누락과 원본 본문의 일치를 확인합니다.
-3. main의 원본은 위 커밋 링크로, #11 로컬 원본은 저장소 상대 링크로 연결합니다.
-4. 내용 변경이 필요하면 담당자 원본을 먼저 수정한 뒤 다시 취합합니다.
+3. main 원본은 위 커밋 링크로, #11 로컬 원본은 저장소 상대 링크로 연결합니다.
+4. 내용 변경 시 담당자 원본을 먼저 수정한 뒤 다시 취합합니다.
 
 ## 기록 목록
 
 | 항목 ID | 원본 파일 |
 | --- | --- |
-| [AI-20261103-sxngwxn-01](#ai-20261103-sxngwxn-01) | [ai_logs/sxngwxn/2026-11-03-issue-3.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/sxngwxn/2026-11-03-issue-3.md#ai-20261103-sxngwxn-01) |
-| [AI-20261103-sxngwxn-02](#ai-20261103-sxngwxn-02) | [ai_logs/sxngwxn/2026-11-03-issue-3-02.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/sxngwxn/2026-11-03-issue-3-02.md#ai-20261103-sxngwxn-02) |
-| [AI-20261103-sxngwxn-03](#ai-20261103-sxngwxn-03) | [ai_logs/sxngwxn/2026-11-03-issue-3-03.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/sxngwxn/2026-11-03-issue-3-03.md#ai-20261103-sxngwxn-03) |
-| [AI-20261103-sxngwxn-04](#ai-20261103-sxngwxn-04) | [ai_logs/sxngwxn/2026-11-03-issue-3-04.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/sxngwxn/2026-11-03-issue-3-04.md#ai-20261103-sxngwxn-04) |
-| [AI-20261104-titanfall7274-01](#ai-20261104-titanfall7274-01) | [ai_logs/titanfall7274/2026-11-04-issue-5.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/titanfall7274/2026-11-04-issue-5.md#ai-20261104-titanfall7274-01) |
-| [AI-20261105-sxngwxn-01](#ai-20261105-sxngwxn-01) | [ai_logs/sxngwxn/2026-11-05-issue-4.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/sxngwxn/2026-11-05-issue-4.md#ai-20261105-sxngwxn-01) |
-| [AI-20261107-gunzzzang-01](#ai-20261107-gunzzzang-01) | [ai_logs/gunzzzang/2026-11-07-issue-40.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/gunzzzang/2026-11-07-issue-40.md#ai-20261107-gunzzzang-01) |
-| [AI-20261107-titanfall7274-01](#ai-20261107-titanfall7274-01) | [ai_logs/titanfall7274/2026-11-07-issue-5.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/titanfall7274/2026-11-07-issue-5.md#ai-20261107-titanfall7274-01) |
-| [AI-20261108-titanfall7274-01](#ai-20261108-titanfall7274-01) | [ai_logs/titanfall7274/2026-11-08-issue-43.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/titanfall7274/2026-11-08-issue-43.md#ai-20261108-titanfall7274-01) |
-| [AI-20261109-sxngwxn-01](#ai-20261109-sxngwxn-01) | [ai_logs/sxngwxn/2026-11-09-issue-10.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/sxngwxn/2026-11-09-issue-10.md#ai-20261109-sxngwxn-01) |
-| [AI-20261109-sxngwxn-02](#ai-20261109-sxngwxn-02) | [ai_logs/sxngwxn/2026-11-09-issue-7.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/sxngwxn/2026-11-09-issue-7.md#ai-20261109-sxngwxn-02) |
-| [AI-20261109-titanfall7274-01](#ai-20261109-titanfall7274-01) | [ai_logs/titanfall7274/2026-11-09-issue-45.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/titanfall7274/2026-11-09-issue-45.md#ai-20261109-titanfall7274-01) |
-| [AI-20261109-titanfall7274-02](#ai-20261109-titanfall7274-02) | [ai_logs/titanfall7274/2026-11-09-issue-8.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/titanfall7274/2026-11-09-issue-8.md#ai-20261109-titanfall7274-02) |
-| [AI-20261110-gunzzzang-01](#ai-20261110-gunzzzang-01) | [ai_logs/gunzzzang/2026-11-10-issue-9.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/gunzzzang/2026-11-10-issue-9.md#ai-20261110-gunzzzang-01) |
-| [AI-20261111-sxngwxn-01](#ai-20261111-sxngwxn-01) | [ai_logs/sxngwxn/2026-11-09-issue-7.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/sxngwxn/2026-11-09-issue-7.md#ai-20261111-sxngwxn-01) |
+| [AI-20261103-sxngwxn-01](#ai-20261103-sxngwxn-01) | [ai_logs/sxngwxn/2026-11-03-issue-3.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/sxngwxn/2026-11-03-issue-3.md#ai-20261103-sxngwxn-01) |
+| [AI-20261103-sxngwxn-02](#ai-20261103-sxngwxn-02) | [ai_logs/sxngwxn/2026-11-03-issue-3-02.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/sxngwxn/2026-11-03-issue-3-02.md#ai-20261103-sxngwxn-02) |
+| [AI-20261103-sxngwxn-03](#ai-20261103-sxngwxn-03) | [ai_logs/sxngwxn/2026-11-03-issue-3-03.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/sxngwxn/2026-11-03-issue-3-03.md#ai-20261103-sxngwxn-03) |
+| [AI-20261103-sxngwxn-04](#ai-20261103-sxngwxn-04) | [ai_logs/sxngwxn/2026-11-03-issue-3-04.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/sxngwxn/2026-11-03-issue-3-04.md#ai-20261103-sxngwxn-04) |
+| [AI-20261104-titanfall7274-01](#ai-20261104-titanfall7274-01) | [ai_logs/titanfall7274/2026-11-04-issue-5.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/titanfall7274/2026-11-04-issue-5.md#ai-20261104-titanfall7274-01) |
+| [AI-20261105-sxngwxn-01](#ai-20261105-sxngwxn-01) | [ai_logs/sxngwxn/2026-11-05-issue-4.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/sxngwxn/2026-11-05-issue-4.md#ai-20261105-sxngwxn-01) |
+| [AI-20261107-gunzzzang-01](#ai-20261107-gunzzzang-01) | [ai_logs/gunzzzang/2026-11-07-issue-40.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/gunzzzang/2026-11-07-issue-40.md#ai-20261107-gunzzzang-01) |
+| [AI-20261107-titanfall7274-01](#ai-20261107-titanfall7274-01) | [ai_logs/titanfall7274/2026-11-07-issue-5.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/titanfall7274/2026-11-07-issue-5.md#ai-20261107-titanfall7274-01) |
+| [AI-20261108-titanfall7274-01](#ai-20261108-titanfall7274-01) | [ai_logs/titanfall7274/2026-11-08-issue-43.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/titanfall7274/2026-11-08-issue-43.md#ai-20261108-titanfall7274-01) |
+| [AI-20261109-sxngwxn-01](#ai-20261109-sxngwxn-01) | [ai_logs/sxngwxn/2026-11-09-issue-10.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/sxngwxn/2026-11-09-issue-10.md#ai-20261109-sxngwxn-01) |
+| [AI-20261109-sxngwxn-02](#ai-20261109-sxngwxn-02) | [ai_logs/sxngwxn/2026-11-09-issue-7.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/sxngwxn/2026-11-09-issue-7.md#ai-20261109-sxngwxn-02) |
+| [AI-20261109-titanfall7274-01](#ai-20261109-titanfall7274-01) | [ai_logs/titanfall7274/2026-11-09-issue-45.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/titanfall7274/2026-11-09-issue-45.md#ai-20261109-titanfall7274-01) |
+| [AI-20261109-titanfall7274-02](#ai-20261109-titanfall7274-02) | [ai_logs/titanfall7274/2026-11-09-issue-8.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/titanfall7274/2026-11-09-issue-8.md#ai-20261109-titanfall7274-02) |
+| [AI-20261110-gunzzzang-01](#ai-20261110-gunzzzang-01) | [ai_logs/gunzzzang/2026-11-10-issue-9.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/gunzzzang/2026-11-10-issue-9.md#ai-20261110-gunzzzang-01) |
+| [AI-20261111-sxngwxn-01](#ai-20261111-sxngwxn-01) | [ai_logs/sxngwxn/2026-11-09-issue-7.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/sxngwxn/2026-11-09-issue-7.md#ai-20261111-sxngwxn-01) |
+| [AI-20261112-gunzzzang-01](#ai-20261112-gunzzzang-01) | [ai_logs/gunzzzang/2026-11-12-issue-9.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/gunzzzang/2026-11-12-issue-9.md#ai-20261112-gunzzzang-01) |
 | [AI-20261112-sxngwxn-01](#ai-20261112-sxngwxn-01) | [ai_logs/sxngwxn/2026-11-12-issue-11.md](ai_logs/sxngwxn/2026-11-12-issue-11.md#ai-20261112-sxngwxn-01) |
-| [AI-20261112-titanfall7274-01](#ai-20261112-titanfall7274-01) | [ai_logs/titanfall7274/2026-11-12-issue-49.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/titanfall7274/2026-11-12-issue-49.md#ai-20261112-titanfall7274-01) |
+| [AI-20261112-titanfall7274-01](#ai-20261112-titanfall7274-01) | [ai_logs/titanfall7274/2026-11-12-issue-49.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/titanfall7274/2026-11-12-issue-49.md#ai-20261112-titanfall7274-01) |
 | [AI-20261113-sxngwxn-01](#ai-20261113-sxngwxn-01) | [ai_logs/sxngwxn/2026-11-13-issue-11.md](ai_logs/sxngwxn/2026-11-13-issue-11.md#ai-20261113-sxngwxn-01) |
 | [AI-20261115-sxngwxn-01](#ai-20261115-sxngwxn-01) | [ai_logs/sxngwxn/2026-11-15-issue-11.md](ai_logs/sxngwxn/2026-11-15-issue-11.md#ai-20261115-sxngwxn-01) |
+| [AI-20261116-sxngwxn-01](#ai-20261116-sxngwxn-01) | [ai_logs/sxngwxn/2026-11-16-issue-11.md](ai_logs/sxngwxn/2026-11-16-issue-11.md#ai-20261116-sxngwxn-01) |
 
 ## AI-20261103-sxngwxn-01
 
-- 원본: [ai_logs/sxngwxn/2026-11-03-issue-3.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/sxngwxn/2026-11-03-issue-3.md#ai-20261103-sxngwxn-01)
+- 원본: [ai_logs/sxngwxn/2026-11-03-issue-3.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/sxngwxn/2026-11-03-issue-3.md#ai-20261103-sxngwxn-01)
 
 - 날짜·담당자: 2026-11-03 · sxngwxn
 - 관련 이슈·PR: [#3](https://github.com/flutter-minifeed/mini-feed/issues/3) · [#35](https://github.com/flutter-minifeed/mini-feed/pull/35)
@@ -68,7 +69,7 @@
 
 ## AI-20261103-sxngwxn-02
 
-- 원본: [ai_logs/sxngwxn/2026-11-03-issue-3-02.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/sxngwxn/2026-11-03-issue-3-02.md#ai-20261103-sxngwxn-02)
+- 원본: [ai_logs/sxngwxn/2026-11-03-issue-3-02.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/sxngwxn/2026-11-03-issue-3-02.md#ai-20261103-sxngwxn-02)
 
 - 날짜·담당자: 2026-11-03 · sxngwxn
 - 관련 이슈·PR: [#3](https://github.com/flutter-minifeed/mini-feed/issues/3) · [PR #35](https://github.com/flutter-minifeed/mini-feed/pull/35)
@@ -87,7 +88,7 @@
 
 ## AI-20261103-sxngwxn-03
 
-- 원본: [ai_logs/sxngwxn/2026-11-03-issue-3-03.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/sxngwxn/2026-11-03-issue-3-03.md#ai-20261103-sxngwxn-03)
+- 원본: [ai_logs/sxngwxn/2026-11-03-issue-3-03.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/sxngwxn/2026-11-03-issue-3-03.md#ai-20261103-sxngwxn-03)
 
 - 날짜·담당자: 2026-11-03 · sxngwxn
 - 관련 이슈·PR: [#3](https://github.com/flutter-minifeed/mini-feed/issues/3) · [#35](https://github.com/flutter-minifeed/mini-feed/pull/35)
@@ -117,7 +118,7 @@
 
 ## AI-20261103-sxngwxn-04
 
-- 원본: [ai_logs/sxngwxn/2026-11-03-issue-3-04.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/sxngwxn/2026-11-03-issue-3-04.md#ai-20261103-sxngwxn-04)
+- 원본: [ai_logs/sxngwxn/2026-11-03-issue-3-04.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/sxngwxn/2026-11-03-issue-3-04.md#ai-20261103-sxngwxn-04)
 
 - 날짜·담당자: 2026-11-03 · sxngwxn (2026-11-04 최신 리뷰 반영)
 - 관련 이슈·PR: [#3](https://github.com/flutter-minifeed/mini-feed/issues/3) · [#35](https://github.com/flutter-minifeed/mini-feed/pull/35)
@@ -155,7 +156,7 @@
 
 ## AI-20261104-titanfall7274-01
 
-- 원본: [ai_logs/titanfall7274/2026-11-04-issue-5.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/titanfall7274/2026-11-04-issue-5.md#ai-20261104-titanfall7274-01)
+- 원본: [ai_logs/titanfall7274/2026-11-04-issue-5.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/titanfall7274/2026-11-04-issue-5.md#ai-20261104-titanfall7274-01)
 
 - 날짜·담당자: 2026-11-04 · titanfall7274
 - 관련 이슈·PR: #5 · #37
@@ -180,7 +181,7 @@
 
 ## AI-20261105-sxngwxn-01
 
-- 원본: [ai_logs/sxngwxn/2026-11-05-issue-4.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/sxngwxn/2026-11-05-issue-4.md#ai-20261105-sxngwxn-01)
+- 원본: [ai_logs/sxngwxn/2026-11-05-issue-4.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/sxngwxn/2026-11-05-issue-4.md#ai-20261105-sxngwxn-01)
 
 - 날짜·담당자: 2026-11-05 · sxngwxn
 - 관련 이슈: https://github.com/flutter-minifeed/mini-feed/issues/4
@@ -226,7 +227,7 @@
 
 ## AI-20261107-gunzzzang-01
 
-- 원본: [ai_logs/gunzzzang/2026-11-07-issue-40.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/gunzzzang/2026-11-07-issue-40.md#ai-20261107-gunzzzang-01)
+- 원본: [ai_logs/gunzzzang/2026-11-07-issue-40.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/gunzzzang/2026-11-07-issue-40.md#ai-20261107-gunzzzang-01)
 
 - 날짜·담당자: 2026-11-07 · gunzzzang
 - 관련 이슈·PR: #40 · #42
@@ -277,7 +278,7 @@
 
 ## AI-20261107-titanfall7274-01
 
-- 원본: [ai_logs/titanfall7274/2026-11-07-issue-5.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/titanfall7274/2026-11-07-issue-5.md#ai-20261107-titanfall7274-01)
+- 원본: [ai_logs/titanfall7274/2026-11-07-issue-5.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/titanfall7274/2026-11-07-issue-5.md#ai-20261107-titanfall7274-01)
 
 - 날짜·담당자: 2026-11-07 · titanfall7274
 - 관련 이슈·PR: #5
@@ -297,7 +298,7 @@
 
 ## AI-20261108-titanfall7274-01
 
-- 원본: [ai_logs/titanfall7274/2026-11-08-issue-43.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/titanfall7274/2026-11-08-issue-43.md#ai-20261108-titanfall7274-01)
+- 원본: [ai_logs/titanfall7274/2026-11-08-issue-43.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/titanfall7274/2026-11-08-issue-43.md#ai-20261108-titanfall7274-01)
 
 - 날짜·담당자: 2026-11-08 · titanfall7274
 - 관련 이슈·PR: [#43](https://github.com/flutter-minifeed/mini-feed/issues/43)
@@ -317,7 +318,7 @@
 
 ## AI-20261109-sxngwxn-01
 
-- 원본: [ai_logs/sxngwxn/2026-11-09-issue-10.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/sxngwxn/2026-11-09-issue-10.md#ai-20261109-sxngwxn-01)
+- 원본: [ai_logs/sxngwxn/2026-11-09-issue-10.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/sxngwxn/2026-11-09-issue-10.md#ai-20261109-sxngwxn-01)
 
 - 날짜·담당자: 2026-11-09 · sxngwxn
 - 관련 이슈·PR: [#10](https://github.com/flutter-minifeed/mini-feed/issues/10)
@@ -345,7 +346,7 @@
 
 ## AI-20261109-sxngwxn-02
 
-- 원본: [ai_logs/sxngwxn/2026-11-09-issue-7.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/sxngwxn/2026-11-09-issue-7.md#ai-20261109-sxngwxn-02)
+- 원본: [ai_logs/sxngwxn/2026-11-09-issue-7.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/sxngwxn/2026-11-09-issue-7.md#ai-20261109-sxngwxn-02)
 
 - 날짜·담당자: 2026-11-09 · sxngwxn
 - 관련 이슈·PR: [#7](https://github.com/flutter-minifeed/mini-feed/issues/7)
@@ -390,7 +391,7 @@
 
 ## AI-20261109-titanfall7274-01
 
-- 원본: [ai_logs/titanfall7274/2026-11-09-issue-45.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/titanfall7274/2026-11-09-issue-45.md#ai-20261109-titanfall7274-01)
+- 원본: [ai_logs/titanfall7274/2026-11-09-issue-45.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/titanfall7274/2026-11-09-issue-45.md#ai-20261109-titanfall7274-01)
 
 - 날짜·담당자: 2026-11-09 · titanfall7274
 - 관련 이슈·PR: [#45](https://github.com/flutter-minifeed/mini-feed/issues/45)
@@ -427,7 +428,7 @@
 
 ## AI-20261109-titanfall7274-02
 
-- 원본: [ai_logs/titanfall7274/2026-11-09-issue-8.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/titanfall7274/2026-11-09-issue-8.md#ai-20261109-titanfall7274-02)
+- 원본: [ai_logs/titanfall7274/2026-11-09-issue-8.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/titanfall7274/2026-11-09-issue-8.md#ai-20261109-titanfall7274-02)
 
 - 날짜·담당자: 2026-11-09 · titanfall7274
 - 관련 이슈·PR: [#8](https://github.com/flutter-minifeed/mini-feed/issues/8)
@@ -471,7 +472,7 @@
 
 ## AI-20261110-gunzzzang-01
 
-- 원본: [ai_logs/gunzzzang/2026-11-10-issue-9.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/gunzzzang/2026-11-10-issue-9.md#ai-20261110-gunzzzang-01)
+- 원본: [ai_logs/gunzzzang/2026-11-10-issue-9.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/gunzzzang/2026-11-10-issue-9.md#ai-20261110-gunzzzang-01)
 
 - 날짜·담당자: 2026-11-10 · gunzzzang
 - 관련 이슈·PR: #9 · #51
@@ -534,7 +535,7 @@
 
 ## AI-20261111-sxngwxn-01
 
-- 원본: [ai_logs/sxngwxn/2026-11-09-issue-7.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/sxngwxn/2026-11-09-issue-7.md#ai-20261111-sxngwxn-01)
+- 원본: [ai_logs/sxngwxn/2026-11-09-issue-7.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/sxngwxn/2026-11-09-issue-7.md#ai-20261111-sxngwxn-01)
 
 - 날짜·담당자: 2026-11-11 · sxngwxn
 - 관련 이슈·PR: [#7](https://github.com/flutter-minifeed/mini-feed/issues/7) · [#52](https://github.com/flutter-minifeed/mini-feed/pull/52)
@@ -553,6 +554,63 @@
 - flutter build web --no-pub 성공. CupertinoIcons 글꼴을 찾지 못했다는 빌드 경고가 출력됐다. app/lib와 app/test, pubspec.yaml에서 Cupertino 참조는 검색되지 않았다.
 - 로컬 웹 빌드를 브라우저에서 열어 피드 본문 → 같은 글의 본문·댓글 표시 → 뒤로가기 복귀를 확인했다. 피드 댓글 버튼 → 상세 입력창 포커스도 확인했다. 브라우저 오류 로그는 비어 있었다.
 - Android 실기기 확인과 #8의 실제 글쓰기 → 새 글 상단 표시 통합 검증은 남아 있다. #8 코드는 이번 로컬 반영에 포함되지 않았다.
+
+## AI-20261112-gunzzzang-01
+
+- 원본: [ai_logs/gunzzzang/2026-11-12-issue-9.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/gunzzzang/2026-11-12-issue-9.md#ai-20261112-gunzzzang-01)
+
+- 날짜·담당자: 2026-11-12 · gunzzzang
+- 관련 이슈·PR: #9 · #55
+- 도구·모델: Claude · Claude Opus 5.5
+
+### 1. 상세 게시글 영역을 PostCard로 교체
+
+- 프롬프트: #7·#10이 머지된 뒤 #9의 남은 기준(아바타·상대 시간)을 팀 코드에 맞춰 마무리하는 방법 요청
+- AI 응답: #51의 임시 _PostCard·_PostAction을 지우고 #7의 PostCard를 상세에서 그대로 사용. 좋아요 표시도 PostCard 것을 써서 #18에서 피드와 상세를 한 곳에서 바꿀 수 있게 함
+- 판단: 채택. 같은 Figma 컴포넌트를 두 벌 두지 않음(R10)
+
+### 2. 작성자 아바타 위젯 분리
+
+- 프롬프트: 게시글 카드와 댓글이 같은 아바타를 쓰는데 중복 없이 표시하는 방법 질문
+- AI 응답: PostCard 안의 CircleAvatar를 Figma UserAvatar 이름으로 분리하고 반지름만 받게 함. 글자 크기는 Figma 비율(반지름의 0.8배)로 계산
+- 판단: 채택. PostCard 코드를 그대로 옮겨 피드 모양은 바뀌지 않음
+
+### 3. PostCard 본문 탭을 선택 사항으로
+
+- 프롬프트: 상세에서 PostCard를 쓰면 본문을 눌러도 갈 곳이 없는 문제 처리 방법 질문
+- AI 응답: onOpen을 선택 사항으로 바꿔 null이면 본문이 반응하지 않게 함. 빈 함수(눌리는 척만 함)나 카드 전체 IgnorePointer(댓글 버튼까지 막힘)보다 단순
+- 판단: 채택. 피드는 지금처럼 onOpen을 넘겨 동작이 같음
+
+### 4. 댓글 타일 아바타·상대 시간
+
+- 프롬프트: Figma CommentTile에 맞춰 댓글에 아바타와 상대 시간 추가 요청
+- AI 응답: UserAvatar(반지름 16), 닉네임·상대 시간 한 줄(글자 밑선 맞춤), 본문. 기준 시각 now는 PostCard처럼 화면에서 받음
+- 판단: 채택. 상세가 now를 한 번 구해 게시글과 댓글에 같이 넘김
+
+### 5. 키보드 다시 열기 방식 통일
+
+- 프롬프트: #54 리뷰 중 글쓰기의 키보드 다시 열기 방식과 #51 상세 방식이 다른 점 확인
+- AI 응답: #51의 SystemChannels 직접 호출 대신 #54와 같은 EditableTextState.requestKeyboard()로 변경. 포커스 유무 분기를 Flutter가 처리함
+- 판단: 수정. #51에서 쓴 방식을 팀 방식에 맞춰 바꿈. 기존 키보드 테스트가 그대로 통과하는 것을 확인
+
+### 6. 테스트 도우미 정리
+
+- 프롬프트: #51에서 약속한 대로 #9 테스트 도우미를 #50의 test_app.dart 기준으로 정리 요청
+- AI 응답: FakeCommentRepository에 댓글 목록을 추가하고, 상세 테스트를 FakePostRepository·FakeCommentRepository로 바꾼 뒤 test_repositories.dart 삭제. 작성 시각을 현재 시각 기준으로 만들어 상대 시간("12분 전")을 확인
+- 판단: 채택. 댓글을 넣지 않으면 빈 목록이라 글쓰기 테스트는 영향 없음
+
+### 7. 리뷰 반영
+
+- 프롬프트: #55 리뷰 수정 요청(#54의 AuthorTile과 충돌, UserAvatar 글자 크기, 상세 본문 탭 테스트) 반영 요청
+- AI 응답: main을 합치면서 post_card.dart는 main의 AuthorTile을 남기고 onOpen 변경만 유지하고, AuthorTile 안의 CircleAvatar를 UserAvatar로 교체. 글자 크기는 radius * 0.8을 반올림하고, 상세에서 본문을 눌러도 다른 화면이 열리지 않는 테스트 추가
+- 판단: 수정. AI가 처음 쓴 radius * 0.8은 반지름 16에서 12.8이라 주석·Figma(13)와 달랐고, 리뷰 지적대로 반올림함. 상세 본문 탭 테스트도 처음에는 필요할 때 추가하기로 미뤘다가 onOpen 변경을 확인하도록 추가
+
+### 직접 검증한 내용·결과
+
+- flutter analyze: No issues found!
+- flutter test: 67개 통과 (main의 #54 테스트 포함, 상세 테스트 9개)
+- 실기기: Galaxy A32(SM-A325N, Android 13). 피드 카드 본문으로 열면 같은 글이 키보드 없이 표시, 댓글 아이콘으로 열면 입력창 포커스와 키보드 표시(T15). 상세 본문 탭 무반응, 키보드만 내린 뒤 댓글 버튼으로 키보드 다시 열림, 댓글 0개 글·댓글 21개 글(오래된 순, 키보드 위 스크롤) 표시, 뒤로가기로 피드 복귀·스크롤 위치 유지, 피드 카드 아바타·본문 눌림 효과 유지
+- 상대 시간: 더미 데이터가 7일 넘게 지나 실기기에서는 날짜("11월 4일")로 표시. "N분 전" 표시는 위젯 테스트로 확인
 
 ## AI-20261112-sxngwxn-01
 
@@ -586,7 +644,7 @@
 
 ## AI-20261112-titanfall7274-01
 
-- 원본: [ai_logs/titanfall7274/2026-11-12-issue-49.md](https://github.com/flutter-minifeed/mini-feed/blob/4cbf358/ai_logs/titanfall7274/2026-11-12-issue-49.md#ai-20261112-titanfall7274-01)
+- 원본: [ai_logs/titanfall7274/2026-11-12-issue-49.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/titanfall7274/2026-11-12-issue-49.md#ai-20261112-titanfall7274-01)
 
 - 날짜·담당자: 2026-11-12 · titanfall7274
 - 관련 이슈·PR: [#49](https://github.com/flutter-minifeed/mini-feed/issues/49)
@@ -692,9 +750,9 @@
 
 ### 1. 리뷰 코멘트 반영
 
-- 프롬프트: #53에 달린 최신 main 반영 및 README 화면 흐름 추가 요청을 로컬에서 수정해 달라는 요청.
-- AI 응답: #54가 병합된 main 4cbf358을 로컬 #11 브랜치에 합치고 README 화면 구성 절에 피드·글쓰기·상세 이동과 게시·작성 취소 흐름을 추가했다. 병합된 팀원 AI 기록을 누적본에 취합했다.
-- 판단: 부분 채택(사용자 검토 전). 현재 구현된 흐름을 기록했다. #55 병합 후 상세 화면 설명과 최종 제출 자료를 갱신할 항목이 남아 있다.
+- 프롬프트: #53에 달린 최신 main 반영 및 README 화면 흐름 작성 된 것을 수정해 달라는 요청.
+- AI 응답: #54가 병합된 main 4cbf358을 로컬 #11 브랜치에 합치고 README 화면 구성 절에 피드·글쓰기·상세 이동과 게시·작성 취소 흐름을 수정했다. 병합된 팀원 AI 기록을 누적본에 취합했다.
+- 판단: 부분 채택. 현재 구현된 흐름을 기록했다. #55 병합 후 상세 화면 설명과 최종 제출 자료를 갱신할 항목이 남아 있다.
 
 ### 직접 검증한 내용·결과
 
@@ -702,3 +760,32 @@
 - flutter analyze --no-pub 오류 없음, flutter test --no-pub 66개 통과.
 - 현재 app/과 main 4cbf358의 코드 차이가 없음을 확인했다.
 - README의 세 절 구성과 화면 흐름을 실제 화면 이동 코드에 대조했다.
+
+## AI-20261116-sxngwxn-01
+
+- 원본: [ai_logs/sxngwxn/2026-11-16-issue-11.md](ai_logs/sxngwxn/2026-11-16-issue-11.md#ai-20261116-sxngwxn-01)
+
+- 날짜·담당자: 2026-11-16 · sxngwxn
+- 관련 이슈·PR: [#11](https://github.com/flutter-minifeed/mini-feed/issues/11) · [#53](https://github.com/flutter-minifeed/mini-feed/pull/53)
+- 도구·모델: Codex
+
+### 1. 최신 통합 앱의 검증 증거와 제출 안내 갱신
+
+- 프롬프트: 연결한 삼성폰으로 최신 앱을 검사하고 팀원의 캡처 안내에 맞춰 로컬 자료를 정리해 달라는 요청
+- AI 응답: 최신 main과 같은 app/을 빌드·설치해 기능별 실제 결과와 원본 캡처를 남기고, README의 상세 화면 설명·검증 문서·AI 누적본을 갱신하는 방안
+- 판단: 채택. PR #53의 10개 검사 항목을 실제 기기에서 확인한 결과로 작성했다. 팀원이 같은 브랜치에 추가한 기존 검사 기록을 보존했으며, 현재 기기·앱 커밋·도구 버전을 함께 남겼다. 최초 자동 입력 및 이전 화면 촬영 시도는 재확인한 결과로 교체했다. 미확인 T번호 대응이나 팀원 코드 설명을 완료로 바꾸지 않았다. 사용자 최종 파일 검토가 남아 있다.
+
+### 2. 팀원 실기기 검사 결과 취합
+
+- 프롬프트: PR #53에 올라온 팀원들의 실기기 검사 결과와 사진을 로컬에 모아 달라는 요청
+- AI 응답: 작성자별 폴더에 첨부 이미지 원본을 저장하고, 원본 댓글의 기기·버전·판정을 검증 문서에 옮긴 뒤 사진 링크를 연결하는 방안
+- 판단: 채택. gunzzzang의 11장과 UTORY4624의 12장을 실제 JPG 형식 그대로 저장했다. 기기별 검사 결과는 작성자 보고를 보존했고, 기존 titanfall7274 기록의 Flutter 3.47.2 / Dart 3.13.2도 원문대로 남겼다. PR 본문 초안과 제출 검토용 ZIP에 취합 결과를 반영했다.
+
+### 직접 검증한 내용·결과
+
+- app/은 main ddd04b48aee207503a26879795a7cf63b9eab280과 파일 차이가 없다.
+- Flutter 3.47.9 stable / Dart 3.13.7에서 analyze 오류 없음, test 67개 통과, debug APK 빌드·USB 설치 성공.
+- Galaxy Note10 5G / Android 12에서 피드 양 끝·두 상세 진입·빈 글과 공백·300자 경계·한글 조합·실제 301자 붙여넣기·작성 취소·새 글 게시와 상세를 확인했다.
+- 캡처 12장의 원본 PNG 해상도와 복사 전후 해시가 일치한다. 세부 결과는 docs/mp1-verification.md에 기록했다.
+
+- 팀원 첨부 이미지 23장의 형식·해상도·해시와 로컬 문서 링크를 확인하고 사진 내용을 시각 점검했다. 각 기기의 실행 판정은 작성자 댓글을 출처로 기록했다.

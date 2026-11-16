@@ -1,35 +1,59 @@
 import 'package:flutter/material.dart';
 
 import '../models/comment.dart';
+import '../utils/relative_time.dart';
+import 'user_avatar.dart';
 
 /// 상세 화면의 댓글 한 줄. Figma CommentTile(Mine=No)과 이름을 맞춘다(R10).
-///
-/// 아바타와 상대 시간은 피드 카드와 함께 쓰는 부분이라 #7·#10이 머지된 뒤
-/// 다음 PR에서 붙인다. 지금은 닉네임과 본문만 표시한다.
 class CommentTile extends StatelessWidget {
-  const CommentTile({super.key, required this.comment});
+  const CommentTile({super.key, required this.comment, required this.now});
 
   final Comment comment;
+
+  /// 상대 시간의 기준 시각. 피드 카드처럼 화면이 정해서 넘긴다.
+  final DateTime now;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final text = Theme.of(context).textTheme;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 12,
         children: [
-          // TODO(#9): 아바타(왼쪽)와 상대 시간(닉네임 오른쪽)을 붙인다.
-          Text(
-            comment.author.nickName,
-            style: textTheme.titleSmall?.copyWith(color: colors.onSurface),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            comment.body,
-            style: textTheme.bodyMedium?.copyWith(color: colors.onSurface),
+          UserAvatar(author: comment.author, radius: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 2,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  spacing: 8,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        comment.author.nickName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: text.titleSmall,
+                      ),
+                    ),
+                    Text(
+                      relativeTime(comment.createdAt, now: now),
+                      style: text.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+                Text(comment.body, style: text.bodyMedium),
+              ],
+            ),
           ),
         ],
       ),

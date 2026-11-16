@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../models/comment.dart';
 import '../models/post.dart';
 import '../repository/repository_scope.dart';
 import '../widgets/comment_input.dart';
 import '../widgets/comment_tile.dart';
+import '../widgets/post_card.dart';
 
 // 상세 화면이 한 번에 불러오는 글과 댓글 목록.
 typedef _DetailData = ({Post post, List<Comment> comments});
@@ -64,14 +64,13 @@ class _DetailScreenState extends State<DetailScreen> {
     return (post: post, comments: comments);
   }
 
-  // 상세 안의 댓글 버튼. Android 뒤로가기로 키보드만 내리면 입력창 포커스는 남아 있어서
-  // requestFocus가 아무 일도 하지 않는다. 그때는 키보드를 직접 다시 연다.
+  // 상세 안의 댓글 버튼. 입력창을 직접 누른 것과 같게 처리한다(#49 글쓰기와 같은 방식).
+  // 포커스가 없으면 포커스를 주고, Android 뒤로가기로 키보드만 내린 상태(포커스는 남음)면
+  // 키보드를 다시 올린다.
   void _focusCommentInput() {
-    if (_commentFocus.hasFocus) {
-      SystemChannels.textInput.invokeMethod<void>('TextInput.show');
-    } else {
-      _commentFocus.requestFocus();
-    }
+    _commentFocus.context
+        ?.findAncestorStateOfType<EditableTextState>()
+        ?.requestKeyboard();
   }
 
   void _sendComment(String body) {
@@ -95,14 +94,17 @@ class _DetailScreenState extends State<DetailScreen> {
           if (data == null) {
             return const _Message('삭제되었거나 없는 게시글이에요.');
           }
+          // 글과 댓글의 상대 시간을 같은 시각 기준으로 센다.
+          final now = DateTime.now();
           return Column(
             children: [
               Expanded(
                 child: ListView(
                   children: [
-                    _PostCard(
+                    PostCard(
                       post: data.post,
-                      onCommentTap: _focusCommentInput,
+                      now: now,
+                      onComments: _focusCommentInput,
                     ),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
@@ -112,7 +114,11 @@ class _DetailScreenState extends State<DetailScreen> {
                       ),
                     ),
                     for (final comment in data.comments)
-                      CommentTile(key: ValueKey(comment.id), comment: comment),
+                      CommentTile(
+                        key: ValueKey(comment.id),
+                        comment: comment,
+                        now: now,
+                      ),
                   ],
                 ),
               ),
@@ -129,92 +135,6 @@ class _DetailScreenState extends State<DetailScreen> {
             ],
           );
         },
-      ),
-    );
-  }
-}
-
-// 상세 위쪽 게시글 영역. 이름은 Figma PostCard에 맞춘다(R10).
-//
-// PostCard는 피드 카드(#7)와 함께 쓰는 위젯이라 지금은 상세 안에 임시로 둔다.
-// #7의 PostCard가 머지되면 그것으로 바꾼다.
-class _PostCard extends StatelessWidget {
-  const _PostCard({required this.post, required this.onCommentTap});
-
-  final Post post;
-  final VoidCallback onCommentTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: colors.outlineVariant)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // TODO(#9): 아바타·상대 시간·더보기 버튼은 #7·#10 머지 후 붙인다.
-          Text(post.author.nickName, style: textTheme.titleMedium),
-          const SizedBox(height: 8),
-          Text(post.body, style: textTheme.bodyLarge),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: Row(
-              children: [
-                _PostAction(
-                  icon: Icons.favorite_border,
-                  count: post.likeCount,
-                  // TODO(#18): MP3에서 좋아요 상태를 서버에 반영한다.
-                  onPressed: () {},
-                ),
-                const SizedBox(width: 8),
-                _PostAction(
-                  icon: Icons.chat_bubble_outline,
-                  count: post.commentCount,
-                  onPressed: onCommentTap,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// 좋아요·댓글 개수 버튼. Figma PostAction 모양이다(테두리 있는 알약형).
-class _PostAction extends StatelessWidget {
-  const _PostAction({
-    required this.icon,
-    required this.count,
-    required this.onPressed,
-  });
-
-  final IconData icon;
-  final int count;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    return OutlinedButton.icon(
-      onPressed: onPressed,
-      icon: Icon(icon, size: 20),
-      label: Text('$count'),
-      style: OutlinedButton.styleFrom(
-        foregroundColor: colors.onSurfaceVariant,
-        iconColor: colors.onSurfaceVariant,
-        textStyle: Theme.of(context).textTheme.labelMedium,
-        side: BorderSide(color: colors.outlineVariant),
-        minimumSize: const Size(0, 32),
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
     );
   }
