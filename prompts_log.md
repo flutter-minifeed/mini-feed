@@ -34,11 +34,11 @@
 | [AI-20261110-gunzzzang-01](#ai-20261110-gunzzzang-01) | [ai_logs/gunzzzang/2026-11-10-issue-9.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/gunzzzang/2026-11-10-issue-9.md#ai-20261110-gunzzzang-01) |
 | [AI-20261111-sxngwxn-01](#ai-20261111-sxngwxn-01) | [ai_logs/sxngwxn/2026-11-09-issue-7.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/sxngwxn/2026-11-09-issue-7.md#ai-20261111-sxngwxn-01) |
 | [AI-20261112-gunzzzang-01](#ai-20261112-gunzzzang-01) | [ai_logs/gunzzzang/2026-11-12-issue-9.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/gunzzzang/2026-11-12-issue-9.md#ai-20261112-gunzzzang-01) |
-| [AI-20261112-sxngwxn-01](#ai-20261112-sxngwxn-01) | [ai_logs/sxngwxn/2026-11-12-issue-11.md](ai_logs/sxngwxn/2026-11-12-issue-11.md#ai-20261112-sxngwxn-01) |
+| [AI-20261112-sxngwxn-01](#ai-20261112-sxngwxn-01) | [ai_logs/sxngwxn/2026-11-12-issue-11.md](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/ai_logs/sxngwxn/2026-11-12-issue-11.md#ai-20261112-sxngwxn-01) |
 | [AI-20261112-titanfall7274-01](#ai-20261112-titanfall7274-01) | [ai_logs/titanfall7274/2026-11-12-issue-49.md](https://github.com/flutter-minifeed/mini-feed/blob/ddd04b4/ai_logs/titanfall7274/2026-11-12-issue-49.md#ai-20261112-titanfall7274-01) |
-| [AI-20261113-sxngwxn-01](#ai-20261113-sxngwxn-01) | [ai_logs/sxngwxn/2026-11-13-issue-11.md](ai_logs/sxngwxn/2026-11-13-issue-11.md#ai-20261113-sxngwxn-01) |
-| [AI-20261115-sxngwxn-01](#ai-20261115-sxngwxn-01) | [ai_logs/sxngwxn/2026-11-15-issue-11.md](ai_logs/sxngwxn/2026-11-15-issue-11.md#ai-20261115-sxngwxn-01) |
-| [AI-20261116-sxngwxn-01](#ai-20261116-sxngwxn-01) | [ai_logs/sxngwxn/2026-11-16-issue-11.md](ai_logs/sxngwxn/2026-11-16-issue-11.md#ai-20261116-sxngwxn-01) |
+| [AI-20261113-sxngwxn-01](#ai-20261113-sxngwxn-01) | [ai_logs/sxngwxn/2026-11-13-issue-11.md](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/ai_logs/sxngwxn/2026-11-13-issue-11.md#ai-20261113-sxngwxn-01) |
+| [AI-20261115-sxngwxn-01](#ai-20261115-sxngwxn-01) | [ai_logs/sxngwxn/2026-11-15-issue-11.md](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/ai_logs/sxngwxn/2026-11-15-issue-11.md#ai-20261115-sxngwxn-01) |
+| [AI-20261116-sxngwxn-01](#ai-20261116-sxngwxn-01) | [ai_logs/sxngwxn/2026-11-16-issue-11.md](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/ai_logs/sxngwxn/2026-11-16-issue-11.md#ai-20261116-sxngwxn-01) |
 
 ## AI-20261103-sxngwxn-01
 
@@ -614,7 +614,7 @@
 
 ## AI-20261112-sxngwxn-01
 
-- 원본: [ai_logs/sxngwxn/2026-11-12-issue-11.md](ai_logs/sxngwxn/2026-11-12-issue-11.md#ai-20261112-sxngwxn-01)
+- 원본: [ai_logs/sxngwxn/2026-11-12-issue-11.md](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/ai_logs/sxngwxn/2026-11-12-issue-11.md#ai-20261112-sxngwxn-01)
 
 - 날짜·담당자: 2026-11-12 · sxngwxn
 - 관련 이슈·PR: [#11](https://github.com/flutter-minifeed/mini-feed/issues/11) · PR 미생성
@@ -694,7 +694,7 @@
 
 ## AI-20261113-sxngwxn-01
 
-- 원본: [ai_logs/sxngwxn/2026-11-13-issue-11.md](ai_logs/sxngwxn/2026-11-13-issue-11.md#ai-20261113-sxngwxn-01)
+- 원본: [ai_logs/sxngwxn/2026-11-13-issue-11.md](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/ai_logs/sxngwxn/2026-11-13-issue-11.md#ai-20261113-sxngwxn-01)
 
 - 날짜·담당자: 2026-11-13 · sxngwxn
 - 관련 이슈·PR: [#11](https://github.com/flutter-minifeed/mini-feed/issues/11) · [#53](https://github.com/flutter-minifeed/mini-feed/pull/53)
@@ -742,7 +742,7 @@
 
 ## AI-20261115-sxngwxn-01
 
-- 원본: [ai_logs/sxngwxn/2026-11-15-issue-11.md](ai_logs/sxngwxn/2026-11-15-issue-11.md#ai-20261115-sxngwxn-01)
+- 원본: [ai_logs/sxngwxn/2026-11-15-issue-11.md](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/ai_logs/sxngwxn/2026-11-15-issue-11.md#ai-20261115-sxngwxn-01)
 
 - 날짜·담당자: 2026-11-15 · sxngwxn
 - 관련 이슈·PR: [#11](https://github.com/flutter-minifeed/mini-feed/issues/11) · [#53](https://github.com/flutter-minifeed/mini-feed/pull/53)
@@ -763,7 +763,7 @@
 
 ## AI-20261116-sxngwxn-01
 
-- 원본: [ai_logs/sxngwxn/2026-11-16-issue-11.md](ai_logs/sxngwxn/2026-11-16-issue-11.md#ai-20261116-sxngwxn-01)
+- 원본: [ai_logs/sxngwxn/2026-11-16-issue-11.md](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/ai_logs/sxngwxn/2026-11-16-issue-11.md#ai-20261116-sxngwxn-01)
 
 - 날짜·담당자: 2026-11-16 · sxngwxn
 - 관련 이슈·PR: [#11](https://github.com/flutter-minifeed/mini-feed/issues/11) · [#53](https://github.com/flutter-minifeed/mini-feed/pull/53)

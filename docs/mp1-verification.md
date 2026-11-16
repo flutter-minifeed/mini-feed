@@ -267,7 +267,7 @@ PR #53의 실기기 안내에 따라 #54·#55가 포함된 main ddd04b48aee20750
 
 | 작성자 | 보고한 기기·버전 | 기록과 캡처 |
 | --- | --- | --- |
-| titanfall7274 | Galaxy S23 Ultra / Android 16, main ddd04b4. 이 문서의 해당 절에 Flutter 3.47.2 / Dart 3.13.2로 기록 | 위 최신 main 실기기 검증 절과 screenshots/main-ddd04b4/ |
+| titanfall7274 | Galaxy S23 Ultra / Android 16, main ddd04b4. 이 문서의 해당 절에 Flutter 3.47.2 / Dart 3.13.2로 기록 | [최신 원본 댓글](https://github.com/flutter-minifeed/mini-feed/pull/53#issuecomment-6916571635) · [캡처 13장](../screenshots/main-ddd04b4/) |
 | gunzzzang | Galaxy A32 / Android 13, main ddd04b4, Flutter 3.47.9 / Dart 3.13.7 | [원본 댓글](https://github.com/flutter-minifeed/mini-feed/pull/53#issuecomment-6908379511) · [캡처 11장](../screenshots/2026-11-16-gunzzzang/) |
 | UTORY4624 | S25 Ultra / Android 17, main ddd04b4, Flutter 3.47.9 / Dart 3.13.7 | [원본 댓글](https://github.com/flutter-minifeed/mini-feed/pull/53#issuecomment-6913792138) · [캡처 12장](../screenshots/2026-11-16-UTORY4624/) |
 
@@ -275,7 +275,7 @@ PR #53의 실기기 안내에 따라 #54·#55가 포함된 main ddd04b48aee20750
 
 ### 갱신한 제출 검토용 ZIP
 
-minifeed-MP1-review-ddd04b4-20261116.zip을 로컬 임시 폴더에 생성했습니다. 최상위 app/·README.md·screenshots/·prompts_log.md, 129개 파일의 ZIP 무결성을 확인했습니다. 팀원 원본 JPG 23장을 포함해 다시 생성했습니다. 앱 소스는 main ddd04b4와 같습니다. 사용자 최종 검토와 원문 T번호·팀 설명 확인은 기존 미확인 상태입니다.
+minifeed-MP1-review-ddd04b4-20261116.zip을 로컬 임시 폴더에 생성했습니다. 최상위 app/·README.md·screenshots/·prompts_log.md, 130개 파일의 ZIP 무결성을 확인했습니다. 팀원 원본 JPG 23장과 지호님의 새 붙여넣기 사진을 포함해 다시 생성했습니다. 앱 소스는 main ddd04b4와 같습니다. 사용자 최종 검토와 원문 T번호·팀 설명 확인은 기존 미확인 상태입니다.
 
 ## 2026-11-16 팀원 검증 자료 취합
 
@@ -284,11 +284,11 @@ PR #53 댓글에 올라온 검사 결과와 원본 사진을 모았습니다. �
 | 작성자 | 기기·OS | Flutter / Dart | 앱 소스 | 원본 캡처 |
 | --- | --- | --- | --- | --- |
 | sxngwxn | Galaxy Note10 5G / Android 12 | 3.47.9 stable / 3.13.7 | ddd04b4 | [12장](../screenshots/2026-11-16-sxngwxn/) |
-| titanfall7274 | Galaxy S23 Ultra / Android 16 | 3.47.2 stable / 3.13.2 | ddd04b4 | [12장](../screenshots/main-ddd04b4/) |
+| titanfall7274 | Galaxy S23 Ultra / Android 16 | 3.47.2 stable / 3.13.2 | ddd04b4 | [13장](../screenshots/main-ddd04b4/) |
 | gunzzzang | Galaxy A32 / Android 13 | 3.47.9 / 3.13.7 | ddd04b4 | [11장](../screenshots/2026-11-16-gunzzzang/) |
 | UTORY4624 | S25 Ultra / Android 17 | 3.47.9 stable / 3.13.7 | ddd04b4 | [12장](../screenshots/2026-11-16-UTORY4624/) |
 
-sxngwxn과 titanfall7274의 상세 결과는 위 각 검사 절에 있습니다. 아래는 이번에 취합한 두 팀원의 원본 댓글 내용과 사진입니다.
+sxngwxn과 titanfall7274의 상세 결과는 위 각 검사 절에 있습니다. 아래에는 gunzzzang·UTORY4624의 원본 댓글을 취합했고, 이어지는 새 자료 재취합 절에 titanfall7274의 최신 댓글과 13장 목록을 연결했습니다.
 
 ### gunzzzang
 
@@ -372,3 +372,73 @@ sxngwxn과 titanfall7274의 상세 결과는 위 각 검사 절에 있습니다.
 | write-before-post | [write-before-post.jpg](../screenshots/2026-11-16-UTORY4624/write-before-post.jpg) |
 | feed-new-post | [feed-new-post.jpg](../screenshots/2026-11-16-UTORY4624/feed-new-post.jpg) |
 | detail-new-post | [detail-new-post.jpg](../screenshots/2026-11-16-UTORY4624/detail-new-post.jpg) |
+
+## 2026-11-16 새 자료 재취합
+
+로컬 #11 브랜치에 지호님의 추가 커밋 4a60181을 반영했습니다. 새 파일은 `screenshots/main-ddd04b4/write-paste-301.jpg`이며, 문서의 기존 실제 붙여넣기 결과에 연결돼 있습니다. 새 사진의 본문 끝 차와 빨간 300 / 300 표시를 시각 확인했습니다.
+
+| 작성자 | 최신 main 검증 캡처 |
+| --- | --- |
+| sxngwxn | 12장 |
+| titanfall7274 | 13장 |
+| gunzzzang | 11장 |
+| UTORY4624 | 12장 |
+| 합계 | 48장 |
+
+### titanfall7274 최신 원본 댓글
+
+[원본 검사 결과와 첨부 사진](https://github.com/flutter-minifeed/mini-feed/pull/53#issuecomment-6916571635)
+
+| 항목 | 작성자가 보고한 내용 |
+| --- | --- |
+| 날짜 | 2026-11-16 |
+| 앱 커밋 | `ddd04b4` |
+| 기기·OS | Galaxy S23 Ultra (SM-S918N), Android 16 / API 36 |
+| Flutter / Dart | 3.47.2 / 3.13.2 (팀 기준 3.47.9와 다름) |
+| 설치 방법 | 무선 adb (Tailscale) |
+| analyze·test | 오류 없음 / 테스트 67개 통과 |
+
+| 점검 | 결과 | 판정 |
+| --- | --- | --- |
+| 피드 표시·스크롤 | 맨 위 post-01, 맨 끝 post-50이 더미 JSON과 일치 | 통과 |
+| 본문 → 상세 → 뒤로 | 같은 본문·댓글 1개, 키보드 안 뜸, Android 뒤로가기로 복귀 | 통과 |
+| 댓글 아이콘 → 상세(키보드) | 입력창 커서·키보드 표시, 입력창 안 가려짐, 상단 화살표로 복귀 | 통과 |
+| 빈 글·공백만 입력 | 빈 글·공백 3자 모두 게시 버튼 비활성 | 통과 |
+| 299·300·301자 경계 | 299자 활성, 300자 빨간 카운터, 301번째 글자 입력 막힘 | 통과 |
+| 한글 조합 경계 | 299자 뒤 ㄱ → 가 → 각, 300자를 넘지 않음 | 통과 |
+| 301자 붙여넣기 | 예시 301자 붙여넣기 → `300 / 300`, 본문이 `차`로 끝나 `끝`이 잘림 | 통과 |
+| 작성 취소(계속 쓰기·버리기) | 계속 쓰기 → 내용 유지, Android 뒤로가기 → 버리기 → 피드 복귀, 글 추가 없음 | 통과 |
+| 새 글 게시(1개만 추가·공백 처리) | 게시 버튼 2번 연속 탭에도 1개만 추가, 앞뒤 공백 제거·줄바꿈 유지, `방금 전` | 통과 |
+| 새 글 상세 | 같은 본문, 댓글 0개 | 통과 |
+
+| 캡처 | 로컬 원본 |
+| --- | --- |
+| detail-keyboard | [detail-keyboard.png](../screenshots/main-ddd04b4/detail-keyboard.png) |
+| detail-new-post | [detail-new-post.png](../screenshots/main-ddd04b4/detail-new-post.png) |
+| detail | [detail.png](../screenshots/main-ddd04b4/detail.png) |
+| discard | [discard.png](../screenshots/main-ddd04b4/discard.png) |
+| feed-bottom | [feed-bottom.png](../screenshots/main-ddd04b4/feed-bottom.png) |
+| feed-new-post | [feed-new-post.png](../screenshots/main-ddd04b4/feed-new-post.png) |
+| feed | [feed.png](../screenshots/main-ddd04b4/feed.png) |
+| write-299 | [write-299.png](../screenshots/main-ddd04b4/write-299.png) |
+| write-301-blocked | [write-301-blocked.png](../screenshots/main-ddd04b4/write-301-blocked.png) |
+| write-empty | [write-empty.png](../screenshots/main-ddd04b4/write-empty.png) |
+| write-korean-300 | [write-korean-300.png](../screenshots/main-ddd04b4/write-korean-300.png) |
+| write-paste-301 | [write-paste-301.jpg](../screenshots/main-ddd04b4/write-paste-301.jpg) |
+| write-spaces | [write-spaces.png](../screenshots/main-ddd04b4/write-spaces.png) |
+
+작성자는 이상한 점 없음과 앱 로그의 예외·화면 넘침·충돌 0줄을 보고했습니다.
+
+### 제출 전 최종 검토 요청 취합
+
+[지호님의 최종 검토 요청 원문](https://github.com/flutter-minifeed/mini-feed/pull/53#issuecomment-6916755035)
+
+- [x] 새 301자 붙여넣기 사진과 검사 댓글을 반영하고 지호님 캡처를 13장으로 갱신했다.
+- [x] prompts_log.md의 ai_logs/ 상대 링크 8개를 GitHub 전체 주소로 교체했다.
+- [ ] 루트 대표 캡처를 #54·#55 이후 사진으로 교체하고 제출본에 포함할 하위 사진 폴더를 결정한다.
+- [ ] 사람이 더미 데이터와 사진의 개인정보를 최종 확인한다.
+- [ ] T09~T13 원문 대조와 팀원별 담당 흐름 설명 확인 결과를 기록한다.
+
+이번 실기기 사진 재취합 내역과 검토 진행 상태는 이 검증 문서에 이어 기록했습니다. 최신 PR 커밋 4a60181의 Analyze and test 성공을 GitHub에서 확인했습니다.
+
+검토용 ZIP에는 현재 저장소의 사진 64장을 모두 포함했습니다. 제출본에 포함할 사진 범위는 위 최종 검토 항목에 남겼습니다.
