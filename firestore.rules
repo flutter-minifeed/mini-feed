@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // #12 개인 프로필만 허용한다. 게시글 규칙은 #16에서 추가한다.
+    match /users/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.auth.token.firebase.sign_in_provider == 'anonymous'
+        && request.resource.data.keys().hasAll(['nickName', 'colorIndex', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['nickName', 'colorIndex', 'createdAt'])
+        && request.resource.data.nickName is string
+        && request.resource.data.nickName.size() > 0
+        && request.resource.data.nickName.size() <= 40
+        && request.resource.data.nickName.matches('[가-힣]+ [가-힣]+')
+        && request.resource.data.colorIndex is int
+        && request.resource.data.colorIndex >= 0
+        && request.resource.data.colorIndex <= 7
+        && request.resource.data.createdAt == request.time;
+      allow list, update, delete: if false;
+    }
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

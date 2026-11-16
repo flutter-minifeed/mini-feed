@@ -7,10 +7,16 @@ import '../theme/app_theme.dart';
 ///
 /// 게시글 카드는 반지름 20, 댓글은 반지름 16으로 쓴다.
 class UserAvatar extends StatelessWidget {
-  const UserAvatar({super.key, required this.author, this.radius = 20});
+  const UserAvatar({
+    super.key,
+    required this.author,
+    this.radius = 20,
+    this.fontSize,
+  });
 
   final Author author;
   final double radius;
+  final double? fontSize;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +29,7 @@ class UserAvatar extends StatelessWidget {
         // Figma 글자 크기는 반지름의 0.8배를 반올림한 값이다(반지름 20 → 16, 16 → 13).
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
           color: userOnColor,
-          fontSize: (radius * 0.8).roundToDouble(),
+          fontSize: fontSize ?? (radius * 0.8).roundToDouble(),
         ),
       ),
     );

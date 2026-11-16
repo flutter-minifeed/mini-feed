@@ -36,3 +36,7 @@ build/
 /app/android/app/google-services.json
 /app/lib/firebase_options.dart
 /app/firebase.json
+
+# Firebase 로컬 에뮬레이터와 규칙 테스트 의존성
+/.firebase/
+/tests/firestore/node_modules/
