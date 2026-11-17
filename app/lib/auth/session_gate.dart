@@ -68,9 +68,9 @@ class _SessionGateState extends State<SessionGate> {
       setState(() => _author = profile.author);
       final session = await widget.buildSession(profile.author);
       if (!_active(attempt)) return;
+      _timer?.cancel();
       await Future<void>.delayed(widget.profileDisplayDuration);
       if (!_active(attempt)) return;
-      _timer?.cancel();
       setState(() {
         _session = session;
         _busy = false;
