@@ -138,6 +138,40 @@ void main() {
     expect(find.text('네트워크에 연결되어 있지 않아요'), findsNothing);
   });
 
+  for (final (state, failure) in [
+    ('로딩', null),
+    ('오프라인', SessionFailure.offline),
+  ]) {
+    testWidgets('$state 시작 화면이 화면 너비의 중앙에 배치된다', (tester) async {
+      // given
+      const size = Size(412, 892);
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      // when
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: appTheme,
+          home: StartScreen(failure: failure),
+        ),
+      );
+
+      // then
+      final stateIndicator = failure == null
+          ? find.byType(CircularProgressIndicator)
+          : find.byIcon(Icons.wifi_off);
+      for (final element in [
+        find.text('미니피드'),
+        stateIndicator,
+        find.byIcon(Icons.lock_outline),
+      ]) {
+        expect(tester.getCenter(element).dx, closeTo(size.width / 2, 0.01));
+      }
+    });
+  }
+
   testWidgets('작은 화면과 큰 글자에서도 오류 안내와 재시도 버튼을 볼 수 있다', (tester) async {
     // given
     tester.view.physicalSize = const Size(320, 480);

@@ -43,7 +43,10 @@ class StartScreen extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) => SingleChildScrollView(
             child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              constraints: BoxConstraints(
+                minWidth: constraints.maxWidth,
+                minHeight: constraints.maxHeight,
+              ),
               child: IntrinsicHeight(
                 child: Column(
                   children: [
