@@ -50,6 +50,7 @@ MP1은 Firebase 계정·키 없이 메모리 저장소로 실행합니다. 앱�
 
 - 프레임워크·SDK: Flutter 3.47.5 stable / Dart 3.13.4
 - 실행 기기: Galaxy S23 Ultra (SM-S918N), Android 16 / API 36 실기기. 앱의 Android 최소 API는 24입니다.
+- 스크린샷 촬영 기기: Galaxy Note10 5G (SM-N971N), Android 12 / API 31
 - Android 패키지 ID: `com.minifeed`
 
 ```bash
@@ -81,19 +82,19 @@ flutter run -d <기기_ID>
 
 - 조작: 연필 버튼으로 글쓰기 화면을 열어 본문을 입력하고 게시를 누른 뒤, 피드 맨 위의 새 글을 누른다
 - 기대 결과: 방금 쓴 글이 피드 맨 위에 1개 추가되고, 누르면 같은 본문의 상세 화면이 열린다
-- 스크린샷: 11_feed_new_post.png, 12_detail_new_post.png
+- 스크린샷: 10_write_before_post.png, 11_feed_new_post.png, 12_detail_new_post.png
 
 ### 상대 시간 표시
 
-- 조작: 새 글을 게시한 직후 피드와 상세의 작성 시각을 보고, 더미 게시글의 작성 시각과 비교한다
-- 기대 결과: 새 글은 `방금 전`으로 표시된다. 경과 시간에 따라 `N분 전`·`N시간 전`·`어제`·`N일 전`으로 바뀌고, 7일 이상 지난 더미 게시글은 `11월 4일`처럼 날짜로 표시된다
+- 조작: 새 글을 게시한 직후 피드의 작성 시각을 보고, 몇 분 뒤 그 글의 상세를 열어 다시 본다. 더미 게시글의 작성 시각과도 비교한다
+- 기대 결과: 새 글은 게시 직후 `방금 전`, 몇 분 뒤 `N분 전`으로 표시된다. 7일 이상 지난 더미 게시글은 `11월 4일`처럼 날짜로 표시된다. `N시간 전`·`어제`·`N일 전`과 각 경계는 `app/test/utils/relative_time_test.dart`로 확인한다
 - 스크린샷: 11_feed_new_post.png, 12_detail_new_post.png, 01_feed.png
 
 ### 글쓰기 입력 제한·작성 취소
 
 - 조작: 글쓰기 화면에서 빈 상태로 게시 버튼을 확인하고, 300자까지 입력한 뒤 한 글자를 더 입력하거나 301자를 붙여넣는다. 이어서 왼쪽 위 X를 누른다
 - 기대 결과: 빈 글에서는 게시 버튼이 비활성이고, 300자에서 카운터가 빨간색이 되며 301번째 글자는 입력되지 않는다. X를 누르면 작성 취소 확인 창이 열리고, 계속 쓰기는 내용을 유지하며 버리기는 피드로 돌아간다
-- 스크린샷: 05_write_empty.png, 06_write_299.png, 07_write_301_blocked.png, 08_write_korean_300.png, 09_write_paste_301.jpg, 10_discard.png
+- 스크린샷: 05_write_empty.png, 06_write_301_blocked.png, 07_write_korean_300.png, 08_write_paste_301.png, 09_discard.png
 
 ### 더미 데이터·스크린샷 개인정보
 
