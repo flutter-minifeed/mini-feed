@@ -48,10 +48,59 @@ MP1은 Firebase 계정·키 없이 메모리 저장소로 실행합니다. 앱�
 
 ## 실행 절차
 
-Flutter 3.47.9 stable / Dart 3.13.7, Android 최소 API 24
+- 프레임워크·SDK: Flutter 3.47.5 stable / Dart 3.13.4
+- 실행 기기: Galaxy S23 Ultra (SM-S918N), Android 16 / API 36 실기기. 앱의 Android 최소 API는 24입니다.
+- Android 패키지 ID: `com.minifeed`
 
-Android 패키지 ID: `com.minifeed`
+```bash
+flutter --version          # Flutter 3.47.5 / Dart 3.13.4 확인
+flutter doctor
+cd app
+flutter pub get
+flutter devices            # 연결한 기기 ID 확인
+flutter run -d <기기_ID>
+```
 
-1. `flutter doctor`로 환경 확인
-2. 저장소 루트에서 `cd app` 실행 후 `flutter pub get`
-3. `flutter run` — Chrome에서 확인할 때는 `flutter run -d chrome`
+`app/assets/fonts/`의 Noto Sans KR 글꼴은 오프라인에서도 한글을 같은 모양으로 표시하려고 앱에 포함했습니다.
+
+## 확인 방법
+
+### 피드·글쓰기·상세와 더미 데이터
+
+- 조작: 앱을 실행해 피드 첫 글의 본문을 누르고, 뒤로 돌아와 같은 글의 댓글 아이콘을 누른 뒤, 다시 뒤로 돌아와 오른쪽 아래 연필 버튼을 누른다
+- 기대 결과: 피드에 더미 게시글이 표시되고, 본문을 누르면 같은 글의 상세가, 댓글 아이콘을 누르면 댓글 입력창에 커서와 키보드가 올라온 상세가, 연필 버튼을 누르면 글쓰기 화면이 열린다
+- 스크린샷: 01_feed.png, 03_detail.png, 04_detail_keyboard.png, 05_write_empty.png
+
+### 게시글 카드·스크롤
+
+- 조작: 앱을 실행하고 피드를 끝까지 아래로 스크롤한다
+- 기대 결과: 아바타·닉네임·작성 시각·본문·좋아요 수·댓글 수가 있는 카드가 최신순으로 표시되고, 마지막 글까지 스크롤된다
+- 스크린샷: 01_feed.png, 02_feed_bottom.png
+
+### 새 글 최상단 반영·상세 이동
+
+- 조작: 연필 버튼으로 글쓰기 화면을 열어 본문을 입력하고 게시를 누른 뒤, 피드 맨 위의 새 글을 누른다
+- 기대 결과: 방금 쓴 글이 피드 맨 위에 1개 추가되고, 누르면 같은 본문의 상세 화면이 열린다
+- 스크린샷: 11_feed_new_post.png, 12_detail_new_post.png
+
+### 상대 시간 표시
+
+- 조작: 새 글을 게시한 직후 피드와 상세의 작성 시각을 보고, 더미 게시글의 작성 시각과 비교한다
+- 기대 결과: 새 글은 `방금 전`으로 표시된다. 경과 시간에 따라 `N분 전`·`N시간 전`·`어제`·`N일 전`으로 바뀌고, 7일 이상 지난 더미 게시글은 `11월 4일`처럼 날짜로 표시된다
+- 스크린샷: 11_feed_new_post.png, 12_detail_new_post.png, 01_feed.png
+
+### 글쓰기 입력 제한·작성 취소
+
+- 조작: 글쓰기 화면에서 빈 상태로 게시 버튼을 확인하고, 300자까지 입력한 뒤 한 글자를 더 입력하거나 301자를 붙여넣는다. 이어서 왼쪽 위 X를 누른다
+- 기대 결과: 빈 글에서는 게시 버튼이 비활성이고, 300자에서 카운터가 빨간색이 되며 301번째 글자는 입력되지 않는다. X를 누르면 작성 취소 확인 창이 열리고, 계속 쓰기는 내용을 유지하며 버리기는 피드로 돌아간다
+- 스크린샷: 05_write_empty.png, 06_write_299.png, 07_write_301_blocked.png, 08_write_korean_300.png, 09_write_paste_301.jpg, 10_discard.png
+
+### 더미 데이터·스크린샷 개인정보
+
+- 조작: `app/assets/dummy/` 아래 JSON 파일과 `screenshots/`의 이미지를 연다
+- 기대 결과: 닉네임은 창작한 별명이고, 실명·연락처·실제 인물 사진이 없다
+- 스크린샷: 01_feed.png, 02_feed_bottom.png, 03_detail.png, 12_detail_new_post.png
+
+시험 데이터: `app/assets/dummy/post/posts.json`(게시글 50개), `app/assets/dummy/comment/comments.json`(댓글 83개)
+
+네트워크: 불필요(서버 연결 없이 앱 안의 JSON으로 동작)
