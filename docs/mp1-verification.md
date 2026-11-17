@@ -54,7 +54,7 @@ Chrome에서 별도로 확인한 결과가 생기면 아래에 남깁니다. And
 | T11 | 원문 접근 후 기입 | 미실행 | 미판정 | 없음 |
 | T12 | 원문 접근 후 기입 | 미실행 | 미판정 | 없음 |
 | T13 | 원문 접근 후 기입 | 미실행 | 미판정 | 없음 |
-| T15 | [#9 검증 절](https://github.com/flutter-minifeed/mini-feed/issues/9) — 실기기에서 카드 본문·댓글 아이콘 두 진입 경로 확인 | post-01 본문으로 상세 진입 시 키보드 자동 표시 없음. 피드 댓글 아이콘으로 같은 상세 진입 시 입력창 포커스·키보드 표시 확인 | 통과 — GitHub #9에 명시된 범위 | [상세](../screenshots/detail.png) · [댓글 진입](../screenshots/detail-keyboard.png) |
+| T15 | [#9 검증 절](https://github.com/flutter-minifeed/mini-feed/issues/9) — 실기기에서 카드 본문·댓글 아이콘 두 진입 경로 확인 | post-01 본문으로 상세 진입 시 키보드 자동 표시 없음. 피드 댓글 아이콘으로 같은 상세 진입 시 입력창 포커스·키보드 표시 확인 | 통과 — GitHub #9에 명시된 범위 | [상세](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/detail.png) · [댓글 진입](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/detail-keyboard.png) |
 
 ## 기능별 통합 점검
 
@@ -62,17 +62,17 @@ Chrome에서 별도로 확인한 결과가 생기면 아래에 남깁니다. And
 
 | 점검 | 절차와 기대 결과 | 실제 결과 | 판정 | 로그·캡처 |
 | --- | --- | --- | --- | --- |
-| 피드 표시·스크롤 | 앱 실행 후 더미 글이 최신순으로 표시되고 마지막 글까지 스크롤할 수 있다. 실제 JSON은 게시글 50개다. | 최초 post-01과 마지막 post-50의 본문을 JSON과 대조. 끝까지 스크롤 가능 | 통과 | [목록 끝](../screenshots/feed-bottom.png) |
-| 본문 → 상세 → 뒤로 | 같은 글의 전체 내용·댓글을 확인하고 피드로 돌아온다. | 새 글 및 post-01 본문으로 상세 진입, 같은 본문과 post-01 댓글 1개 표시. Android 뒤로가기·상단 화살표로 복귀 | 통과 | [상세](../screenshots/detail.png) |
+| 피드 표시·스크롤 | 앱 실행 후 더미 글이 최신순으로 표시되고 마지막 글까지 스크롤할 수 있다. 실제 JSON은 게시글 50개다. | 최초 post-01과 마지막 post-50의 본문을 JSON과 대조. 끝까지 스크롤 가능 | 통과 | [목록 끝](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/feed-bottom.png) |
+| 본문 → 상세 → 뒤로 | 같은 글의 전체 내용·댓글을 확인하고 피드로 돌아온다. | 새 글 및 post-01 본문으로 상세 진입, 같은 본문과 post-01 댓글 1개 표시. Android 뒤로가기·상단 화살표로 복귀 | 통과 | [상세](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/detail.png) |
 | 댓글 아이콘 → 상세 | 같은 글의 상세가 열리고 댓글 입력창에 포커스와 키보드가 표시된다. | post-01 댓글 버튼으로 동일 상세 진입. 입력창과 삼성 키보드가 함께 표시되며 입력창 가림 없음 | 통과 | 로컬 실제 화면 및 input_method의 mInputShown=true 확인 |
-| 피드 → 글쓰기 → 뒤로 | 글쓰기 화면 진입·복귀가 가능하다. | 피드 글쓰기 버튼으로 진입, 게시 및 사용자 직접 X → 버리기로 복귀 확인 | 통과 | [글쓰기](../screenshots/write.png) |
+| 피드 → 글쓰기 → 뒤로 | 글쓰기 화면 진입·복귀가 가능하다. | 피드 글쓰기 버튼으로 진입, 게시 및 사용자 직접 X → 버리기로 복귀 확인 | 통과 | [글쓰기](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/write.png) |
 | 빈 글·공백 | 빈 입력과 공백만 입력했을 때 게시할 수 없다. | 빈 글에서 게시를 눌러도 이동 없음. 공백 3자에서 회색 비활성 게시 버튼 확인 | 통과 | 로컬 실제 화면 확인 |
-| 300자 경계·한글 입력 | 299·300·301자 입력, 붙여넣기, 한글 조합 중 글자 수와 게시 가능 상태가 #8 요구사항에 맞다. | 299자 게시 활성, 300자 빨간 카운터, 301번째 C 입력 차단 확인. 삼성 키보드에서 A 299자 뒤 ㄱ → 가 조합을 300자로 표시. 301자 붙여넣기는 위젯 테스트 통과, 실기기 직접 붙여넣기는 미실행 | 일부 확인 — 실기기 붙여넣기 남음 | [299자](../screenshots/write-299.png) · [300자](../screenshots/write-300.png) · [301번째 차단](../screenshots/write-301-blocked.png) · [한글 조합](../screenshots/write-korean-300.png) |
+| 300자 경계·한글 입력 | 299·300·301자 입력, 붙여넣기, 한글 조합 중 글자 수와 게시 가능 상태가 #8 요구사항에 맞다. | 299자 게시 활성, 300자 빨간 카운터, 301번째 C 입력 차단 확인. 삼성 키보드에서 A 299자 뒤 ㄱ → 가 조합을 300자로 표시. 301자 붙여넣기는 위젯 테스트 통과, 실기기 직접 붙여넣기는 미실행 | 일부 확인 — 실기기 붙여넣기 남음 | [299자](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/write-299.png) · [300자](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/write-300.png) · [301번째 차단](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/write-301-blocked.png) · [한글 조합](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/write-korean-300.png) |
 | 작성 취소 확인 | 작성 중 닫기·Android 뒤로가기로 취소 확인이 열리고 계속 쓰기는 내용 유지, 버리기는 복귀한다. | X 및 키보드를 닫은 뒤 Android 뒤로가기로 확인 창 표시. 계속 쓰기는 한글 18자 유지. 사용자 직접 X → 버리기 후 피드 복귀를 캡처로 확인. 자동 좌표 입력으로 버리기 선택이 정확하지 않았던 시도는 성공 결과에서 제외 | 통과 — 사용자 직접 선택 포함 | 로컬 실제 화면과 사용자 답변 확인 |
-| 새 글 게시·상단 추가 | 창작한 글을 게시하면 피드로 복귀해 한 번만 추가되고 최상단에서 본문·상대 시간을 확인할 수 있다. | 09:27:01 KST 게시 버튼 1회 → 피드 최상단에 ‘미니피드 실기기 확인용 글입니다.’ 1개와 ‘방금 전’ 표시 | 통과 | [피드](../screenshots/feed.png) |
-| 새 글 상세 | 방금 쓴 글을 눌러 동일한 전체 본문이 표시되는지 확인한다. | 새 글 본문으로 상세 진입해 같은 내용·작성자·댓글 0개 확인 | 통과 | [새 글 상세](../screenshots/detail-new-post.png) |
-| 상대 시간 | 기준 시각을 기록하고 #10의 방금 전·분·시간·어제·일·날짜 경계 결과를 확인한다. 고정 시각 더미 글의 오래된 날짜 표시도 확인한다. | 자동 테스트에서 #10 경계 검사 통과. 실기기 새 글은 09:27:01 KST 게시 직후 ‘방금 전’, 고정 더미 글은 ‘11월 4일’ 표시 | 통과 — 경계는 단위 테스트, 화면은 새 글·날짜 확인 | [피드](../screenshots/feed.png) |
-| 작은 화면·키보드 | 글쓰기·상세에서 작은 화면과 키보드가 열린 상태에도 필요한 조작이 가려지지 않는다. | SM-N971N 세로 화면에서 키보드와 글자 수·게시 버튼·댓글 입력창 표시. 300자 및 한글 조합 화면에서 가림·넘침 오류 미관찰. 더 작은 화면·다른 배율은 미검사 | 해당 기기 범위 통과 | [댓글 키보드](../screenshots/detail-keyboard.png) · [300자](../screenshots/write-300.png) |
+| 새 글 게시·상단 추가 | 창작한 글을 게시하면 피드로 복귀해 한 번만 추가되고 최상단에서 본문·상대 시간을 확인할 수 있다. | 09:27:01 KST 게시 버튼 1회 → 피드 최상단에 ‘미니피드 실기기 확인용 글입니다.’ 1개와 ‘방금 전’ 표시 | 통과 | [피드](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/feed.png) |
+| 새 글 상세 | 방금 쓴 글을 눌러 동일한 전체 본문이 표시되는지 확인한다. | 새 글 본문으로 상세 진입해 같은 내용·작성자·댓글 0개 확인 | 통과 | [새 글 상세](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/detail-new-post.png) |
+| 상대 시간 | 기준 시각을 기록하고 #10의 방금 전·분·시간·어제·일·날짜 경계 결과를 확인한다. 고정 시각 더미 글의 오래된 날짜 표시도 확인한다. | 자동 테스트에서 #10 경계 검사 통과. 실기기 새 글은 09:27:01 KST 게시 직후 ‘방금 전’, 고정 더미 글은 ‘11월 4일’ 표시 | 통과 — 경계는 단위 테스트, 화면은 새 글·날짜 확인 | [피드](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/feed.png) |
+| 작은 화면·키보드 | 글쓰기·상세에서 작은 화면과 키보드가 열린 상태에도 필요한 조작이 가려지지 않는다. | SM-N971N 세로 화면에서 키보드와 글자 수·게시 버튼·댓글 입력창 표시. 300자 및 한글 조합 화면에서 가림·넘침 오류 미관찰. 더 작은 화면·다른 배율은 미검사 | 해당 기기 범위 통과 | [댓글 키보드](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/detail-keyboard.png) · [300자](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/write-300.png) |
 | 더미 데이터·비밀값 | 실제 사용한 소스와 캡처에 실명·연락처·실제 키·토큰이 없는지 사람이 검토한다. | JSON 50글·83댓글에서 이메일·휴대폰 패턴 0건, 댓글 postId 미연결 0건. 저장할 앱 캡처를 시각 확인. .env·google-services.json·service-account 파일 검색 결과 없음. 팀원 최종 개인정보 검토는 대기 | 자동 점검·캡처 확인 완료, 사람 검토 대기 | 로컬 검색 결과 |
 
 현재 상대 시간 함수의 경계는 1분·1시간·24시간·48시간·7일입니다. 미래 시각은 방금 전, 7일 이상은 월·일로 표시합니다. 함수 테스트 통과 여부와 실기기 화면 확인 결과를 각각 기록합니다.
@@ -83,7 +83,7 @@ Chrome에서 별도로 확인한 결과가 생기면 아래에 남깁니다. And
 | --- | --- | --- | --- |
 | flutter analyze --no-pub | `36007e1` | 오류 없음. 2026-11-13 재실행 | 로컬 명령 결과 |
 | flutter test --no-pub | `36007e1` | 기존 테스트 63개 모두 통과. 2026-11-13 재실행 | 로컬 명령 결과 |
-| Android 빌드·설치·실행 | `36007e1` | debug APK 빌드·USB 설치 성공. 게시·상세·댓글 진입·스크롤·입력 제한 확인. 앱 PID의 logcat에서 Flutter 예외·RenderFlex·충돌 일치 줄 0건 | [실기기 캡처](../screenshots/) |
+| Android 빌드·설치·실행 | `36007e1` | debug APK 빌드·USB 설치 성공. 게시·상세·댓글 진입·스크롤·입력 제한 확인. 앱 PID의 logcat에서 Flutter 예외·RenderFlex·충돌 일치 줄 0건 | [실기기 캡처](https://github.com/flutter-minifeed/mini-feed/tree/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/) |
 
 이전 PR의 분석·테스트 결과를 최종 통합 앱의 결과로 대신 적지 않습니다.
 
@@ -93,9 +93,9 @@ Chrome에서 별도로 확인한 결과가 생기면 아래에 남깁니다. And
 
 | 루트 기준 저장 위치 예시 | 실제 캡처 앱 커밋·기기·날짜 | 상태 |
 | --- | --- | --- |
-| [screenshots/feed.png](../screenshots/feed.png) | `36007e1` · SM-N971N / Android 12 · 2026-11-13 | 촬영·이미지 확인 완료 |
-| [screenshots/write.png](../screenshots/write.png) | `36007e1` · SM-N971N / Android 12 · 2026-11-13 | 촬영·이미지 확인 완료 |
-| [screenshots/detail.png](../screenshots/detail.png) | `36007e1` · SM-N971N / Android 12 · 2026-11-13 | 촬영·이미지 확인 완료 |
+| [screenshots/feed.png](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/feed.png) | `36007e1` · SM-N971N / Android 12 · 2026-11-13 | 촬영·이미지 확인 완료 |
+| [screenshots/write.png](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/write.png) | `36007e1` · SM-N971N / Android 12 · 2026-11-13 | 촬영·이미지 확인 완료 |
+| [screenshots/detail.png](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/detail.png) | `36007e1` · SM-N971N / Android 12 · 2026-11-13 | 촬영·이미지 확인 완료 |
 
 - [x] README의 화면 구성·더미 데이터 구조·실행 절차를 현재 main의 앱과 대조했다. 후속 병합 시 재확인한다.
 - [x] 병합된 #8 및 오늘 #11 원본을 prompts_log.md에 추가하고 16개 원본 파일·17개 ID의 누락·중복·본문 일치를 확인했다. 후속 병합 시 재확인한다.
@@ -160,12 +160,12 @@ Chrome에서 별도로 확인한 결과가 생기면 아래에 남깁니다. And
 
 | 화면 | 파일 |
 | --- | --- |
-| 게시 후 피드 | [feed.png](../screenshots/pr-54-review/feed.png) |
-| 빈 글쓰기 | [write-empty.png](../screenshots/pr-54-review/write-empty.png) |
-| 본문으로 상세 진입 | [detail.png](../screenshots/pr-54-review/detail.png) |
-| 댓글 버튼으로 상세 진입 | [detail-keyboard.png](../screenshots/pr-54-review/detail-keyboard.png) |
-| 작성 취소 확인 창 | [discard.png](../screenshots/pr-54-review/discard.png) |
-| 300자 입력 | [write-300.png](../screenshots/pr-54-review/write-300.png) |
+| 게시 후 피드 | [feed.png](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/pr-54-review/feed.png) |
+| 빈 글쓰기 | [write-empty.png](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/pr-54-review/write-empty.png) |
+| 본문으로 상세 진입 | [detail.png](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/pr-54-review/detail.png) |
+| 댓글 버튼으로 상세 진입 | [detail-keyboard.png](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/pr-54-review/detail-keyboard.png) |
+| 작성 취소 확인 창 | [discard.png](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/pr-54-review/discard.png) |
+| 300자 입력 | [write-300.png](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/pr-54-review/write-300.png) |
 
 ### 이어서 확인할 항목
 
@@ -206,23 +206,23 @@ Chrome에서 별도로 확인한 결과가 생기면 아래에 남깁니다. And
 
 | 점검 | 실제 결과 | 판정 | 캡처 |
 | --- | --- | --- | --- |
-| 피드 표시·스크롤 | 최상단 post-01, 마지막 post-50 본문이 JSON과 일치. 끝까지 스크롤 가능. 작성자 아바타·닉네임·날짜 표시 | 통과 | [피드](../screenshots/main-ddd04b4/feed.png) · [목록 끝](../screenshots/main-ddd04b4/feed-bottom.png) |
-| 본문 → 상세 → 뒤로 | post-01 본문으로 상세 진입, 같은 본문·댓글 1개 표시, 키보드 자동 표시 없음(mInputShown=false). Android 뒤로가기로 피드 복귀 | 통과 | [상세](../screenshots/main-ddd04b4/detail.png) |
-| 댓글 아이콘 → 상세 (T15 범위) | post-01 댓글 버튼으로 같은 상세 진입. 입력창 포커스·키보드 표시(mInputShown=true), 입력창 가림 없음. 상단 화살표로 피드 복귀 | 통과 | [댓글 진입](../screenshots/main-ddd04b4/detail-keyboard.png) |
-| 빈 글·공백 | 빈 글 게시 버튼 비활성, 눌러도 화면 유지. 공백 3자 입력 시 `3 / 300`, 게시 비활성 | 통과 | [빈 글](../screenshots/main-ddd04b4/write-empty.png) · [공백](../screenshots/main-ddd04b4/write-spaces.png) |
-| 300자 경계 | 영문 299자 `299 / 300` 게시 활성, 300번째 입력 시 빨간 `300 / 300`, 301번째 `C` 입력 차단·본문 300자 유지 | 통과 | [299자](../screenshots/main-ddd04b4/write-299.png) · [301번째 차단](../screenshots/main-ddd04b4/write-301-blocked.png) |
-| 한글 조합 | 삼성 키보드로 299자 뒤 ㄱ → 가 → 각 입력. 조합 중에도 `300 / 300`을 넘지 않고 마지막 글자만 바뀜 | 통과 | [한글 조합](../screenshots/main-ddd04b4/write-korean-300.png) |
-| 301자 붙여넣기 | adb로는 클립보드를 채울 수 없어 titanfall7274가 폰에서 예시 301자(끝 글자 `끝`)를 직접 붙여넣음. 카운터 `300 / 300`, 본문은 `차`로 끝나 301번째 글자가 잘림 | 통과 — 사용자 직접 확인 | [301자 붙여넣기](../screenshots/main-ddd04b4/write-paste-301.jpg) |
-| 작성 취소 확인 | X로 확인 창 표시 → 계속 쓰기 시 300자 유지. 키보드를 내린 뒤 Android 뒤로가기로 확인 창 표시 → 버리기 시 피드 복귀, 새 글 추가 없음 | 통과 | [취소 확인](../screenshots/main-ddd04b4/discard.png) |
-| 새 글 게시·공백 처리 | 앞뒤 공백 2칸과 중간 줄바꿈이 있는 25자 입력 후 게시 버튼을 연달아 2회 탭(13:57:50 KST). 피드 최상단에 1개만 추가, 앞뒤 공백 제거·줄바꿈 유지, `방금 전` 표시 | 통과 | [게시 후 피드](../screenshots/main-ddd04b4/feed-new-post.png) |
-| 새 글 상세 | 새 글 본문으로 상세 진입, 같은 본문·작성자·`방금 전`·댓글 0개 표시 | 통과 | [새 글 상세](../screenshots/main-ddd04b4/detail-new-post.png) |
+| 피드 표시·스크롤 | 최상단 post-01, 마지막 post-50 본문이 JSON과 일치. 끝까지 스크롤 가능. 작성자 아바타·닉네임·날짜 표시 | 통과 | [피드](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/main-ddd04b4/feed.png) · [목록 끝](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/main-ddd04b4/feed-bottom.png) |
+| 본문 → 상세 → 뒤로 | post-01 본문으로 상세 진입, 같은 본문·댓글 1개 표시, 키보드 자동 표시 없음(mInputShown=false). Android 뒤로가기로 피드 복귀 | 통과 | [상세](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/main-ddd04b4/detail.png) |
+| 댓글 아이콘 → 상세 (T15 범위) | post-01 댓글 버튼으로 같은 상세 진입. 입력창 포커스·키보드 표시(mInputShown=true), 입력창 가림 없음. 상단 화살표로 피드 복귀 | 통과 | [댓글 진입](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/main-ddd04b4/detail-keyboard.png) |
+| 빈 글·공백 | 빈 글 게시 버튼 비활성, 눌러도 화면 유지. 공백 3자 입력 시 `3 / 300`, 게시 비활성 | 통과 | [빈 글](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/main-ddd04b4/write-empty.png) · [공백](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/main-ddd04b4/write-spaces.png) |
+| 300자 경계 | 영문 299자 `299 / 300` 게시 활성, 300번째 입력 시 빨간 `300 / 300`, 301번째 `C` 입력 차단·본문 300자 유지 | 통과 | [299자](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/main-ddd04b4/write-299.png) · [301번째 차단](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/main-ddd04b4/write-301-blocked.png) |
+| 한글 조합 | 삼성 키보드로 299자 뒤 ㄱ → 가 → 각 입력. 조합 중에도 `300 / 300`을 넘지 않고 마지막 글자만 바뀜 | 통과 | [한글 조합](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/main-ddd04b4/write-korean-300.png) |
+| 301자 붙여넣기 | adb로는 클립보드를 채울 수 없어 titanfall7274가 폰에서 예시 301자(끝 글자 `끝`)를 직접 붙여넣음. 카운터 `300 / 300`, 본문은 `차`로 끝나 301번째 글자가 잘림 | 통과 — 사용자 직접 확인 | [301자 붙여넣기](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/main-ddd04b4/write-paste-301.jpg) |
+| 작성 취소 확인 | X로 확인 창 표시 → 계속 쓰기 시 300자 유지. 키보드를 내린 뒤 Android 뒤로가기로 확인 창 표시 → 버리기 시 피드 복귀, 새 글 추가 없음 | 통과 | [취소 확인](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/main-ddd04b4/discard.png) |
+| 새 글 게시·공백 처리 | 앞뒤 공백 2칸과 중간 줄바꿈이 있는 25자 입력 후 게시 버튼을 연달아 2회 탭(13:57:50 KST). 피드 최상단에 1개만 추가, 앞뒤 공백 제거·줄바꿈 유지, `방금 전` 표시 | 통과 | [게시 후 피드](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/main-ddd04b4/feed-new-post.png) |
+| 새 글 상세 | 새 글 본문으로 상세 진입, 같은 본문·작성자·`방금 전`·댓글 0개 표시 | 통과 | [새 글 상세](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/main-ddd04b4/detail-new-post.png) |
 | 더미 데이터 | JSON 게시글 50개·댓글 83개, 이메일·휴대폰 패턴 0건, 연결되지 않은 댓글 postId 0건. 캡처의 상태 표시줄에 개인정보 없음 | 자동 점검 통과, 사람 검토 대기 | 로컬 검색 결과 |
 
 ### 남은 항목
 
 - T09~T13 원문 번호별 판정, 팀원 설명 확인은 그대로 남아 있습니다.
-- 팀 기준 Flutter 3.47.9로 다시 빌드한 결과가 아닙니다. 제출용 최종 빌드는 3.47.9 환경에서 다시 확인합니다.
-- 루트 `screenshots/`의 제출용 캡처는 아직 `36007e1` 화면입니다. 최신 화면으로 바꿀지는 팀에서 정합니다.
+- 이 절의 빌드는 Flutter 3.47.2입니다. 2026-11-17 개정 기준으로 팀 버전을 3.47.5 / Dart 3.13.4로 바꿨으므로 제출용 최종 빌드는 3.47.5에서 다시 확인합니다.
+- 2026-11-17 개정 기준(최대 12장, `01_` 번호)에 맞춰 이 절의 캡처 12장을 `screenshots/01_feed.png`~`12_detail_new_post.png` 대표 캡처로 옮겼습니다. 나머지 검증 캡처는 저장소에서 지우고 [PR #53 댓글](https://github.com/flutter-minifeed/mini-feed/pull/53#issuecomment-6938410773)과 각자의 검증 댓글에 보관합니다. 이 문서의 캡처 링크는 삭제 전 커밋 `4a60181`에 고정했습니다.
 
 ## 2026-11-16 sxngwxn 최종 실기기 검증
 
@@ -243,16 +243,16 @@ PR #53의 실기기 안내에 따라 #54·#55가 포함된 main ddd04b48aee20750
 
 | 점검 | 실제 결과 | 판정 | 캡처 |
 | --- | --- | --- | --- |
-| 피드 표시·스크롤 | 첫 글 「아침에 추워서 니트…」와 마지막 글 「우산 같이 쓰고 가자고…」 표시 | 통과 | [feed.png](../screenshots/2026-11-16-sxngwxn/feed.png) · [feed-bottom.png](../screenshots/2026-11-16-sxngwxn/feed-bottom.png) |
-| 본문 → 상세 → 뒤로 | 같은 첫 글 본문·댓글 1개 표시, 키보드 닫힘, 피드 복귀 | 통과 | [detail.png](../screenshots/2026-11-16-sxngwxn/detail.png) |
-| 댓글 아이콘 → 상세(키보드) | 같은 첫 글 상세, 입력창 포커스·키보드 표시, 입력창 가림 없음 | 통과 | [detail-keyboard.png](../screenshots/2026-11-16-sxngwxn/detail-keyboard.png) |
-| 빈 글·공백만 입력 | 빈 글 0 / 300, 공백 3개 입력 시 3 / 300, 두 경우 모두 게시 비활성 | 통과 | [write-empty.png](../screenshots/2026-11-16-sxngwxn/write-empty.png) |
-| 299·300·301자 경계 | A 299개 입력 후 B로 300자, 추가 C 차단, 빨간 300 / 300 유지 | 통과 | [write-301-blocked.png](../screenshots/2026-11-16-sxngwxn/write-301-blocked.png) |
-| 한글 조합 경계 | A 299개 뒤 삼성 한글 키보드로 ㄱ → ㅏ 입력, 마지막 가와 300 / 300 확인 | 통과 | [write-korean-300.png](../screenshots/2026-11-16-sxngwxn/write-korean-300.png) |
-| 301자 붙여넣기 | PR #53 예시 301자를 휴대폰 Chrome에서 복사해 Paste 메뉴로 붙여넣음. 끝은 잘리고 차로 끝나는 300자 유지 | 통과 | [write-paste-301.png](../screenshots/2026-11-16-sxngwxn/write-paste-301.png) |
-| 작성 취소(계속 쓰기·버리기) | X → 확인 창, 계속 쓰기 → A 299개와 가 유지, 다시 X → 버리기 → 피드 복귀 | 통과 | [discard.png](../screenshots/2026-11-16-sxngwxn/discard.png) |
-| 새 글 게시(1개만 추가·공백 처리) | 앞뒤 공백 각 2칸을 포함한 두 줄 37자 입력 후 게시. 공백 제거·줄바꿈 유지, 최상단 1개와 방금 전 표시 | 통과 | [write-before-post.png](../screenshots/2026-11-16-sxngwxn/write-before-post.png) · [feed-new-post.png](../screenshots/2026-11-16-sxngwxn/feed-new-post.png) |
-| 새 글 상세 | Minifeed phone check와 Second line.의 두 줄 본문, 같은 작성자, 댓글 0개 | 통과 | [detail-new-post.png](../screenshots/2026-11-16-sxngwxn/detail-new-post.png) |
+| 피드 표시·스크롤 | 첫 글 「아침에 추워서 니트…」와 마지막 글 「우산 같이 쓰고 가자고…」 표시 | 통과 | [feed.png](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-sxngwxn/feed.png) · [feed-bottom.png](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-sxngwxn/feed-bottom.png) |
+| 본문 → 상세 → 뒤로 | 같은 첫 글 본문·댓글 1개 표시, 키보드 닫힘, 피드 복귀 | 통과 | [detail.png](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-sxngwxn/detail.png) |
+| 댓글 아이콘 → 상세(키보드) | 같은 첫 글 상세, 입력창 포커스·키보드 표시, 입력창 가림 없음 | 통과 | [detail-keyboard.png](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-sxngwxn/detail-keyboard.png) |
+| 빈 글·공백만 입력 | 빈 글 0 / 300, 공백 3개 입력 시 3 / 300, 두 경우 모두 게시 비활성 | 통과 | [write-empty.png](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-sxngwxn/write-empty.png) |
+| 299·300·301자 경계 | A 299개 입력 후 B로 300자, 추가 C 차단, 빨간 300 / 300 유지 | 통과 | [write-301-blocked.png](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-sxngwxn/write-301-blocked.png) |
+| 한글 조합 경계 | A 299개 뒤 삼성 한글 키보드로 ㄱ → ㅏ 입력, 마지막 가와 300 / 300 확인 | 통과 | [write-korean-300.png](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-sxngwxn/write-korean-300.png) |
+| 301자 붙여넣기 | PR #53 예시 301자를 휴대폰 Chrome에서 복사해 Paste 메뉴로 붙여넣음. 끝은 잘리고 차로 끝나는 300자 유지 | 통과 | [write-paste-301.png](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-sxngwxn/write-paste-301.png) |
+| 작성 취소(계속 쓰기·버리기) | X → 확인 창, 계속 쓰기 → A 299개와 가 유지, 다시 X → 버리기 → 피드 복귀 | 통과 | [discard.png](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-sxngwxn/discard.png) |
+| 새 글 게시(1개만 추가·공백 처리) | 앞뒤 공백 각 2칸을 포함한 두 줄 37자 입력 후 게시. 공백 제거·줄바꿈 유지, 최상단 1개와 방금 전 표시 | 통과 | [write-before-post.png](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-sxngwxn/write-before-post.png) · [feed-new-post.png](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-sxngwxn/feed-new-post.png) |
+| 새 글 상세 | Minifeed phone check와 Second line.의 두 줄 본문, 같은 작성자, 댓글 0개 | 통과 | [detail-new-post.png](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-sxngwxn/detail-new-post.png) |
 
 ### 캡처와 확인 범위
 
@@ -268,8 +268,8 @@ PR #53의 실기기 안내에 따라 #54·#55가 포함된 main ddd04b48aee20750
 | 작성자 | 보고한 기기·버전 | 기록과 캡처 |
 | --- | --- | --- |
 | titanfall7274 | Galaxy S23 Ultra / Android 16, main ddd04b4. 이 문서의 해당 절에 Flutter 3.47.2 / Dart 3.13.2로 기록 | 위 최신 main 실기기 검증 절과 screenshots/main-ddd04b4/ |
-| gunzzzang | Galaxy A32 / Android 13, main ddd04b4, Flutter 3.47.9 / Dart 3.13.7 | [원본 댓글](https://github.com/flutter-minifeed/mini-feed/pull/53#issuecomment-6908379511) · [캡처 11장](../screenshots/2026-11-16-gunzzzang/) |
-| UTORY4624 | S25 Ultra / Android 17, main ddd04b4, Flutter 3.47.9 / Dart 3.13.7 | [원본 댓글](https://github.com/flutter-minifeed/mini-feed/pull/53#issuecomment-6913792138) · [캡처 12장](../screenshots/2026-11-16-UTORY4624/) |
+| gunzzzang | Galaxy A32 / Android 13, main ddd04b4, Flutter 3.47.9 / Dart 3.13.7 | [원본 댓글](https://github.com/flutter-minifeed/mini-feed/pull/53#issuecomment-6908379511) · [캡처 11장](https://github.com/flutter-minifeed/mini-feed/tree/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-gunzzzang/) |
+| UTORY4624 | S25 Ultra / Android 17, main ddd04b4, Flutter 3.47.9 / Dart 3.13.7 | [원본 댓글](https://github.com/flutter-minifeed/mini-feed/pull/53#issuecomment-6913792138) · [캡처 12장](https://github.com/flutter-minifeed/mini-feed/tree/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-UTORY4624/) |
 
 팀원의 기기 결과는 원본 문서·댓글에 보고된 내용입니다. 각자의 담당 코드 설명 확인 표와는 별도로 기록합니다.
 
@@ -283,10 +283,10 @@ PR #53 댓글에 올라온 검사 결과와 원본 사진을 모았습니다. �
 
 | 작성자 | 기기·OS | Flutter / Dart | 앱 소스 | 원본 캡처 |
 | --- | --- | --- | --- | --- |
-| sxngwxn | Galaxy Note10 5G / Android 12 | 3.47.9 stable / 3.13.7 | ddd04b4 | [12장](../screenshots/2026-11-16-sxngwxn/) |
-| titanfall7274 | Galaxy S23 Ultra / Android 16 | 3.47.2 stable / 3.13.2 | ddd04b4 | [12장](../screenshots/main-ddd04b4/) |
-| gunzzzang | Galaxy A32 / Android 13 | 3.47.9 / 3.13.7 | ddd04b4 | [11장](../screenshots/2026-11-16-gunzzzang/) |
-| UTORY4624 | S25 Ultra / Android 17 | 3.47.9 stable / 3.13.7 | ddd04b4 | [12장](../screenshots/2026-11-16-UTORY4624/) |
+| sxngwxn | Galaxy Note10 5G / Android 12 | 3.47.9 stable / 3.13.7 | ddd04b4 | [12장](https://github.com/flutter-minifeed/mini-feed/tree/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-sxngwxn/) |
+| titanfall7274 | Galaxy S23 Ultra / Android 16 | 3.47.2 stable / 3.13.2 | ddd04b4 | [12장](https://github.com/flutter-minifeed/mini-feed/tree/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/main-ddd04b4/) |
+| gunzzzang | Galaxy A32 / Android 13 | 3.47.9 / 3.13.7 | ddd04b4 | [11장](https://github.com/flutter-minifeed/mini-feed/tree/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-gunzzzang/) |
+| UTORY4624 | S25 Ultra / Android 17 | 3.47.9 stable / 3.13.7 | ddd04b4 | [12장](https://github.com/flutter-minifeed/mini-feed/tree/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-UTORY4624/) |
 
 sxngwxn과 titanfall7274의 상세 결과는 위 각 검사 절에 있습니다. 아래는 이번에 취합한 두 팀원의 원본 댓글 내용과 사진입니다.
 
@@ -318,17 +318,17 @@ sxngwxn과 titanfall7274의 상세 결과는 위 각 검사 절에 있습니다.
 
 | 캡처 | 로컬 원본 |
 | --- | --- |
-| feed | [feed.jpg](../screenshots/2026-11-16-gunzzzang/feed.jpg) |
-| feed-bottom | [feed-bottom.jpg](../screenshots/2026-11-16-gunzzzang/feed-bottom.jpg) |
-| detail | [detail.jpg](../screenshots/2026-11-16-gunzzzang/detail.jpg) |
-| detail-keyboard | [detail-keyboard.jpg](../screenshots/2026-11-16-gunzzzang/detail-keyboard.jpg) |
-| write-empty | [write-empty.jpg](../screenshots/2026-11-16-gunzzzang/write-empty.jpg) |
-| write-301-blocked | [write-301-blocked.jpg](../screenshots/2026-11-16-gunzzzang/write-301-blocked.jpg) |
-| write-korean-300 | [write-korean-300.jpg](../screenshots/2026-11-16-gunzzzang/write-korean-300.jpg) |
-| write-paste-301 | [write-paste-301.jpg](../screenshots/2026-11-16-gunzzzang/write-paste-301.jpg) |
-| discard | [discard.jpg](../screenshots/2026-11-16-gunzzzang/discard.jpg) |
-| feed-new-post | [feed-new-post.jpg](../screenshots/2026-11-16-gunzzzang/feed-new-post.jpg) |
-| detail-new-post | [detail-new-post.jpg](../screenshots/2026-11-16-gunzzzang/detail-new-post.jpg) |
+| feed | [feed.jpg](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-gunzzzang/feed.jpg) |
+| feed-bottom | [feed-bottom.jpg](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-gunzzzang/feed-bottom.jpg) |
+| detail | [detail.jpg](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-gunzzzang/detail.jpg) |
+| detail-keyboard | [detail-keyboard.jpg](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-gunzzzang/detail-keyboard.jpg) |
+| write-empty | [write-empty.jpg](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-gunzzzang/write-empty.jpg) |
+| write-301-blocked | [write-301-blocked.jpg](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-gunzzzang/write-301-blocked.jpg) |
+| write-korean-300 | [write-korean-300.jpg](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-gunzzzang/write-korean-300.jpg) |
+| write-paste-301 | [write-paste-301.jpg](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-gunzzzang/write-paste-301.jpg) |
+| discard | [discard.jpg](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-gunzzzang/discard.jpg) |
+| feed-new-post | [feed-new-post.jpg](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-gunzzzang/feed-new-post.jpg) |
+| detail-new-post | [detail-new-post.jpg](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-gunzzzang/detail-new-post.jpg) |
 
 작성자가 보고한 이상한 점은 없음입니다.
 
@@ -360,15 +360,15 @@ sxngwxn과 titanfall7274의 상세 결과는 위 각 검사 절에 있습니다.
 
 | 캡처 | 로컬 원본 |
 | --- | --- |
-| feed | [feed.jpg](../screenshots/2026-11-16-UTORY4624/feed.jpg) |
-| feed-bottom | [feed-bottom.jpg](../screenshots/2026-11-16-UTORY4624/feed-bottom.jpg) |
-| detail | [detail.jpg](../screenshots/2026-11-16-UTORY4624/detail.jpg) |
-| detail-keyboard | [detail-keyboard.jpg](../screenshots/2026-11-16-UTORY4624/detail-keyboard.jpg) |
-| write-empty | [write-empty.jpg](../screenshots/2026-11-16-UTORY4624/write-empty.jpg) |
-| write-korean-300-composing | [write-korean-300-composing.jpg](../screenshots/2026-11-16-UTORY4624/write-korean-300-composing.jpg) |
-| write-korean-300 | [write-korean-300.jpg](../screenshots/2026-11-16-UTORY4624/write-korean-300.jpg) |
-| write-paste-301 | [write-paste-301.jpg](../screenshots/2026-11-16-UTORY4624/write-paste-301.jpg) |
-| discard | [discard.jpg](../screenshots/2026-11-16-UTORY4624/discard.jpg) |
-| write-before-post | [write-before-post.jpg](../screenshots/2026-11-16-UTORY4624/write-before-post.jpg) |
-| feed-new-post | [feed-new-post.jpg](../screenshots/2026-11-16-UTORY4624/feed-new-post.jpg) |
-| detail-new-post | [detail-new-post.jpg](../screenshots/2026-11-16-UTORY4624/detail-new-post.jpg) |
+| feed | [feed.jpg](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-UTORY4624/feed.jpg) |
+| feed-bottom | [feed-bottom.jpg](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-UTORY4624/feed-bottom.jpg) |
+| detail | [detail.jpg](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-UTORY4624/detail.jpg) |
+| detail-keyboard | [detail-keyboard.jpg](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-UTORY4624/detail-keyboard.jpg) |
+| write-empty | [write-empty.jpg](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-UTORY4624/write-empty.jpg) |
+| write-korean-300-composing | [write-korean-300-composing.jpg](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-UTORY4624/write-korean-300-composing.jpg) |
+| write-korean-300 | [write-korean-300.jpg](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-UTORY4624/write-korean-300.jpg) |
+| write-paste-301 | [write-paste-301.jpg](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-UTORY4624/write-paste-301.jpg) |
+| discard | [discard.jpg](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-UTORY4624/discard.jpg) |
+| write-before-post | [write-before-post.jpg](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-UTORY4624/write-before-post.jpg) |
+| feed-new-post | [feed-new-post.jpg](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-UTORY4624/feed-new-post.jpg) |
+| detail-new-post | [detail-new-post.jpg](https://github.com/flutter-minifeed/mini-feed/blob/4a60181454bb3d7fb12478dadbecefc1a51bbb44/screenshots/2026-11-16-UTORY4624/detail-new-post.jpg) |
