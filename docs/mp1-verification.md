@@ -221,7 +221,7 @@ Chrome에서 별도로 확인한 결과가 생기면 아래에 남깁니다. And
 ### 남은 항목
 
 - T09~T13 원문 번호별 판정, 팀원 설명 확인은 그대로 남아 있습니다.
-- 이 절의 빌드는 Flutter 3.47.2입니다. 3.47.5 재검증 결과는 아래 [2026-11-17 Flutter 3.47.5 재검증](#2026-11-17-flutter-3475-재검증)에 있습- 2026-11-17 개정 기준(최대 12장, `01_` 번호)에 맞춰 마지막에 취합하는 sxngwxn의 2026-11-16 캡처 12장을 `screenshots/01_feed.png`~`12_detail_new_post.png` 대표 캡처로 정했습니다. 나머지 검증 캡처는 저장소에서 지우고 [PR #53 댓글](https://github.com/flutter-minifeed/mini-feed/pull/53#issuecomment-6938410773)과 각자의 검증 댓글에 보관합니다. 이 문서의 캡처 링크는 삭제 전 커밋 `4a60181`에 고정했습니다.습니다.
+- 이 절의 빌드는 Flutter 3.47.2입니다. 3.47.5 재검증 결과는 아래 [2026-11-17 Flutter 3.47.5 재검증](#2026-11-17-flutter-3475-재검증)에 있습- 2026-11-17 개정 기준(최대 12장, `01_` 번호)에 맞춰 마지막에 취합하는 sxngwxn의 2026-11-16 캡처 12장을 `screenshots/01_feed.png`~`12_detail_new_post.png` 대표 캡처로 정했습니다. 나머지 검증 캡처는 저장소에서 지우고 촬영 대상 PR의 댓글에 보관합니다. 11-13 `36007e1` 캡처는 [PR #50](https://github.com/flutter-minifeed/mini-feed/pull/50#issuecomment-6939123682), PR #54 리뷰 캡처는 [PR #54](https://github.com/flutter-minifeed/mini-feed/pull/54#issuecomment-6939124320), 팀원별 11-16·11-17 캡처는 PR #53의 각자 검증 댓글에 있습니다. 이 문서의 캡처 링크는 삭제 전 커밋 `4a60181`에 고정했습니다.습니다.
 
 ## 2026-11-16 sxngwxn 최종 실기기 검증
 
@@ -386,4 +386,4 @@ sxngwxn과 titanfall7274의 상세 결과는 위 각 검사 절에 있습니다.
 | APK SHA-256 | `56072db58f1a20e40992eb45db8024d9c74f912f8e02f60b0f552a0539720faa` |
 | 앱 실행 기록 | 앱 PID logcat에서 exception·RenderFlex·overflow·FATAL 0줄, 전체 FATAL EXCEPTION 0줄 |
 
-피드 첫 글·마지막 글, 본문·댓글 아이콘 상세 진입, 빈 글·공백 게시 비활성, 299·300·301자 경계, 한글 조합, 작성 취소(계속 쓰기·버리기), 게시 버튼 연속 2회 탭 시 1개만 추가·앞뒤 공백 제거·줄바꿈 유지, 새 글 상세를 다시 확인해 모두 통과했습니다. 게시 3~4분 뒤 피드의 새 글이 `4분 전`으로 표시되는 것도 확인했습니다. 301자 붙여넣기는 titanfall7274가 폰에서 직접 확인했습니다. 캡처는 [PR #53의 titanfall7274 검증 댓글](https://github.com/flutter-minifeed/mini-feed/pull/53)에만 남깁니다.
+피드 첫 글·마지막 글, 본문·댓글 아이콘 상세 진입, 빈 글·공백 게시 비활성, 299·300·301자 경계, 한글 조합, 작성 취소(계속 쓰기·버리기), 게시 버튼 연속 2회 탭 시 1개만 추가·앞뒤 공백 제거·줄바꿈 유지, 새 글 상세를 다시 확인해 모두 통과했습니다. 게시 3~4분 뒤 피드의 새 글이 `4분 전`으로 표시되는 것도 확인했습니다. 301자 붙여넣기는 titanfall7274가 폰에서 직접 확인했습니다. 캡처는 [PR #53의 titanfall7274 검증 댓글](https://github.com/flutter-minifeed/mini-feed/pull/53#issuecomment-6939108278)에만 남깁니다.
