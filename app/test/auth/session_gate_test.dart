@@ -39,11 +39,12 @@ class _Sessions implements SessionRepository {
 Widget _app(
   _Sessions repository, {
   Duration waitLimit = const Duration(seconds: 30),
+  Duration profileDisplayDuration = Duration.zero,
   Future<Widget> Function(Author)? build,
 }) => SessionGate(
   repository: repository,
   waitLimit: waitLimit,
-  profileDisplayDuration: Duration.zero,
+  profileDisplayDuration: profileDisplayDuration,
   buildSession:
       build ??
       (author) async =>
@@ -85,6 +86,28 @@ void main() {
     await tester.pumpAndSettle();
     // then
     expect(find.text('피드: ${author.id}'), findsOneWidget);
+  });
+
+  testWidgets('시간 제한 직전에 준비가 끝나면 표시 대기 후 피드로 진입한다', (tester) async {
+    // given
+    final repository = _Sessions();
+    await tester.pumpWidget(
+      _app(
+        repository,
+        waitLimit: const Duration(seconds: 1),
+        profileDisplayDuration: const Duration(milliseconds: 600),
+      ),
+    );
+
+    // when
+    await tester.pump(const Duration(milliseconds: 800));
+    repository.requests.single.complete(profile);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+
+    // then
+    expect(find.text('피드: ${author.id}'), findsOneWidget);
+    expect(find.text('다시 시도'), findsNothing);
   });
 
   testWidgets('대기 한도를 넘긴 이전 요청은 재시도 결과를 덮어쓰지 않는다', (tester) async {
