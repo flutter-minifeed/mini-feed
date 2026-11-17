@@ -9,6 +9,7 @@ import 'package:minifeed/models/post.dart';
 import 'package:minifeed/repository/comment/comment_repository.dart';
 import 'package:minifeed/repository/post/post_repository.dart';
 import 'package:minifeed/repository/repository_scope.dart';
+import 'package:minifeed/viewmodels/write_view_model.dart';
 
 const testUser = Author(id: 'user-test', nickName: '테스트', colorIndex: 0);
 
@@ -78,7 +79,10 @@ Future<FakePostRepository> pumpApp(WidgetTester tester) async {
     RepositoryScope(
       postRepository: postRepository,
       commentRepository: FakeCommentRepository(),
-      child: const MyApp(),
+      child: MyApp(
+        createWriteViewModel: () =>
+            WriteViewModelImpl(repository: postRepository),
+      ),
     ),
   );
   return postRepository;

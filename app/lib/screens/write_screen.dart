@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:minifeed/repository/repository_scope.dart';
+import 'package:minifeed/viewmodels/write_view_model.dart';
 import 'package:minifeed/widgets/author_tile.dart';
 
 /// 게시글 본문 최대 글자 수. 이모지 및 한글도 보이는 글자 하나를 1자로 세게 됩니다.
 const maxPostLength = 300;
 
 class WriteScreen extends StatefulWidget {
-  const WriteScreen({super.key});
+  const WriteScreen({super.key, required this.viewModel});
+
+  /// 이 화면 전용 객체이며, 교체되거나 화면이 닫힐 때 해제한다.
+  final WriteViewModel viewModel;
 
   @override
   State<WriteScreen> createState() => _WriteScreenState();
@@ -20,12 +23,25 @@ class _WriteScreenState extends State<WriteScreen> {
   // 글 아래 빈 곳을 눌렀을 때 입력칸을 찾아 키보드를 올리는 데 쓴다.
   final _focusNode = FocusNode();
 
-  // 저장소에 저장하는 중인지. 이 동안 게시 버튼 및 닫기를 막는다.
-  bool _isSaving = false;
+  // 글쓰기 화면을 닫으면 실패 안내도 함께 없어지도록 화면 전용으로 둔다.
+  final _messengerKey = GlobalKey<ScaffoldMessengerState>();
+  bool _isConfirmingDiscard = false;
+
+  WriteViewModel get _viewModel => widget.viewModel;
+  bool get _isSaving => _viewModel.status == WriteStatus.saving;
+
+  @override
+  void didUpdateWidget(covariant WriteScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(oldWidget.viewModel, widget.viewModel)) {
+      oldWidget.viewModel.dispose();
+    }
+  }
 
   // 화면이 닫힐 때 한 번 호출된다. 직접 만든 컨트롤러·포커스를 해제한다.
   @override
   void dispose() {
+    _viewModel.dispose();
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -49,7 +65,11 @@ class _WriteScreenState extends State<WriteScreen> {
   // 화면 입력 제한과 별도로 저장할 본문 길이를 다시 확인한다.
   bool get _withinLimit => _body.characters.length <= maxPostLength;
 
-  bool get _canPost => !_isSaving && _hasText && _withinLimit;
+  bool get _canPost =>
+      !_isSaving &&
+      _viewModel.status != WriteStatus.succeeded &&
+      _hasText &&
+      _withinLimit;
 
   // 닫기 확인 창을 띄우고, 버리기를 고르면 true를 돌려준다.
   Future<bool> _confirmDiscard() async {
@@ -65,8 +85,10 @@ class _WriteScreenState extends State<WriteScreen> {
         // 본문 기본 스타일(bodyMedium)에는 색이 없어 검정으로 그려지므로 시안의 회색을 지정한다.
         contentTextStyle: Theme.of(context).textTheme.bodyMedium
             ?.copyWith(color: colors.onSurfaceVariant),
-        content: const Text(
-          '닫으면 지금까지 쓴 글이 사라져요. 임시 저장은 되지 않아요.',
+        content: Text(
+          _viewModel.status == WriteStatus.timedOut
+              ? '입력한 본문은 사라져요. 이미 요청한 글은 나중에 게시될 수 있어요.'
+              : '닫으면 지금까지 쓴 글이 사라져요. 임시 저장은 되지 않아요.',
           textAlign: TextAlign.center,
         ),
         actions: [
@@ -90,34 +112,58 @@ class _WriteScreenState extends State<WriteScreen> {
   // X·뒤로가기·pop이 일어날 때마다 호출된다. 실제로 닫혔으면 didPop이 true다.
   Future<void> _onPopInvokedWithResult(bool didPop, Object? result) async {
     // 이미 닫혔거나(게시 성공) 게시 중이면 확인 창을 띄우지 않는다.
-    if (didPop || _isSaving) return;
-    final discard = await _confirmDiscard();
-    if (discard && mounted) Navigator.of(context).pop();
+    if (didPop || _isSaving || _isConfirmingDiscard) return;
+    _isConfirmingDiscard = true;
+    try {
+      final discard = await _confirmDiscard();
+      if (discard && mounted) Navigator.of(context).pop();
+    } finally {
+      _isConfirmingDiscard = false;
+    }
   }
 
   Future<void> _submit() async {
     // 같은 프레임에 두 번 눌리거나 300자를 넘은 상태면 보내지 않는다.
-    if (!_canPost) return;
-    setState(() => _isSaving = true);
+    if (!mounted || !_canPost) return;
+    _messengerKey.currentState?.clearSnackBars();
+    _focusNode.unfocus();
+    final viewModel = _viewModel;
+    final post = await viewModel.submit(_body);
 
-    // await 뒤에는 화면이 닫혔을 수 있어 context에서 필요한 것을 미리 꺼내 둔다.
-    final repository = RepositoryScope.of(context).postRepository;
-    final navigator = Navigator.of(context);
-
-    try {
-      final post = await repository.addPost(_body);
-
-      // 만든 글을 결과로 돌려줘 피드가 상단 갱신에 쓸 수 있게 한다.
-      navigator.pop(post);
-    } finally {
-      // 실패하면 본문은 그대로 두고 다시 게시할 수 있게 한다. 실패 안내는 MP2 #14
-      if (mounted) setState(() => _isSaving = false);
+    if (!mounted || !identical(viewModel, _viewModel)) return;
+    if (post != null) {
+      Navigator.of(context).pop(post);
+      return;
     }
+
+    final message = viewModel.status == WriteStatus.timedOut
+        ? '응답이 늦어요. 입력한 글은 그대로 있고, 요청한 글은 나중에 게시될 수 있어요.'
+        : '올리지 못했어요. 입력한 글은 그대로 있어요.';
+    _messengerKey.currentState?.showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        content: Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        action: SnackBarAction(label: '다시 시도', onPressed: _submit),
+      ),
+    );
   }
 
-  // setState()가 호출될 때마다 다시 실행된다.
   @override
   Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: _viewModel,
+      builder: (context, child) =>
+          ScaffoldMessenger(key: _messengerKey, child: _buildContent(context)),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     // maxLength와 같은 기준(보이는 글자 수)으로 센다.
@@ -125,7 +171,8 @@ class _WriteScreenState extends State<WriteScreen> {
 
     // 본문이 있거나 게시 중이면 X·Android 뒤로가기로 바로 닫히지 않게 막는다.
     return PopScope(
-      canPop: !_isSaving && !_hasText,
+      canPop:
+          !_isSaving && !_hasText && _viewModel.status != WriteStatus.timedOut,
       onPopInvokedWithResult: _onPopInvokedWithResult,
       child: Scaffold(
         appBar: AppBar(
@@ -160,13 +207,12 @@ class _WriteScreenState extends State<WriteScreen> {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 4),
                     child: AuthorTile(
-                      author: RepositoryScope.of(context)
-                          .postRepository
-                          .currentUser,
+                      author: _viewModel.author,
                       subtitle: '이 기기의 익명 닉네임 · 바꿀 수 없어요',
                     ),
                   ),
                   TextField(
+                    readOnly: _isSaving,
                     controller: _controller, // 입력 내용이 _controller.text로 들어간다.
                     focusNode: _focusNode,
                     autofocus: true, // 화면이 열리면 바로 키보드가 올라온다.

@@ -6,6 +6,7 @@ import 'repository/post/in_memory_post_repository.dart';
 import 'repository/repository_scope.dart';
 import 'screens/feed_screen.dart';
 import 'theme/app_theme.dart';
+import 'viewmodels/write_view_model.dart';
 
 //앱 실행
 // 저장소는 여기서 한 번만 만들고 RepositoryScope로 모든 화면에 공유한다.
@@ -24,20 +25,25 @@ Future<void> main() async {
     RepositoryScope(
       postRepository: postRepository,
       commentRepository: commentRepository,
-      child: const MyApp(),
+      child: MyApp(
+        createWriteViewModel: () =>
+            WriteViewModelImpl(repository: postRepository),
+      ),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, required this.createWriteViewModel});
+
+  final WriteViewModel Function() createWriteViewModel;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: '미니피드',
       theme: appTheme,
-      home: const FeedScreen(),
+      home: FeedScreen(createWriteViewModel: createWriteViewModel),
     );
   }
 }
