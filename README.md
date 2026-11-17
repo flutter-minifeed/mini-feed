@@ -24,23 +24,41 @@ Flutter로 개발하는 미니 피드 팀 프로젝트입니다. 앱 소스는 �
 
 ## 더미 데이터 구조
 
-게시글 50개와 댓글 83개를 JSON 배열로 저장합니다. 모두 창작한 내용입니다.
+게시글 50개와 댓글 83개를 JSON 배열로 저장합니다. 모두 창작한 내용입니다. 아래 예시는 각 파일의 항목 하나이며, `//` 주석은 설명을 위해 README에만 붙였습니다.
 
-- [게시글](app/assets/dummy/post/posts.json): 작성 시각 최신순
-- [댓글](app/assets/dummy/comment/comments.json): 작성 시각 오래된 순. `postId`로 게시글의 `id`와 연결
+### 게시글 — [`app/assets/dummy/post/posts.json`](app/assets/dummy/post/posts.json)
 
-| 필드 | 타입 | 설명 |
-| --- | --- | --- |
-| `id` | 문자열 | 게시글 또는 댓글 ID |
-| `authorId` | 문자열 | 작성자 ID. `user-me`는 현재 사용자 |
-| `nickName` | 문자열 | 작성자 닉네임 |
-| `colorIndex` | 정수 | 아바타 색상 번호(0~7) |
-| `body` | 문자열 | 본문. 게시글 300자, 댓글 200자 이내 |
-| `createdAt` | 문자열 | 작성 시각(예: `2026-11-04T12:48:00+09:00`). `+09:00`은 한국 시간 |
-| `likeCount` | 정수 | 좋아요 수. 게시글에만 포함 |
-| `commentCount` | 정수 | 댓글 수. 게시글에만 포함 |
-| `likedByMe` | 불리언(`true`/`false`) | 현재 사용자의 좋아요 여부. 게시글에만 포함 |
-| `postId` | 문자열 | 댓글이 달린 게시글 ID. 댓글에만 포함 |
+작성 시각 최신순으로 저장합니다.
+
+```jsonc
+{
+  "id": "post-01",                           // 게시글 ID
+  "authorId": "user-03",                     // 작성자 ID. "user-me"는 현재 사용자
+  "nickName": "졸린 판다",                    // 작성자 닉네임
+  "colorIndex": 2,                           // 아바타 색상 번호(0~7)
+  "body": "아침에 추워서 니트 입었는데 …",       // 본문. 300자 이내
+  "createdAt": "2026-11-04T12:48:00+09:00",  // 작성 시각. +09:00은 한국 시간
+  "likeCount": 3,                            // 좋아요 수
+  "commentCount": 1,                         // 댓글 수
+  "likedByMe": false                         // 현재 사용자의 좋아요 여부(true/false)
+}
+```
+
+### 댓글 — [`app/assets/dummy/comment/comments.json`](app/assets/dummy/comment/comments.json)
+
+작성 시각 오래된 순으로 저장합니다.
+
+```jsonc
+{
+  "id": "post-50-c1",                        // 댓글 ID
+  "postId": "post-50",                       // 댓글이 달린 게시글의 id
+  "authorId": "user-11",                     // 작성자 ID. "user-me"는 현재 사용자
+  "nickName": "구름 위 토끼",                  // 작성자 닉네임
+  "colorIndex": 2,                           // 아바타 색상 번호(0~7)
+  "body": "오늘 비 진짜 왔다갔다 하더라",          // 본문. 200자 이내
+  "createdAt": "2026-10-30T13:23:00+09:00"   // 작성 시각. +09:00은 한국 시간
+}
+```
 
 JSON의 `createdAt`은 고정값입니다. `likedByMe`는 화면 표시용 값이며 Firestore 공용 게시글 문서에는 저장하지 않습니다.
 
