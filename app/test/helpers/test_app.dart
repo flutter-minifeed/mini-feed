@@ -16,16 +16,19 @@ const testUser = Author(id: 'user-test', nickName: '테스트', colorIndex: 0);
 ///
 /// 실제 메모리 저장소는 assets JSON을 읽어서 testWidgets 안에서 끝나지 않을 수 있다.
 class FakePostRepository implements PostRepository {
+  FakePostRepository({this.currentUser = testUser});
+
   final List<Post> posts = [];
 
   /// addPost가 받은 본문. 공백 제거·중복 요청 검사에 쓴다.
   final List<String> addedBodies = [];
+  final List<String?> requestIds = [];
 
   /// 값을 넣으면 addPost가 이 Completer가 끝날 때까지 멈춘다. 게시 중 상태 검사에 쓴다.
   Completer<void>? addGate;
 
   @override
-  Author get currentUser => testUser;
+  final Author currentUser;
 
   @override
   Future<List<Post>> getPosts() async => List.unmodifiable(posts);
@@ -35,12 +38,19 @@ class FakePostRepository implements PostRepository {
       posts.where((post) => post.id == id).firstOrNull;
 
   @override
-  Future<Post> addPost(String body) async {
+  Future<Post> addPost(String body, {String? requestId}) async {
     addedBodies.add(body);
+    requestIds.add(requestId);
+    final id = requestId ?? 'fake-${addedBodies.length}';
     await addGate?.future; // addGate가 없으면(null) 바로 넘어간다.
+    final previous = posts.where((post) => post.id == id).firstOrNull;
+    if (previous != null) {
+      if (previous.body != body) throw ArgumentError('같은 요청 ID의 본문이 다릅니다.');
+      return previous;
+    }
     final post = Post(
-      id: 'fake-${addedBodies.length}',
-      author: testUser,
+      id: id,
+      author: currentUser,
       body: body,
       createdAt: DateTime.now(),
       likeCount: 0,

@@ -49,6 +49,7 @@ class InMemoryPostRepository implements PostRepository {
   final Author currentUser;
 
   final List<Post> _posts; // 항상 최신순을 유지한다.
+  final Map<String, Post> _submittedPosts = {};
   int _localCount = 0; // 새 글 id 번호. JSON id(post-01~50)와 겹치지 않게 접두어를 다르게 쓴다.
 
   @override
@@ -63,7 +64,14 @@ class InMemoryPostRepository implements PostRepository {
   }
 
   @override
-  Future<Post> addPost(String body) async {
+  Future<Post> addPost(String body, {String? requestId}) async {
+    final previous = _submittedPosts[requestId];
+    if (previous != null) {
+      if (previous.body != body) {
+        throw ArgumentError('같은 요청 ID로 다른 본문을 저장할 수 없습니다.');
+      }
+      return previous;
+    }
     final post = Post(
       id: 'post-local-${++_localCount}',
       author: currentUser,
@@ -75,6 +83,7 @@ class InMemoryPostRepository implements PostRepository {
     );
     // 현재 시각이 가장 최신이라 맨 앞에 넣으면 최신순이 유지된다.
     _posts.insert(0, post);
+    if (requestId != null) _submittedPosts[requestId] = post;
     return post;
   }
 }
