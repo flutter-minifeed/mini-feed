@@ -138,8 +138,16 @@ void main() {
     final missing = _Snapshot();
     when(() => missing.exists).thenReturn(false);
     when(() => transaction.get(ref)).thenAnswer((_) async => missing);
+    final saved = {
+      'nickName': '용감한 치타',
+      'colorIndex': 4,
+      'createdAt': Timestamp.fromMillisecondsSinceEpoch(1000),
+    };
+    when(() => server.data()).thenReturn(saved);
+
     // when
-    await authService.signIn();
+    final profile = await authService.signIn();
+
     // then
     verify(() => auth.signInAnonymously()).called(1);
     final data =
@@ -148,10 +156,84 @@ void main() {
                 .single
             as Map<String, dynamic>;
     expect(data.keys.toSet(), {'nickName', 'colorIndex', 'createdAt'});
-    expect(data['nickName'], '용감한 치타');
-    expect(data['colorIndex'], 4);
+    expect(data['nickName'], saved['nickName']);
+    expect(data['colorIndex'], saved['colorIndex']);
     expect(data['createdAt'], isA<FieldValue>());
+    expect(profile.author.id, 'user-a');
+    expect(profile.author.nickName, saved['nickName']);
+    expect(profile.author.colorIndex, saved['colorIndex']);
+    expect(profile.createdAt.millisecondsSinceEpoch, 1000);
   });
+
+  test('최초 인증 후 프로필 저장에 실패해도 같은 UID로 재시도한다', () async {
+    // given
+    User? signedInUser;
+    when(() => auth.currentUser).thenAnswer((_) => signedInUser);
+    final credential = _Credential();
+    when(() => credential.user).thenReturn(user);
+    when(() => auth.signInAnonymously()).thenAnswer((_) async {
+      signedInUser = user;
+      return credential;
+    });
+    when(() => cache.exists).thenReturn(false);
+    final missing = _Snapshot();
+    when(() => missing.exists).thenReturn(false);
+    when(() => transaction.get(ref)).thenAnswer((_) async => missing);
+    final saved = {
+      'nickName': '용감한 치타',
+      'colorIndex': 4,
+      'createdAt': Timestamp.fromMillisecondsSinceEpoch(1000),
+    };
+    when(() => server.data()).thenReturn(saved);
+    var transactionAttempts = 0;
+    when(
+      () => db.runTransaction<void>(any(), timeout: any(named: 'timeout')),
+    ).thenAnswer((invocation) async {
+      transactionAttempts++;
+      await (invocation.positionalArguments.first
+          as Future<void> Function(Transaction))(transaction);
+      if (transactionAttempts == 1) {
+        throw FirebaseException(plugin: 'cloud_firestore', code: 'unavailable');
+      }
+    });
+    Object? firstError;
+
+    // when
+    try {
+      await authService.signIn();
+    } catch (error) {
+      firstError = error;
+    }
+    final profile = await authService.signIn();
+
+    // then
+    expect(
+      firstError,
+      isA<SessionException>().having(
+        (error) => error.failure,
+        'failure',
+        SessionFailure.offline,
+      ),
+    );
+    verify(() => auth.signInAnonymously()).called(1);
+    verify(() => db.collection('users')).called(2);
+    verify(() => db.runTransaction<void>(any(), timeout: any(named: 'timeout')))
+        .called(2);
+    final writes = verify(
+      () => transaction.set(ref, captureAny<Map<String, dynamic>>()),
+    ).captured;
+    expect(writes, hasLength(2));
+    for (final data in writes.cast<Map<String, dynamic>>()) {
+      expect(data['nickName'], saved['nickName']);
+      expect(data['colorIndex'], saved['colorIndex']);
+      expect(data['createdAt'], isA<FieldValue>());
+    }
+    expect(profile.author.id, 'user-a');
+    expect(profile.author.nickName, saved['nickName']);
+    expect(profile.author.colorIndex, saved['colorIndex']);
+    expect(profile.createdAt.millisecondsSinceEpoch, 1000);
+  });
+
   test('프로필 저장 실패 후 재시도해도 UID를 새로 만들지 않고 서버 프로필을 유지한다', () async {
     // given
     when(() => cache.exists).thenReturn(false);

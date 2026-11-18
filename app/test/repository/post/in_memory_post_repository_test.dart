@@ -54,7 +54,7 @@ void main() {
     expect(found, isNull);
   });
 
-  test('새 글은 입력한 본문과 현재 사용자, 0개 카운트로 만들어진다', () async {
+  test('새 글은 입력한 본문과 0개 카운트로 만들어진다', () async {
     // given: 추가 전 가장 최신 글
     final repository = await _loadPosts();
     final newestBefore = (await repository.getPosts()).first;
@@ -65,10 +65,25 @@ void main() {
     // then
     expect(added.body, '새 글 본문');
     expect(added.createdAt.isAfter(newestBefore.createdAt), isTrue);
-    expect(added.author, same(_me));
     expect(added.likeCount, 0);
     expect(added.commentCount, 0);
     expect(added.likedByMe, isFalse);
+  });
+
+  test('새 글에는 현재 사용자의 작성자 정보가 설정된다', () async {
+    // given
+    final repository = InMemoryPostRepository.fromJsonString(
+      '[]',
+      currentUser: _me,
+    );
+
+    // when
+    final added = await repository.addPost('새 글');
+
+    // then
+    expect(added.author.id, _me.id);
+    expect(added.author.nickName, _me.nickName);
+    expect(added.author.colorIndex, _me.colorIndex);
   });
 
   test('새 글을 추가하면 피드 맨 앞에 오고 ID로도 조회된다', () async {

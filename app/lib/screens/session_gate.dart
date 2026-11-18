@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../models/author.dart';
 import '../service/auth/auth_service.dart';
 import '../theme/app_theme.dart';
-import 'start_screen.dart';
+import 'startscreen/start_screen.dart';
 
 /// 인증·프로필·저장소가 준비되기 전에는 피드로 진입하지 않는다.
 class SessionGate extends StatefulWidget {
