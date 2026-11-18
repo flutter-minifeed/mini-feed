@@ -5,9 +5,9 @@
 
 ## 처음 세팅하기
 
-### 1. Flutter 3.47.9 설치
+### 1. Flutter 3.47.5 설치
 
-팀은 **Flutter 3.47.9 stable**(Dart 3.13.7 포함)을 써요. [공식 아카이브](https://docs.flutter.dev/install/archive)에서 이 버전을 받아 주세요.
+팀은 **Flutter 3.47.5 stable**(Dart 3.13.4 포함)을 써요. [공식 아카이브](https://docs.flutter.dev/install/archive)에서 이 버전을 받아 주세요.
 
 > `flutter upgrade`는 그 시점의 최신 버전으로 올라가서 버전이 어긋나요. 버전을 맞출 때는 쓰지 마세요.
 

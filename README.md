@@ -30,7 +30,7 @@ Flutter로 개발하는 미니 피드 팀 프로젝트입니다. 앱 소스는 �
 
 ## 실행 절차
 
-Flutter 3.47.9 stable / Dart 3.13.7, Android 최소 API 24
+Flutter 3.47.5 stable / Dart 3.13.4, Android 최소 API 24
 
 Android 패키지 ID: `com.minifeed`
 
