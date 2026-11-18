@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import '../models/author.dart';
+import '../../models/author.dart';
 
 // A2: 각 30개. 이미 저장한 프로필은 이 목록이 바뀌더라도 다시 생성하지 않는다.
 const _adjectives = [

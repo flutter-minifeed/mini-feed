@@ -4,14 +4,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 
-import '../firebase_config.dart';
-import '../models/author.dart';
-import '../models/user_profile.dart';
+import '../../firebase_config.dart';
+import '../../models/author.dart';
+import '../../models/user_profile.dart';
 import 'anonymous_identity.dart';
-import 'session_repository.dart';
+import 'auth_service.dart';
 
-class FirebaseSessionRepository implements SessionRepository {
-  FirebaseSessionRepository({
+class FirebaseAuthService implements AuthService {
+  FirebaseAuthService({
     this.auth,
     this.firestore,
     Future<void> Function()? initialize,

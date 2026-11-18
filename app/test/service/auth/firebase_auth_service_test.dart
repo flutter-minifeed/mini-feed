@@ -7,8 +7,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:minifeed/auth/firebase_session_repository.dart';
-import 'package:minifeed/auth/session_repository.dart';
+import 'package:minifeed/service/auth/auth_service.dart';
+import 'package:minifeed/service/auth/firebase_auth_service.dart';
 
 class _Auth extends Mock implements FirebaseAuth {}
 
@@ -38,7 +38,7 @@ void main() {
   late _Snapshot cache;
   late _Snapshot server;
   late _Transaction transaction;
-  late FirebaseSessionRepository repository;
+  late FirebaseAuthService authService;
   final original = {
     'nickName': '밤산책 고양이',
     'colorIndex': 4,
@@ -86,7 +86,7 @@ void main() {
           await (invocation.positionalArguments.first
               as Future<void> Function(Transaction))(transaction);
         });
-    repository = FirebaseSessionRepository(
+    authService = FirebaseAuthService(
       auth: auth,
       firestore: db,
       initialize: () async {},
@@ -95,7 +95,7 @@ void main() {
 
   test('기존 익명 계정과 확정된 캐시가 있으면 재로그인 없이 같은 프로필을 사용한다', () async {
     // given / when
-    final profile = await repository.signIn();
+    final profile = await authService.signIn();
     // then
     expect(profile.author.id, 'user-a');
     expect(profile.author.nickName, '밤산책 고양이');
@@ -109,7 +109,7 @@ void main() {
     // given
     final displayedNames = <String>[];
     // when
-    await repository.signIn(
+    await authService.signIn(
       onAuthorReady: (author) => displayedNames.add(author.nickName),
     );
     // then
@@ -121,7 +121,7 @@ void main() {
     when(() => metadata.hasPendingWrites).thenReturn(true);
     when(() => cache.data()).thenReturn({...original, 'nickName': '임시 고양이'});
     // when
-    final profile = await repository.signIn();
+    final profile = await authService.signIn();
     // then
     expect(profile.author.nickName, '밤산책 고양이');
     verify(() => db.runTransaction<void>(any(), timeout: any(named: 'timeout')))
@@ -139,7 +139,7 @@ void main() {
     when(() => missing.exists).thenReturn(false);
     when(() => transaction.get(ref)).thenAnswer((_) async => missing);
     // when
-    await repository.signIn();
+    await authService.signIn();
     // then
     verify(() => auth.signInAnonymously()).called(1);
     final data =
@@ -167,7 +167,7 @@ void main() {
     });
     // when
     await expectLater(
-      repository.signIn(),
+      authService.signIn(),
       throwsA(
         isA<SessionException>().having(
           (e) => e.failure,
@@ -176,7 +176,7 @@ void main() {
         ),
       ),
     );
-    final profile = await repository.signIn();
+    final profile = await authService.signIn();
     // then
     expect(profile.author.nickName, '밤산책 고양이');
     expect(profile.createdAt.millisecondsSinceEpoch, 1000);
@@ -190,7 +190,7 @@ void main() {
         .thenThrow(FirebaseAuthException(code: 'network-request-failed'));
     // when / then
     await expectLater(
-      repository.signIn(),
+      authService.signIn(),
       throwsA(
         isA<SessionException>().having(
           (e) => e.failure,
@@ -209,8 +209,8 @@ void main() {
     final credential = _Credential();
     when(() => credential.user).thenReturn(user);
     // when
-    final first = repository.signIn();
-    final retry = repository.signIn();
+    final first = authService.signIn();
+    final retry = authService.signIn();
     pending.complete(credential);
     final profiles = await Future.wait([first, retry]);
     // then
@@ -222,7 +222,7 @@ void main() {
     when(() => cache.data()).thenReturn({...original, 'colorIndex': 8});
     // when / then
     await expectLater(
-      repository.signIn(),
+      authService.signIn(),
       throwsA(
         isA<SessionException>().having(
           (e) => e.failure,

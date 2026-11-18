@@ -2,15 +2,15 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:minifeed/auth/session_gate.dart';
-import 'package:minifeed/auth/session_repository.dart';
 import 'package:minifeed/models/author.dart';
 import 'package:minifeed/models/user_profile.dart';
 import 'package:minifeed/repository/comment/in_memory_comment_repository.dart';
 import 'package:minifeed/repository/post/in_memory_post_repository.dart';
 import 'package:minifeed/repository/repository_scope.dart';
 import 'package:minifeed/screens/feed_screen.dart';
+import 'package:minifeed/screens/session_gate.dart';
 import 'package:minifeed/screens/start_screen.dart';
+import 'package:minifeed/service/auth/auth_service.dart';
 import 'package:minifeed/theme/app_theme.dart';
 
 const author = Author(
@@ -23,7 +23,7 @@ final profile = UserProfile(
   createdAt: DateTime.utc(2026, 11, 16),
 );
 
-class _Sessions implements SessionRepository {
+class _TestAuthService implements AuthService {
   int calls = 0;
   final requests = <Completer<UserProfile>>[];
   @override
@@ -37,12 +37,12 @@ class _Sessions implements SessionRepository {
 }
 
 Widget _app(
-  _Sessions repository, {
+  _TestAuthService authService, {
   Duration waitLimit = const Duration(seconds: 30),
   Duration profileDisplayDuration = Duration.zero,
   Future<Widget> Function(Author)? build,
 }) => SessionGate(
-  repository: repository,
+  authService: authService,
   waitLimit: waitLimit,
   profileDisplayDuration: profileDisplayDuration,
   buildSession:
@@ -54,14 +54,14 @@ Widget _app(
 void main() {
   testWidgets('인증이 끝나기 전에는 시작 화면만 보이고 성공하면 해당 사용자로 피드에 들어간다', (tester) async {
     // given / when
-    final repository = _Sessions();
-    await tester.pumpWidget(_app(repository));
+    final authService = _TestAuthService();
+    await tester.pumpWidget(_app(authService));
     // then
     expect(find.text('밤산책 고양이'), findsOneWidget);
     expect(find.text('피드: ${author.id}'), findsNothing);
-    expect(repository.calls, 1);
+    expect(authService.calls, 1);
     // when
-    repository.requests.single.complete(profile);
+    authService.requests.single.complete(profile);
     await tester.pumpAndSettle();
     // then
     expect(find.text('피드: ${author.id}'), findsOneWidget);
@@ -69,9 +69,9 @@ void main() {
 
   testWidgets('첫 실행 오프라인 후 연결을 복구하고 재시도하면 피드로 진입한다', (tester) async {
     // given
-    final repository = _Sessions();
-    await tester.pumpWidget(_app(repository));
-    repository.requests.single.completeError(
+    final authService = _TestAuthService();
+    await tester.pumpWidget(_app(authService));
+    authService.requests.single.completeError(
       const SessionException(SessionFailure.offline),
     );
     await tester.pumpAndSettle();
@@ -81,8 +81,8 @@ void main() {
     await tester.tap(find.text('다시 시도'));
     await tester.pump();
     await tester.tapAt(const Offset(1, 1));
-    expect(repository.calls, 2);
-    repository.requests.last.complete(profile);
+    expect(authService.calls, 2);
+    authService.requests.last.complete(profile);
     await tester.pumpAndSettle();
     // then
     expect(find.text('피드: ${author.id}'), findsOneWidget);
@@ -90,10 +90,10 @@ void main() {
 
   testWidgets('시간 제한 직전에 준비가 끝나면 표시 대기 후 피드로 진입한다', (tester) async {
     // given
-    final repository = _Sessions();
+    final authService = _TestAuthService();
     await tester.pumpWidget(
       _app(
-        repository,
+        authService,
         waitLimit: const Duration(seconds: 1),
         profileDisplayDuration: const Duration(milliseconds: 600),
       ),
@@ -101,7 +101,7 @@ void main() {
 
     // when
     await tester.pump(const Duration(milliseconds: 800));
-    repository.requests.single.complete(profile);
+    authService.requests.single.complete(profile);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
 
@@ -112,16 +112,16 @@ void main() {
 
   testWidgets('대기 한도를 넘긴 이전 요청은 재시도 결과를 덮어쓰지 않는다', (tester) async {
     // given
-    final repository = _Sessions();
+    final authService = _TestAuthService();
     await tester.pumpWidget(
-      _app(repository, waitLimit: const Duration(seconds: 1)),
+      _app(authService, waitLimit: const Duration(seconds: 1)),
     );
     await tester.pump(const Duration(seconds: 1));
     expect(find.text('다시 시도'), findsOneWidget);
     // when
     await tester.tap(find.text('다시 시도'));
     await tester.pump();
-    repository.requests.first.complete(
+    authService.requests.first.complete(
       UserProfile(
         author: const Author(id: 'old', nickName: '조용한 토끼', colorIndex: 1),
         createdAt: DateTime.utc(2026),
@@ -130,18 +130,18 @@ void main() {
     await tester.pump();
     // then
     expect(find.text('피드: old'), findsNothing);
-    repository.requests.last.complete(profile);
+    authService.requests.last.complete(profile);
     await tester.pumpAndSettle();
     expect(find.text('피드: ${author.id}'), findsOneWidget);
   });
 
   testWidgets('화면을 닫은 뒤 인증 응답이 도착해도 상태 변경 오류가 나지 않는다', (tester) async {
     // given
-    final repository = _Sessions();
-    await tester.pumpWidget(_app(repository));
+    final authService = _TestAuthService();
+    await tester.pumpWidget(_app(authService));
     // when
     await tester.pumpWidget(const SizedBox());
-    repository.requests.single.complete(profile);
+    authService.requests.single.complete(profile);
     await tester.pump();
     // then
     expect(tester.takeException(), isNull);
@@ -149,10 +149,10 @@ void main() {
 
   testWidgets('프로필 권한 거부는 오프라인이라고 잘못 안내하지 않는다', (tester) async {
     // given
-    final repository = _Sessions();
-    await tester.pumpWidget(_app(repository));
+    final authService = _TestAuthService();
+    await tester.pumpWidget(_app(authService));
     // when
-    repository.requests.single.completeError(
+    authService.requests.single.completeError(
       const SessionException(SessionFailure.permissionDenied),
     );
     await tester.pumpAndSettle();
@@ -219,11 +219,11 @@ void main() {
 
   testWidgets('인증한 프로필이 글쓰기 표시와 새 글 작성자에 전달된다', (tester) async {
     // given
-    final repository = _Sessions();
+    final authService = _TestAuthService();
     late InMemoryPostRepository posts;
     await tester.pumpWidget(
       _app(
-        repository,
+        authService,
         build: (currentUser) async {
           posts = InMemoryPostRepository.fromJsonString(
             '[]',
@@ -237,7 +237,7 @@ void main() {
         },
       ),
     );
-    repository.requests.single.complete(profile);
+    authService.requests.single.complete(profile);
     await tester.pumpAndSettle();
     // when
     await tester.tap(find.byTooltip('글쓰기'));

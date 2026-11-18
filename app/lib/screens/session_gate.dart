@@ -3,21 +3,21 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../models/author.dart';
-import '../screens/start_screen.dart';
+import '../service/auth/auth_service.dart';
 import '../theme/app_theme.dart';
-import 'session_repository.dart';
+import 'start_screen.dart';
 
 /// 인증·프로필·저장소가 준비되기 전에는 피드로 진입하지 않는다.
 class SessionGate extends StatefulWidget {
   const SessionGate({
     super.key,
-    required this.repository,
+    required this.authService,
     required this.buildSession,
     this.waitLimit = const Duration(seconds: 30),
     this.profileDisplayDuration = const Duration(milliseconds: 600),
   });
 
-  final SessionRepository repository;
+  final AuthService authService;
   final Future<Widget> Function(Author) buildSession;
   final Duration waitLimit;
   final Duration profileDisplayDuration;
@@ -59,7 +59,7 @@ class _SessionGateState extends State<SessionGate> {
       });
     });
     try {
-      final profile = await widget.repository.signIn(
+      final profile = await widget.authService.signIn(
         onAuthorReady: (author) {
           if (_active(attempt)) setState(() => _author = author);
         },

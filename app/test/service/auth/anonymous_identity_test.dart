@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:minifeed/auth/anonymous_identity.dart';
+import 'package:minifeed/service/auth/anonymous_identity.dart';
 
 void main() {
   test('같은 UID로 다시 생성하면 닉네임과 색이 유지된다', () {

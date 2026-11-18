@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../auth/session_repository.dart';
 import '../models/author.dart';
+import '../service/auth/auth_service.dart';
 import '../widgets/user_avatar.dart';
 
 /// S4 익명 로그인·S20 첫 실행 오프라인. 시스템 바는 Flutter로 그리지 않는다.

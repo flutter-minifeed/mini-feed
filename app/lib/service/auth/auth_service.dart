@@ -1,7 +1,7 @@
-import '../models/author.dart';
-import '../models/user_profile.dart';
+import '../../models/author.dart';
+import '../../models/user_profile.dart';
 
-abstract interface class SessionRepository {
+abstract interface class AuthService {
   /// 기존 익명 사용자·프로필을 재사용한다. 재시도는 같은 진행 중 요청을 공유한다.
   Future<UserProfile> signIn({void Function(Author)? onAuthorReady});
 }

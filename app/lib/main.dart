@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'auth/firebase_session_repository.dart';
-import 'auth/session_gate.dart';
 import 'repository/comment/in_memory_comment_repository.dart';
 import 'repository/post/in_memory_post_repository.dart';
 import 'repository/repository_scope.dart';
 import 'screens/feed_screen.dart';
+import 'screens/session_gate.dart';
+import 'service/auth/firebase_auth_service.dart';
 import 'theme/app_theme.dart';
 
 //앱 실행
@@ -18,7 +18,7 @@ Future<void> main() async {
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
   runApp(
     SessionGate(
-      repository: FirebaseSessionRepository(),
+      authService: FirebaseAuthService(),
       buildSession: (author) async => RepositoryScope(
         postRepository: await InMemoryPostRepository.load(currentUser: author),
         commentRepository: await InMemoryCommentRepository.load(),
