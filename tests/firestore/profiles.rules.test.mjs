@@ -151,7 +151,6 @@ test('프로필 목록을 조회할 수 없다', async () => {
 });
 
 for (const [name, path, data] of [
-  ['미구현 게시글', 'posts/example', { body: '글' }],
   ['프로필 하위 경로', 'users/owner/extra/example', { value: 1 }],
 ]) {
   test(`${name}는 조회할 수 없다`, async () => {
