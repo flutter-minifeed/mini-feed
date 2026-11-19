@@ -50,12 +50,18 @@ service cloud.firestore {
     }
     // END GENERATED UNICODE 16 GRAPHEME FUNCTIONS
 
+    // Dart String.trim이 지우는 Unicode White_Space와 BOM 집합이다.
+    function isBlank(text) {
+      return text.matches('[\\x{9}-\\x{D}\\x{20}\\x{85}\\x{A0}\\x{1680}\\x{2000}-\\x{200A}\\x{2028}\\x{2029}\\x{202F}\\x{205F}\\x{3000}\\x{FEFF}]*');
+    }
+
+    function withinPostLength(body) {
+      // UTF-16 단위 수가 300 이하면 글자 묶음도 최대 300개라 세지 않는다.
+      return body.size() <= 300 || countGraphemes(body) <= 300;
+    }
+
     function validPostBody(body) {
-      // Dart String.trim에서 사용하는 Unicode White_Space와 BOM으로만 된 글은 거부한다.
-      return body is string
-        && !body.matches('[\\x{9}-\\x{D}\\x{20}\\x{85}\\x{A0}\\x{1680}\\x{2000}-\\x{200A}\\x{2028}\\x{2029}\\x{202F}\\x{205F}\\x{3000}\\x{FEFF}]*')
-        // UTF-16 단위 수가 300 이하면 글자 묶음도 최대 300개다.
-        && (body.size() <= 300 || countGraphemes(body) <= 300);
+      return body is string && !isBlank(body) && withinPostLength(body);
     }
 
     function matchesPostProfile(data) {
