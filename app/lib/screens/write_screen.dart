@@ -29,14 +29,6 @@ class _WriteScreenState extends State<WriteScreen> {
   WriteViewModel get _viewModel => widget.viewModel;
   bool get _isSaving => _viewModel.status == WriteStatus.saving;
 
-  @override
-  void didUpdateWidget(covariant WriteScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (!identical(oldWidget.viewModel, widget.viewModel)) {
-      oldWidget.viewModel.dispose();
-    }
-  }
-
   // 화면이 닫힐 때 한 번 호출된다. 직접 만든 컨트롤러·포커스를 해제한다.
   @override
   void dispose() {
