@@ -133,6 +133,10 @@ flutter build apk --debug --dart-define-from-file=../.env
 
 Firestore 접근 규칙 테스트는 **Node.js 24.12.0 이상**·Firebase CLI·Java 21 이상을 준비한 뒤 `tests/firestore/`에서 `npm ci`, `npm test`로 실행합니다. 잠금 파일의 Firebase 패키지가 Node.js 24.12.0 이상을 요구합니다. GitHub Actions의 `Firestore rules` 작업도 Node.js 24.22.3 / Firebase CLI 15.36.0 / Java 25로 같은 명령을 실행합니다. `demo-minifeed-auth` 프로젝트의 로컬 에뮬레이터에서 프로필·게시글 테스트를 순차 실행하며 실제 팀 서버에 쓰지 않습니다.
 
+Firestore 저장소 통합 검사는 Chrome과 `app/`의 잠금 파일 의존성을 준비한 뒤 `tests/firestore/`에서 `npm run test:repositories`로 실행합니다. `demo-minifeed-repositories`용 Auth·Firestore 에뮬레이터가 #16 규칙으로 동작하는 동안 Flutter SDK에서 페이지 조회, 게시, 재시도, 댓글 읽기를 검사합니다.
+
+게시·댓글 테스트와 페이지 조회 테스트는 각 테스트 파일이 시작되기 전에 에뮬레이터 데이터를 다시 준비합니다. Windows에서는 Flutter 3.47.5 웹 러너의 CanvasKit URL 경로를 임시 러너에서 보정합니다. 사용 중인 Flutter는 PATH에 등록하고, 실행 전에 앱의 의존성을 설치해 주세요.
+
 300자 기준을 앱과 서버에서 같게 적용하려고 Unicode 16의 글자 묶음을 셉니다. Firestore의 `size()`만 쓰면 가족 이모지 300개처럼 앱에서 허용하는 글도 거부되고, Unicode 속성을 한 정규식에 모두 넣으면 에뮬레이터의 길이 제한을 넘습니다. 그래서 문자 속성을 먼저 짧은 기호로 바꾸고, 짧아진 패턴으로 글자 묶음을 세도록 구성했습니다. 이 방식은 무료 Firestore 규칙에서 실행할 수 있습니다.
 
 Firestore의 Unicode 글자 수 함수는 Dart `characters` 1.4.1이 사용하는 Unicode 16 데이터에서 생성합니다. 데이터 원본은 해당 패키지의 `third_party/Unicode_Consortium/`에 있습니다. 규칙을 다시 생성할 때 저장소 루트에서 `python tests/firestore/generate_grapheme_rules.py <Unicode_16_데이터_폴더>`를 실행합니다. 파일을 쓰지 않고 재현 여부를 검사하려면 같은 명령 뒤에 `--check`를 붙입니다.
