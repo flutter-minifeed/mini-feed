@@ -144,6 +144,32 @@ void main() {
     expect(scroll.position.pixels, previousOffset);
   });
 
+  testWidgets('시간 초과 뒤 늦게 저장된 글은 글쓰기를 버리고 닫아도 피드에 보인다', (tester) async {
+    // given
+    final repository = await pumpApp(tester);
+    await tester.pumpAndSettle();
+    final lateSave = Completer<void>();
+    repository.blockAddUntil = lateSave;
+    await tester.tap(find.byTooltip('글쓰기'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '늦게 저장된 글');
+    await tester.pump();
+    await tester.tap(find.text('게시'));
+    await tester.pump(const Duration(seconds: 10));
+    lateSave.complete();
+    await tester.pumpAndSettle();
+
+    // when
+    await tester.tap(find.byType(CloseButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('버리기'));
+    await tester.pumpAndSettle();
+
+    // then
+    final card = tester.widget<PostCard>(find.byType(PostCard).first);
+    expect(card.post.body, '늦게 저장된 글');
+  });
+
   testWidgets('목록 조회에 실패한 상태에서 게시하면 오류 대신 새 글이 보인다', (tester) async {
     // given
     final repository = _ReadOverrideRepository(

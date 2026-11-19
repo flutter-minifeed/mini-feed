@@ -69,7 +69,11 @@ class _FeedScreenState extends State<FeedScreen> {
         builder: (_) => WriteScreen(viewModel: viewModel),
       ),
     );
-    if (!mounted || post == null) return;
+    if (!mounted) return;
+    if (post == null) {
+      await _loadPosts();
+      return;
+    }
 
     setState(() {
       _posts = [post, ..._posts.where((item) => item.id != post.id)];
