@@ -37,13 +37,15 @@ flutter doctor --android-licenses
 확인은 에뮬레이터가 아니라 USB로 연결한 실기기에서 해요.
 
 1. 폰을 USB로 연결하고, VS Code 오른쪽 아래 상태 표시줄의 기기 이름을 눌러 내 폰을 골라요.
-2. **F5**(디버깅 시작)로 실행해요. 코드를 저장하면 핫 리로드로 바로 반영돼요.
+2. [README의 백엔드 설정](README.md#백엔드-설정)을 준비한 뒤, VS Code 터미널의 `app/`에서 `flutter run -d <기기_ID> --dart-define-from-file=../.env`로 실행해요. 실행 중인 터미널에서 `r`을 누르면 핫 리로드로 반영돼요.
+
+F5로 실행하려면 `.vscode/launch.json`의 `minifeed` 설정에 `"toolArgs": ["--dart-define-from-file=../.env"]`를 추가해요. 실제 Firebase 값은 이 파일에 적지 않아요.
 
 ### VS Code에서 자주 쓰는 것
 
 | 하고 싶은 일 | VS Code | 터미널 (`app/`에서) |
 | --- | --- | --- |
-| 실행 | F5 | `flutter run -d <기기_ID>` |
+| 실행 | Firebase 환경 파일을 지정한 F5 설정 | `flutter run -d <기기_ID> --dart-define-from-file=../.env` |
 | 화면에 바로 반영 | 저장 (핫 리로드) | 실행 중인 터미널에서 `r` |
 | 오류·경고 보기 | 문제 패널 (`Ctrl+Shift+M`) | `flutter analyze` |
 | 테스트 | 테스트 패널(비커 아이콘) | `flutter test` |

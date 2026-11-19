@@ -2,10 +2,13 @@
 
 Flutter로 개발하는 미니 피드 팀 프로젝트입니다. 앱 소스는 저장소 루트의 `app/` 한 곳에서 관리합니다.
 
+MP1 제출 당시의 실행·캡처 기록은 [MP1 검증 기록](docs/mp1-verification.md)에 보존합니다. 현재 앱에는 #12의 Firebase 익명 인증·고정 프로필이 추가돼 있으며, 아래 실행 절차는 이 구성을 기준으로 합니다.
+
 ## 화면 구성
 
 | 화면 | 현재 구성 |
 | --- | --- |
+| 시작 | 익명 인증과 고정 프로필을 준비한 뒤 피드로 이동합니다. 첫 실행에 네트워크가 없으면 재시도를 안내합니다. |
 | 피드 | 최신순 게시글을 스크롤하며 아바타·닉네임·상대 시간·본문·좋아요 수·댓글 수를 확인합니다. 본문을 누르면 상세, 댓글 아이콘을 누르면 상세의 댓글 입력창으로 이동합니다. |
 | 글쓰기 | 피드의 글쓰기 버튼으로 이동합니다. 본문 입력·300자 제한·게시·작성 취소 확인을 지원합니다. 게시하면 피드 최상단에 새 글이 추가됩니다. |
 | 상세 | 선택한 글의 전체 본문과 댓글 목록을 표시합니다. 뒤로가기로 피드에 돌아갑니다. 댓글 등록과 좋아요 변경은 후속 MP3 범위입니다. |
@@ -15,7 +18,8 @@ Flutter로 개발하는 미니 피드 팀 프로젝트입니다. 앱 소스는 �
 ### 화면 흐름
 
 ```text
-앱 실행 → 피드
+앱 실행 → 시작 화면 → 익명 인증·프로필 준비 성공 → 피드
+시작 화면 → 연결 오류 안내 → 연결 복구 후 다시 시도 → 피드
 피드 → 글쓰기 → 게시 성공 → 새 글이 추가된 피드 최상단
 글쓰기 → 닫기 → 작성 내용이 있으면 계속 쓰기 또는 버리기 선택
 피드 본문 → 상세 → 뒤로가기 → 피드
@@ -33,7 +37,7 @@ Flutter로 개발하는 미니 피드 팀 프로젝트입니다. 앱 소스는 �
 ```jsonc
 {
   "id": "post-01",                           // 게시글 ID
-  "authorId": "user-03",                     // 작성자 ID. "user-me"는 현재 사용자
+  "authorId": "user-03",                     // 더미 작성자 ID. "user-me"는 MP1 사용자
   "nickName": "졸린 판다",                    // 작성자 닉네임
   "colorIndex": 2,                           // 아바타 색상 번호(0~7)
   "body": "아침에 추워서 니트 입었는데 …",       // 본문. 300자 이내
@@ -52,7 +56,7 @@ Flutter로 개발하는 미니 피드 팀 프로젝트입니다. 앱 소스는 �
 {
   "id": "post-50-c1",                        // 댓글 ID
   "postId": "post-50",                       // 댓글이 달린 게시글의 id
-  "authorId": "user-11",                     // 작성자 ID. "user-me"는 현재 사용자
+  "authorId": "user-11",                     // 더미 작성자 ID. "user-me"는 MP1 사용자
   "nickName": "구름 위 토끼",                  // 작성자 닉네임
   "colorIndex": 2,                           // 아바타 색상 번호(0~7)
   "body": "오늘 비 진짜 왔다갔다 하더라",          // 본문. 200자 이내
@@ -62,27 +66,76 @@ Flutter로 개발하는 미니 피드 팀 프로젝트입니다. 앱 소스는 �
 
 JSON의 `createdAt`은 고정값입니다. `likedByMe`는 화면 표시용 값이며 Firestore 공용 게시글 문서에는 저장하지 않습니다.
 
-MP1은 Firebase 계정·키 없이 메모리 저장소로 실행합니다. 앱을 완전히 종료하고 다시 실행하면 데이터는 JSON 초기 상태로 돌아갑니다.
+더미 데이터의 `user-me`는 MP1 사용자입니다. 현재 앱에서 작성하는 새 글에는 인증된 UID·닉네임·색상을 사용합니다. 게시글·댓글은 계속 메모리 저장소로 관리하므로, 앱을 완전히 종료하고 다시 실행하면 게시글·댓글 데이터는 JSON 초기 상태로 돌아갑니다. Firebase에 저장한 익명 계정·프로필은 재사용합니다.
 
 ## 실행 절차
 
 - 프레임워크·SDK: Flutter 3.47.5 stable / Dart 3.13.4
-- 실행 기기: Galaxy Note10 5G (SM-N971N), Android 12 / API 31 실기기. 앱의 Android 최소 API는 24입니다.
-- 스크린샷 촬영 기기: Galaxy Note10 5G (SM-N971N), Android 12 / API 31
+- Android 최소 API: 24
+- 기존 #12 실기기 검증 기기: Galaxy S25 Ultra (SM-S938N), Android 17 / API 37. 이번 병합본의 실기기 재검증은 별도입니다.
+- MP1 캡처·검증 당시 기기: Galaxy Note10 5G (SM-N971N), Android 12 / API 31. `screenshots/`는 당시 기록입니다.
 - Android 패키지 ID: `com.minifeed`
+
+먼저 아래 [백엔드 설정](#백엔드-설정)을 준비합니다. 명령은 저장소 루트에서 시작합니다.
 
 ```bash
 flutter --version          # Flutter 3.47.5 / Dart 3.13.4 확인
 flutter doctor
 cd app
-flutter pub get
+flutter pub get --enforce-lockfile
 flutter devices            # 연결한 기기 ID 확인
-flutter run -d <기기_ID>
+flutter run -d <기기_ID> --dart-define-from-file=../.env
 ```
 
 `app/assets/fonts/`의 Noto Sans KR 글꼴은 오프라인에서도 한글을 같은 모양으로 표시하려고 앱에 포함했습니다.
 
+## BaaS 선택
+
+Firebase는 익명 인증과 Firestore를 같은 팀 프로젝트에서 사용할 수 있어 선택했습니다.
+
+현재 게시글·댓글은 더미 데이터를 메모리에서 관리합니다. 이 데이터의 서버 연동은 #47에서 진행합니다.
+
+## 익명 인증
+
+Android 앱은 시작 화면에서 익명 인증과 고정 프로필을 준비한 뒤 피드로 이동합니다. 기존 익명 ID와 저장된 닉네임·색·생성 시각은 재사용합니다. 첫 실행에 연결이 없으면 재시도를 안내합니다. 이메일·전화번호를 입력받지 않습니다.
+
+프로필을 한 번 정상적으로 저장했다면 재실행 시 확정된 로컬 캐시를 사용할 수 있습니다. 첫 프로필 생성에는 연결이 필요합니다. 앱 삭제·데이터 초기화 후에는 기존 익명 ID 복구를 보장하지 않습니다.
+
+## 백엔드 설정
+
+실제 값이 없는 루트 `.env.example`을 `.env`로 복사한 뒤 팀 Firebase 프로젝트의 값으로 채웁니다. 기존 `.env`가 있으면 덮어쓰지 않습니다. Firebase 콘솔 → 프로젝트 설정 → 내 앱에서 Android 앱 `com.minifeed`의 `google-services.json`을 다운로드하여 `app/android/app/`에 둡니다. 팀원에게 별도로 전달받을 수도 있습니다.
+
+| .env 항목 | Android JSON에서 확인할 값 |
+| --- | --- |
+| `FIREBASE_API_KEY` | `com.minifeed` client의 `api_key[].current_key` |
+| `FIREBASE_APP_ID` | 같은 client의 `client_info.mobilesdk_app_id` |
+| `FIREBASE_MESSAGING_SENDER_ID` | `project_info.project_number` |
+| `FIREBASE_PROJECT_ID` | `project_info.project_id` |
+| `FIREBASE_STORAGE_BUCKET` | `project_info.storage_bucket` (없으면 빈 값) |
+
+`.env`와 Android JSON은 같은 프로젝트·앱으로 맞춥니다. 앱은 환경값을 읽는 `firebase_config.dart`를 사용하며, FlutterFire가 생성한 `firebase_options.dart`는 가져오지 않습니다. 설정 변경 후에는 앱을 종료하고 위 실행 명령으로 다시 시작합니다.
+
+팀 Firebase 프로젝트의 Authentication에서 익명 로그인을 활성화하고 Firestore 데이터베이스를 준비합니다. 루트 `firestore.rules`를 게시해야 첫 프로필을 저장할 수 있습니다. 팀 프로젝트 관리자가 기존 서버 규칙과 비교한 뒤 저장소 루트에서 실행합니다.
+
+```powershell
+firebase deploy --only firestore:rules --project <팀_프로젝트_ID>
+```
+
+이 규칙은 자기 프로필의 생성·단건 조회만 허용하며, 프로필 변경·삭제·전체 목록 조회와 나머지 경로의 접근을 차단합니다. 게시글 규칙은 #16에서 추가합니다. `users/{uid}`에 `nickName`(문자열), `colorIndex`(0~7 정수), `createdAt`(서버 시각)을 저장합니다. 닉네임은 UID의 UTF-8 FNV-1a 32비트 해시로 고정된 30개 수식어와 30개 동물 이름 중에서 선택하고, 색은 해시를 8로 나눈 나머지로 결정합니다. 닉네임 중복을 허용하며 사용자 식별은 UID로 합니다.
+
+분석과 위젯 테스트는 `app/`에서 `flutter analyze`, `flutter test`로 실행합니다. 실제 설정 없이도 이 검사는 가능합니다. Android APK 빌드는 로컬 설정을 준비한 뒤 실행합니다.
+
+```powershell
+flutter build apk --debug --dart-define-from-file=../.env
+```
+
+Firestore 접근 규칙 테스트는 **Node.js 24.12.0 이상**·Firebase CLI·Java 21 이상을 준비한 뒤 `tests/firestore/`에서 `npm ci`, `npm test`로 실행합니다. 잠금 파일의 Firebase 패키지가 Node.js 24.12.0 이상을 요구합니다. 검증한 환경은 Node.js 24.22.3 / Firebase CLI 15.36.0입니다. `demo-minifeed-auth` 프로젝트의 로컬 에뮬레이터를 사용하며 실제 팀 서버에 쓰지 않습니다.
+
+Git·제출 ZIP에는 `.env`, `app/android/app/google-services.json`, `app/lib/firebase_options.dart`, `app/firebase.json`, 빌드 결과·캐시를 넣지 않습니다. `.gitignore`는 ZIP에서 파일을 자동 제외하지 않으므로 압축할 때 직접 제외합니다. 루트 `.env.example`과 이 설정·실행 안내는 제출물에 포함합니다.
+
 ## 확인 방법
+
+다음은 MP1 기능의 확인 방법입니다. `스크린샷:`의 파일명은 MP1 제출 당시 캡처이며, 현재 앱의 인증·프로필 검증 결과는 PR #56과 `ai_logs/UTORY4624/`의 #12 기록에서 따로 확인합니다. 현재 앱으로 아래 항목을 확인할 때는 시작 화면의 인증·프로필 준비를 마치고 피드에서 진행합니다.
 
 ### 피드·글쓰기·상세와 더미 데이터
 
@@ -122,4 +175,4 @@ flutter run -d <기기_ID>
 
 시험 데이터: `app/assets/dummy/post/posts.json`(게시글 50개), `app/assets/dummy/comment/comments.json`(댓글 83개)
 
-네트워크: 불필요(서버 연결 없이 앱 안의 JSON으로 동작)
+네트워크: 첫 익명 인증·프로필 생성에는 온라인 연결이 필요합니다. 기존 익명 계정과 확정된 프로필 캐시가 있으면 오프라인에서도 재진입할 수 있습니다. 피드·글쓰기·상세는 앱 안의 JSON과 메모리 저장소로 동작합니다.
