@@ -62,6 +62,9 @@ flutter:
   assets:
     - assets/dummy/post/posts.json
     - assets/dummy/comment/comments.json
+    # #26 기기 내 주제 분류 모델과 특징 사전
+    - assets/ml/best.tflite
+    - assets/ml/features.json
 
   fonts:
     - family: NotoSansKR
