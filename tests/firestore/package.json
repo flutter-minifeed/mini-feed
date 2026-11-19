@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "test": "firebase --config ../../firebase.json emulators:exec --only firestore --project demo-minifeed-auth \"node --test --test-concurrency=1 profiles.rules.test.mjs posts.rules.test.mjs\"",
-    "test:repositories": "firebase --config ../../firebase.json emulators:exec --only auth,firestore --project demo-minifeed-repositories \"node seed-repository-fixtures.mjs && cd ../../app && flutter test --no-pub --platform chrome --reporter expanded test/firestore_emulator_test.dart\""
+    "test:repositories": "firebase --config ../../firebase.json emulators:exec --only auth,firestore --project demo-minifeed-repositories \"node run-repository-tests.mjs\""
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^6.0.0",

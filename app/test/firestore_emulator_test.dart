@@ -1,35 +1,21 @@
-// 웹 테스트 러너에서 앱과 같은 Firebase 플러그인을 등록한다.
-// 의존성은 앱의 FlutterFire 패키지가 고정 버전으로 제공한다.
-// ignore_for_file: depend_on_referenced_packages
-
 @TestOn('browser')
 library;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_firestore_web/cloud_firestore_web.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_auth_web/firebase_auth_web.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_core_web/firebase_core_web.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
 import 'package:minifeed/models/author.dart';
 import 'package:minifeed/repository/comment/firestore_comment_repository.dart';
 import 'package:minifeed/repository/post/firestore_post_repository.dart';
-import 'package:minifeed/service/auth/firebase_auth_service.dart';
 
-const _demoProject = 'demo-minifeed-repositories';
-const _host = '127.0.0.1';
+import 'helpers/firestore_emulator.dart';
+
 const _server = GetOptions(source: Source.server);
 const _fixturePost = 'fixture-45';
 const _family = '👨‍👩‍👧‍👦';
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
-  FirebaseCoreWeb.registerWith(webPluginRegistrar);
-  FirebaseAuthWeb.registerWith(webPluginRegistrar);
-  FirebaseFirestoreWeb.registerWith(webPluginRegistrar);
+  registerFirestoreEmulatorPlugins();
 
   late FirebaseFirestore db;
   late Author author;
@@ -38,33 +24,13 @@ void main() {
   late FirebaseFirestore signedOut;
 
   setUpAll(() async {
-    final writer = await _emulatorClient('issue47-writer');
+    final writer = await openFirestoreEmulatorClient('issue47-writer');
     db = writer.firestore;
-    author = await _signIn(writer.auth, db);
+    author = await signInToFirestoreEmulator(writer.auth, db);
     posts = FirestorePostRepository(firestore: db, currentUser: author);
     comments = FirestoreCommentRepository(firestore: db);
-    signedOut = (await _emulatorClient('issue47-signed-out')).firestore;
-  });
-
-  test('같은 시각의 게시글 45개를 20·20·5개로 빠짐없이 읽는다', () async {
-    // given: 에뮬레이터 시작 때 저장한 동일 시각의 글 45개
-    // when
-    final first = await posts.getPostPage();
-    final second = await posts.getPostPage(after: first.nextCursor!);
-    final third = await posts.getPostPage(after: second.nextCursor!);
-
-    // then
-    expect(first.posts, hasLength(20));
-    expect(second.posts, hasLength(20));
-    expect(third.posts, hasLength(5));
-    expect(third.nextCursor, isNull);
-    expect(
-      [...first.posts, ...second.posts, ...third.posts].map((post) => post.id),
-      List.generate(
-        45,
-        (index) => 'fixture-${(45 - index).toString().padLeft(2, '0')}',
-      ),
-    );
+    signedOut = (await openFirestoreEmulatorClient('issue47-signed-out'))
+        .firestore;
   });
 
   test('게시글 ID 조회는 문서 내용을 같은 모델로 반환한다', () async {
@@ -184,8 +150,11 @@ void main() {
 
   test('다른 사용자가 쓴 글의 ID는 같은 본문이라도 재사용할 수 없다', () async {
     // given
-    final second = await _emulatorClient('issue47-reader');
-    final otherAuthor = await _signIn(second.auth, second.firestore);
+    final second = await openFirestoreEmulatorClient('issue47-reader');
+    final otherAuthor = await signInToFirestoreEmulator(
+      second.auth,
+      second.firestore,
+    );
     final repository = FirestorePostRepository(
       firestore: second.firestore,
       currentUser: otherAuthor,
@@ -247,35 +216,6 @@ void main() {
       await db.enableNetwork();
     }
   });
-}
-
-Future<({FirebaseAuth auth, FirebaseFirestore firestore})> _emulatorClient(
-  String name,
-) async {
-  final app = await Firebase.initializeApp(
-    name: name,
-    options: const FirebaseOptions(
-      apiKey: 'emulator-only-key',
-      appId: '1:123456789012:web:1234567890123456',
-      messagingSenderId: '123456789012',
-      projectId: _demoProject,
-      authDomain: '$_demoProject.firebaseapp.com',
-    ),
-  );
-  final auth = FirebaseAuth.instanceFor(app: app);
-  await auth.useAuthEmulator(_host, 9099);
-  final firestore = FirebaseFirestore.instanceFor(app: app);
-  firestore.useFirestoreEmulator(_host, 8080);
-  return (auth: auth, firestore: firestore);
-}
-
-Future<Author> _signIn(FirebaseAuth auth, FirebaseFirestore firestore) async {
-  final profile = await FirebaseAuthService(
-    auth: auth,
-    firestore: firestore,
-    initialize: () async {},
-  ).signIn();
-  return profile.author;
 }
 
 Matcher _firestoreError(String code) => throwsA(
