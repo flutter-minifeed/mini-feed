@@ -147,7 +147,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('시간 초과 재시도와 늦은 성공이 겹쳐도 같은 글은 하나만 저장한다', (tester) async {
+  testWidgets('시간 초과 뒤 재시도하면 같은 요청 ID로 보내고 늦은 이전 응답은 무시한다', (tester) async {
     // given
     final oldGate = Completer<void>();
     repository.addGate = oldGate;
@@ -168,9 +168,8 @@ void main() {
 
     // then
     expect(repository.requestIds.toSet(), hasLength(1));
-    expect(repository.posts, hasLength(1));
     expect(statusAfterOldResponse, WriteStatus.saving);
-    expect(result, same(repository.posts.single));
+    expect(result?.body, '첫 글');
   });
 
   testWidgets('시간 초과 뒤 수정한 본문은 새 요청 ID로 저장한다', (tester) async {

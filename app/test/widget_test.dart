@@ -144,30 +144,32 @@ void main() {
     expect(scroll.position.pixels, previousOffset);
   });
 
-  testWidgets('게시 후 목록 조회가 실패해도 저장한 글은 피드 상단에 표시된다', (tester) async {
+  testWidgets('목록 조회에 실패한 상태에서 게시하면 오류 대신 새 글이 보인다', (tester) async {
     // given
-    final original = _repository();
-    var failReads = false;
-    final repository = _ReadOverrideRepository(original, () async {
-      if (failReads) throw StateError('목록 조회 실패');
-      return original.getPosts();
-    });
+    final repository = _ReadOverrideRepository(
+      _repository(),
+      () async => throw StateError('목록 조회 실패'),
+    );
     await tester.pumpWidget(_app(repository));
     await tester.pumpAndSettle();
+    final errorShownBeforePost = find
+        .text('게시글을 불러오지 못했습니다.')
+        .evaluate()
+        .isNotEmpty;
     await tester.tap(find.byTooltip('글쓰기'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), '방금 저장한 글');
     await tester.pump();
-    failReads = true;
 
     // when
     await tester.tap(find.text('게시'));
     await tester.pumpAndSettle();
 
     // then
+    expect(errorShownBeforePost, isTrue);
+    expect(find.text('게시글을 불러오지 못했습니다.'), findsNothing);
     final card = tester.widget<PostCard>(find.byType(PostCard).first);
     expect(card.post.body, '방금 저장한 글');
-    expect(find.text('게시글을 불러오지 못했습니다.'), findsNothing);
   });
 
   testWidgets('피드를 스크롤하면 마지막 게시글도 표시된다', (tester) async {
