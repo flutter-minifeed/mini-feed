@@ -66,6 +66,10 @@ def alternatives(*patterns):
     return "(?:" + "|".join(patterns) + ")"
 
 
+def group(pattern):
+    return "(?:" + pattern + ")"
+
+
 def rules_string(pattern):
     return pattern.replace("\\", "\\\\")
 
@@ -125,10 +129,10 @@ def grapheme_pattern(markers):
     )
     flag = char("Regional_Indicator") + "{2}"
     emoji = char("Extended_Pictographic")
-    joined_emoji = emoji + alternatives(char("Extend") + "*" + char("ZWJ") + emoji) + "*"
+    joined_emoji = emoji + group(char("Extend") + "*" + char("ZWJ") + emoji) + "*"
     consonant, linker = char("InCB:Consonant"), char("InCB:Linker")
     modifier = char("InCB:Extend", "InCB:Linker")
-    indic = consonant + alternatives(modifier + "*" + linker + modifier + "*" + consonant) + "+"
+    indic = consonant + group(modifier + "*" + linker + modifier + "*" + consonant) + "+"
     controls = ("CR", "LF", "Control")
     core = alternatives(hangul, flag, joined_emoji, indic, char(*controls, negate=True))
     return alternatives(
