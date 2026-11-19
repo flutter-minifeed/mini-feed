@@ -36,7 +36,7 @@ void main() {
   test('게시 중 다시 눌러도 저장 요청은 한 번만 전달된다', () async {
     // given
     final gate = Completer<void>();
-    repository.addGate = gate;
+    repository.blockAddUntil = gate;
 
     // when
     final first = viewModel.submit('첫 글');
@@ -52,11 +52,11 @@ void main() {
   test('저장 거부 후 같은 본문을 재시도하면 같은 요청 ID로 저장한다', () async {
     // given
     final gate = Completer<void>();
-    repository.addGate = gate;
+    repository.blockAddUntil = gate;
     final first = viewModel.submit('첫 글');
     gate.completeError(StateError('저장 거부'));
     await first;
-    repository.addGate = null;
+    repository.blockAddUntil = null;
 
     // when
     final post = await viewModel.submit('첫 글');
@@ -69,7 +69,7 @@ void main() {
   test('저장 오류는 실패 상태로 알리고 성공 결과를 반환하지 않는다', () async {
     // given
     final gate = Completer<void>();
-    repository.addGate = gate;
+    repository.blockAddUntil = gate;
 
     // when
     final pending = viewModel.submit('첫 글');
@@ -84,7 +84,7 @@ void main() {
   testWidgets('10초가 되기 전에는 저장 대기를 유지한다', (tester) async {
     // given
     final gate = Completer<void>();
-    repository.addGate = gate;
+    repository.blockAddUntil = gate;
     final pending = viewModel.submit('첫 글');
 
     // when
@@ -101,7 +101,7 @@ void main() {
 
   testWidgets('10초 동안 응답이 없으면 시간 초과로 대기를 끝낸다', (tester) async {
     // given
-    repository.addGate = Completer<void>();
+    repository.blockAddUntil = Completer<void>();
 
     // when
     final pending = viewModel.submit('첫 글');
@@ -116,7 +116,7 @@ void main() {
   testWidgets('시간 초과 후 늦은 성공은 성공 상태를 다시 알리지 않는다', (tester) async {
     // given
     final gate = Completer<void>();
-    repository.addGate = gate;
+    repository.blockAddUntil = gate;
     final pending = viewModel.submit('첫 글');
     await tester.pump(const Duration(seconds: 10));
     await pending;
@@ -133,7 +133,7 @@ void main() {
   testWidgets('시간 초과 뒤 늦은 오류는 상태를 바꾸거나 전파하지 않는다', (tester) async {
     // given
     final gate = Completer<void>();
-    repository.addGate = gate;
+    repository.blockAddUntil = gate;
     final pending = viewModel.submit('첫 글');
     await tester.pump(const Duration(seconds: 10));
     await pending;
@@ -150,12 +150,12 @@ void main() {
   testWidgets('시간 초과 뒤 재시도하면 같은 요청 ID로 보내고 늦은 이전 응답은 무시한다', (tester) async {
     // given
     final oldGate = Completer<void>();
-    repository.addGate = oldGate;
+    repository.blockAddUntil = oldGate;
     final first = viewModel.submit('첫 글');
     await tester.pump(const Duration(seconds: 10));
     await first;
     final retryGate = Completer<void>();
-    repository.addGate = retryGate;
+    repository.blockAddUntil = retryGate;
 
     // when
     final retry = viewModel.submit('첫 글');
@@ -175,11 +175,11 @@ void main() {
   testWidgets('시간 초과 뒤 수정한 본문은 새 요청 ID로 저장한다', (tester) async {
     // given
     final oldGate = Completer<void>();
-    repository.addGate = oldGate;
+    repository.blockAddUntil = oldGate;
     final first = viewModel.submit('이전 글');
     await tester.pump(const Duration(seconds: 10));
     await first;
-    repository.addGate = null;
+    repository.blockAddUntil = null;
 
     // when
     final pending = viewModel.submit('수정한 글');
@@ -197,7 +197,7 @@ void main() {
   testWidgets('화면 해제는 대기 타이머를 끝내고 늦은 응답을 알리지 않는다', (tester) async {
     // given
     final gate = Completer<void>();
-    repository.addGate = gate;
+    repository.blockAddUntil = gate;
     final pending = viewModel.submit('첫 글');
 
     // when

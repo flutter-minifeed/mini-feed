@@ -13,20 +13,16 @@ import 'package:minifeed/viewmodels/write_view_model.dart';
 
 const testUser = Author(id: 'user-test', nickName: '테스트', colorIndex: 0);
 
-/// 받은 본문을 기록하는 가짜 게시글 저장소.
-///
 /// 실제 메모리 저장소는 assets JSON을 읽어서 testWidgets 안에서 끝나지 않을 수 있다.
 class FakePostRepository implements PostRepository {
   FakePostRepository({this.currentUser = testUser});
 
   final List<Post> posts = [];
 
-  /// addPost가 받은 본문. 공백 제거·중복 요청 검사에 쓴다.
   final List<String> addedBodies = [];
   final List<String?> requestIds = [];
 
-  /// 값을 넣으면 addPost가 이 Completer가 끝날 때까지 멈춘다. 게시 중 상태 검사에 쓴다.
-  Completer<void>? addGate;
+  Completer<void>? blockAddUntil;
 
   @override
   final Author currentUser;
@@ -43,7 +39,7 @@ class FakePostRepository implements PostRepository {
     addedBodies.add(body);
     requestIds.add(requestId);
     final id = requestId ?? 'fake-${addedBodies.length}';
-    await addGate?.future; // addGate가 없으면(null) 바로 넘어간다.
+    await blockAddUntil?.future;
     final previous = posts.where((post) => post.id == id).firstOrNull;
     if (previous != null) {
       if (previous.body != body) throw ArgumentError('같은 요청 ID의 본문이 다릅니다.');
@@ -72,7 +68,6 @@ class FakeCommentRepository implements CommentRepository {
       comments.where((comment) => comment.postId == postId).toList();
 }
 
-/// 가짜 저장소를 넣은 앱을 띄우고, 검사할 수 있게 게시글 저장소를 돌려준다.
 Future<FakePostRepository> pumpApp(WidgetTester tester) async {
   final postRepository = FakePostRepository();
   await tester.pumpWidget(

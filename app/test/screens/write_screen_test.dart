@@ -8,7 +8,6 @@ import 'package:minifeed/viewmodels/write_view_model.dart';
 import '../helpers/fake_write_view_model.dart';
 import '../helpers/test_app.dart';
 
-// 빈 화면 위에 글쓰기 화면을 fullscreenDialog로 엽니다. 피드에서 여는 방식과 같아서 X 버튼도 똑같이 생깁니다.
 Future<FakePostRepository> pumpWriteScreen(
   WidgetTester tester, {
   FakePostRepository? repository,
@@ -17,24 +16,18 @@ Future<FakePostRepository> pumpWriteScreen(
   final postRepository = repository ?? FakePostRepository();
   final writeViewModel =
       viewModel ?? WriteViewModelImpl(repository: postRepository);
-  // 피드처럼 빈 화면 위에 글쓰기를 띄워야 게시 후 닫히는지 확인할 수 있다.
-  // navigatorKey: 테스트 코드에서 context 없이 앱의 Navigator를 꺼내 쓰기 위한 열쇠.
   final navigatorKey = GlobalKey<NavigatorState>();
 
   await tester.pumpWidget(
     MaterialApp(navigatorKey: navigatorKey, home: const Scaffold()),
   );
 
-  // 빈 화면(home) 위에 글쓰기 화면을 한 장 쌓는다. 피드의 '글쓰기 열기'와 같은 방식이다.
-  // currentState: navigatorKey가 연결된 Navigator. pumpWidget 뒤라 null이 아니어서 !를 붙인다.
   navigatorKey.currentState!.push(
     MaterialPageRoute<void>(
-      // 아래에서 위로 올라오는 전체 화면 창으로 열고, AppBar 왼쪽에 X 버튼이 생긴다.
       fullscreenDialog: true,
       builder: (_) => WriteScreen(viewModel: writeViewModel),
     ),
   );
-  // 화면 전환 애니메이션이 끝날 때까지 그려야 글쓰기 화면을 찾을 수 있다.
   await tester.pumpAndSettle();
 
   return postRepository;
@@ -83,7 +76,7 @@ void main() {
     testWidgets('저장이 거부되면 원본 본문을 유지하고 다시 편집할 수 있다', (tester) async {
       // given
       final gate = Completer<void>();
-      repository.addGate = gate;
+      repository.blockAddUntil = gate;
       await pumpWriteScreen(tester, repository: repository);
       await tester.enterText(find.byType(TextField), '  첫 줄\n둘째 줄  ');
       await tester.pump();
@@ -103,14 +96,14 @@ void main() {
     testWidgets('실패 안내의 다시 시도를 누르면 같은 요청 ID로 저장하고 닫힌다', (tester) async {
       // given
       final gate = Completer<void>();
-      repository.addGate = gate;
+      repository.blockAddUntil = gate;
       await pumpWriteScreen(tester, repository: repository);
       await tester.enterText(find.byType(TextField), '작성한 글');
       await tester.pump();
       await tester.tap(_postButton);
       gate.completeError(StateError('저장 거부'));
       await tester.pumpAndSettle();
-      repository.addGate = null;
+      repository.blockAddUntil = null;
 
       // when
       await tester.tap(find.text('다시 시도'));
@@ -125,7 +118,7 @@ void main() {
     testWidgets('게시 중에는 본문을 편집할 수 없다', (tester) async {
       // given
       final gate = Completer<void>();
-      repository.addGate = gate;
+      repository.blockAddUntil = gate;
       await pumpWriteScreen(tester, repository: repository);
       await tester.enterText(find.byType(TextField), '작성한 글');
       await tester.pump();
@@ -146,7 +139,7 @@ void main() {
     testWidgets('10초 무응답이면 본문을 유지하고 늦은 성공에도 화면을 닫지 않는다', (tester) async {
       // given
       final gate = Completer<void>();
-      repository.addGate = gate;
+      repository.blockAddUntil = gate;
       await pumpWriteScreen(tester, repository: repository);
       await tester.enterText(find.byType(TextField), '작성한 글');
       await tester.pump();
@@ -210,7 +203,7 @@ void main() {
     testWidgets('저장 중 화면이 해제되면 늦은 응답이 화면 오류를 만들지 않는다', (tester) async {
       // given
       final gate = Completer<void>();
-      repository.addGate = gate;
+      repository.blockAddUntil = gate;
       await pumpWriteScreen(tester, repository: repository);
       await tester.enterText(find.byType(TextField), '작성한 글');
       await tester.pump();
@@ -378,7 +371,7 @@ void main() {
   testWidgets('게시 중에는 다시 눌러도 한 번만 저장한다', (tester) async {
     // given: 저장이 끝나지 않고 멈춰 있는 상태
     final repository = await pumpWriteScreen(tester);
-    repository.addGate = Completer<void>();
+    repository.blockAddUntil = Completer<void>();
     await tester.enterText(find.byType(TextField), '안녕');
     await tester.pump();
 
@@ -390,7 +383,7 @@ void main() {
 
     final canPostWhileSaving = _canPost(tester);
     final showsSaving = find.text('게시 중…').evaluate().isNotEmpty;
-    repository.addGate!.complete();
+    repository.blockAddUntil!.complete();
     await tester.pumpAndSettle();
 
     // then
@@ -402,7 +395,7 @@ void main() {
   testWidgets('게시 중에는 X를 눌러도 닫히지 않는다', (tester) async {
     // given: 저장이 끝나지 않고 멈춰 있는 상태
     final repository = await pumpWriteScreen(tester);
-    repository.addGate = Completer<void>();
+    repository.blockAddUntil = Completer<void>();
     await tester.enterText(find.byType(TextField), '안녕');
     await tester.pump();
     await tester.tap(_postButton);
@@ -412,7 +405,7 @@ void main() {
     await tester.tap(find.byType(CloseButton));
     await tester.pumpAndSettle();
     final stillOpen = find.byType(WriteScreen).evaluate().isNotEmpty;
-    repository.addGate!.complete();
+    repository.blockAddUntil!.complete();
     await tester.pumpAndSettle();
 
     // then
@@ -484,29 +477,22 @@ void main() {
   });
 }
 
-// 상단 바의 게시 버튼을 찾는 조건. FilledButton.icon은 FilledButton의 하위 클래스라
-// byType(정확한 타입 비교)으로는 찾지 못해 is로 찾는다.
+// FilledButton.icon은 FilledButton의 하위 클래스라 byType으로는 찾지 못한다.
 final _postButton = find.byWidgetPredicate((widget) => widget is FilledButton);
 
-/// '게시' 버튼이 눌리는 상태인지 확인한다.
 bool _canPost(WidgetTester tester) {
-  // 조건에 맞는 실제 버튼 위젯을 꺼낸다.
   final button = tester.widget<FilledButton>(_postButton);
 
-  // onPressed가 null이면 Flutter가 버튼을 비활성(회색)으로 그린다.
   return button.onPressed != null;
 }
 
-/// 카운터 글자(예: '300 / 300')의 색을 꺼낸다.
 Color? _counterColor(WidgetTester tester, String counter) {
   final counterText = tester.widget<Text>(find.text(counter));
 
   return counterText.style?.color;
 }
 
-/// 글쓰기 화면이 쓰는 테마의 강조(error) 색을 꺼낸다.
 Color _errorColor(WidgetTester tester) {
-  // 화면 위젯이 놓인 위치(BuildContext)를 찾는다.
   final context = tester.element(find.byType(WriteScreen));
 
   return Theme.of(context).colorScheme.error;
