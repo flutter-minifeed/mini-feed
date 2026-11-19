@@ -71,8 +71,6 @@ class _FeedScreenState extends State<FeedScreen> {
     );
     if (!mounted || post == null) return;
 
-    // 진행 중인 목록 조회가 늦게 끝나도 방금 올린 글을 덮어쓰지 않게 무효로 만든다.
-    ++_requestId;
     setState(() {
       _posts = [post, ..._posts.where((item) => item.id != post.id)];
       _loading = false;
