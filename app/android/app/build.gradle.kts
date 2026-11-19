@@ -38,6 +38,13 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+
+    // tflite_flutter가 litert-gpu를 항상 함께 넣지만, Dense 한 층 모델이라 GPU 위임을 쓰지 않는다.
+    packaging {
+        jniLibs {
+            excludes += "**/libtensorflowlite_gpu_jni.so"
+        }
+    }
 }
 
 kotlin {
