@@ -8,13 +8,53 @@ abstract interface class PostRepository {
   /// [addPost]로 만드는 글의 작성자. 글쓰기 화면이 작성자 줄을 그릴 때 쓴다.
   Author get currentUser;
 
-  /// 모든 게시글을 최신순(작성 시각 내림차순)으로 돌려준다.
+  /// MP1 피드에서 사용한다. 모든 게시글을 최신순으로 돌려준다.
   Future<List<Post>> getPosts();
+
+  /// [after]가 없으면 첫 페이지, 있으면 커서의 다음 글부터 최대 20개를 반환한다.
+  /// 작성 시각 내림차순이며 시각이 같으면 문서 ID 내림차순으로 정렬한다.
+  Future<PostPage> getPostPage({PostCursor? after});
 
   /// id가 같은 게시글을 돌려준다. 없는 id면 null을 돌려준다.
   Future<Post?> getPostById(String id);
 
-  /// 현재 사용자 이름으로 새 글을 만들어 목록 맨 앞에 넣고, 만든 글을 돌려준다.
-  /// 좋아요·댓글 수는 0으로 시작한다. 300자·공백 검사는 글쓰기 화면이 한다.
-  Future<Post> addPost(String body);
+  /// 현재 사용자의 검증된 본문을 저장한다. 두 초기 카운터는 0이다.
+  /// [requestId]가 있으면 게시글 ID로 쓰고, 없으면 호출마다 새 ID를 만든다.
+  /// 같은 ID·작성자·본문이면 기존 글과 최초 작성 시각을 돌려준다.
+  /// 같은 ID의 작성자나 본문이 다르면 [ArgumentError]로 거부한다.
+  Future<Post> addPost(String body, {String? requestId});
+}
+
+/// 페이지의 마지막 글 위치. 다음 조회에 받은 값을 그대로 넘긴다.
+typedef PostCursor = ({DateTime createdAt, String postId});
+
+class PostPage {
+  PostPage(List<Post> posts)
+    : posts = List.unmodifiable(posts),
+      nextCursor = posts.length == pageSize
+          ? (createdAt: posts.last.createdAt, postId: posts.last.id)
+          : null;
+
+  /// 이미 같은 순서로 정렬된 메모리 목록을 문서 커서 기준으로 잘라 낸다.
+  factory PostPage.fromOrderedPosts(List<Post> posts, {PostCursor? after}) {
+    final remaining = after == null
+        ? posts
+        : posts.skipWhile((post) => _compareToCursor(post, after) <= 0);
+    return PostPage(remaining.take(pageSize).toList());
+  }
+
+  static const pageSize = 20;
+  final List<Post> posts;
+
+  /// 가득 찬 페이지는 커서가 있다. 정확히 20의 배수면 다음 빈 페이지에서 끝난다.
+  final PostCursor? nextCursor;
+}
+
+/// 게시 시각과 문서 ID가 모두 내림차순인 조회 순서.
+int comparePostsNewestFirst(Post left, Post right) =>
+    _compareToCursor(left, (createdAt: right.createdAt, postId: right.id));
+
+int _compareToCursor(Post post, PostCursor cursor) {
+  final byTime = cursor.createdAt.compareTo(post.createdAt);
+  return byTime == 0 ? cursor.postId.compareTo(post.id) : byTime;
 }

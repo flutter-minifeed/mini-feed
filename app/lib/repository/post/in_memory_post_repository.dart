@@ -40,7 +40,7 @@ class InMemoryPostRepository implements PostRepository {
         .map(_postFromJson)
         .toList();
     // JSON 순서에 기대지 않고 직접 최신순으로 맞춘다.
-    posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    posts.sort(comparePostsNewestFirst);
     return InMemoryPostRepository._(posts, currentUser);
   }
 
@@ -58,14 +58,25 @@ class InMemoryPostRepository implements PostRepository {
   }
 
   @override
-  Future<Post?> getPostById(String id) async {
-    return _posts.where((post) => post.id == id).firstOrNull;
-  }
+  Future<PostPage> getPostPage({PostCursor? after}) async =>
+      PostPage.fromOrderedPosts(_posts, after: after);
 
   @override
-  Future<Post> addPost(String body) async {
+  Future<Post?> getPostById(String id) async => _findPost(id);
+
+  @override
+  Future<Post> addPost(String body, {String? requestId}) async {
+    final id = requestId ?? _nextPostId();
+    final saved = _findPost(id);
+    if (saved != null) {
+      if (saved.author.id != currentUser.id || saved.body != body) {
+        throw ArgumentError('같은 요청 ID로 다른 게시글을 저장할 수 없습니다.');
+      }
+      return saved;
+    }
+
     final post = Post(
-      id: 'post-local-${++_localCount}',
+      id: id,
       author: currentUser,
       body: body,
       createdAt: DateTime.now(),
@@ -73,9 +84,22 @@ class InMemoryPostRepository implements PostRepository {
       commentCount: 0,
       likedByMe: false,
     );
-    // 현재 시각이 가장 최신이라 맨 앞에 넣으면 최신순이 유지된다.
-    _posts.insert(0, post);
+    final index = _posts.indexWhere(
+      (saved) => comparePostsNewestFirst(saved, post) > 0,
+    );
+    _posts.insert(index < 0 ? _posts.length : index, post);
     return post;
+  }
+
+  Post? _findPost(String id) =>
+      _posts.where((post) => post.id == id).firstOrNull;
+
+  String _nextPostId() {
+    var id = 'post-local-${++_localCount}';
+    while (_findPost(id) != null) {
+      id = 'post-local-${++_localCount}';
+    }
+    return id;
   }
 }
 
