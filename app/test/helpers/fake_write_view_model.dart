@@ -19,7 +19,7 @@ class FakeWriteViewModel extends ChangeNotifier implements WriteViewModel {
   WriteStatus _status = WriteStatus.idle;
 
   @override
-  Future<Post?> submit(String body) async {
+  Future<Post?> submit(String validatedBody) async {
     _status = _resultStatus;
     notifyListeners();
     return null;

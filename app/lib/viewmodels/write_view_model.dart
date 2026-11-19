@@ -7,12 +7,14 @@ import '../models/author.dart';
 import '../models/post.dart';
 import '../repository/post/post_repository.dart';
 
+const _saveTimeout = Duration(seconds: 10);
+
 enum WriteStatus { idle, saving, succeeded, failed, timedOut }
 
 abstract interface class WriteViewModel implements Listenable {
   Author get author;
   WriteStatus get status;
-  Future<Post?> submit(String body);
+  Future<Post?> submit(String validatedBody);
   void dispose();
 }
 
@@ -34,31 +36,31 @@ class WriteViewModelImpl extends ChangeNotifier implements WriteViewModel {
   @override
   WriteStatus get status => _status;
 
-  /// 화면에서 공백·길이를 검사한 본문을 받는다. 성공 이외에는 null을 반환한다.
   @override
-  Future<Post?> submit(String body) {
+  Future<Post?> submit(String validatedBody) {
     if (_disposed ||
         _status == WriteStatus.saving ||
         _status == WriteStatus.succeeded) {
       return Future.value();
     }
 
-    if (_requestId == null || body != _submittedBody) {
+    if (_requestId == null || validatedBody != _submittedBody) {
       _requestId = _newRequestId();
-      _submittedBody = body;
+      _submittedBody = validatedBody;
     }
 
     final attempt = ++_attempt;
     final result = Completer<Post?>();
     _pendingResult = result;
     _status = WriteStatus.saving;
-    _timer = Timer(const Duration(seconds: 10), () {
+    _timer = Timer(_saveTimeout, () {
       _finish(attempt, WriteStatus.timedOut);
     });
-    // 등록된 리스너에 상태 변경을 알려 화면이 새 상태로 다시 그려지게 한다.
     notifyListeners();
 
-    Future.sync(() => _repository.addPost(body, requestId: _requestId)).then(
+    Future.sync(
+      () => _repository.addPost(validatedBody, requestId: _requestId),
+    ).then(
       (post) => _finish(attempt, WriteStatus.succeeded, post),
       onError: (Object error, StackTrace stack) {
         _finish(
@@ -70,11 +72,11 @@ class WriteViewModelImpl extends ChangeNotifier implements WriteViewModel {
     return result.future;
   }
 
+  bool _isStillWaitingFor(int attempt) =>
+      !_disposed && attempt == _attempt && _status == WriteStatus.saving;
+
   void _finish(int attempt, WriteStatus status, [Post? post]) {
-    // 시간 초과·재시도·화면 해제 뒤 도착한 응답은 현재 화면에 적용하지 않는다.
-    if (_disposed || attempt != _attempt || _status != WriteStatus.saving) {
-      return;
-    }
+    if (!_isStillWaitingFor(attempt)) return;
     _timer?.cancel();
     _status = status;
     _pendingResult?.complete(post);
