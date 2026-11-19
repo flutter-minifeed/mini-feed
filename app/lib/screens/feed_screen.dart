@@ -71,7 +71,7 @@ class _FeedScreenState extends State<FeedScreen> {
     );
     if (!mounted || post == null) return;
 
-    // 재조회가 실패하거나 오래된 목록을 돌려줘도 서버가 반환한 새 글은 바로 보인다.
+    // 진행 중인 목록 조회가 늦게 끝나도 방금 올린 글을 덮어쓰지 않게 무효로 만든다.
     ++_requestId;
     setState(() {
       _posts = [post, ..._posts.where((item) => item.id != post.id)];

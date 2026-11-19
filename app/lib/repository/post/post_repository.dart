@@ -16,9 +16,6 @@ abstract interface class PostRepository {
 
   /// 현재 사용자 이름으로 새 글을 만들어 목록 맨 앞에 넣고, 만든 글을 돌려준다.
   /// 좋아요·댓글 수는 0으로 시작한다. 300자·공백 검사는 글쓰기 화면이 한다.
-  ///
-  /// #14가 가정하는 #47 연결 계약: 같은 requestId·본문은 동시 재시도에도
-  /// 하나의 글과 최초 작성 시각을 반환한다. 같은 ID로 다른 본문은 거부한다.
-  /// null은 기존 호출부 호환용이며, 호출할 때마다 새 글을 만든다.
+  /// 같은 requestId로 다시 보내면 처음 만든 글을 돌려주고, 본문이 다르면 거부한다.
   Future<Post> addPost(String body, {String? requestId});
 }

@@ -8,7 +8,6 @@ const maxPostLength = 300;
 class WriteScreen extends StatefulWidget {
   const WriteScreen({super.key, required this.viewModel});
 
-  /// 이 화면 전용 객체이며, 교체되거나 화면이 닫힐 때 해제한다.
   final WriteViewModel viewModel;
 
   @override
