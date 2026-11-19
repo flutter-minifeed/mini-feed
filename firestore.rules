@@ -64,17 +64,19 @@ service cloud.firestore {
       return body is string && !isBlank(body) && withinPostLength(body);
     }
 
-    function matchesPostProfile(data) {
+    function matchesAuthorProfile(data) {
       let profile = get(/databases/$(database)/documents/users/$(request.auth.uid));
       return profile != null
         && data.nickName == profile.data.nickName
         && data.colorIndex == profile.data.colorIndex;
     }
 
+    function hasExactly(data, fields) {
+      return data.keys().hasAll(fields) && data.keys().hasOnly(fields);
+    }
+
     function validNewPost(data) {
-      let fields = ['authorId', 'nickName', 'colorIndex', 'body', 'createdAt', 'likeCount', 'commentCount'];
-      return data.keys().hasAll(fields)
-        && data.keys().hasOnly(fields)
+      return hasExactly(data, ['authorId', 'nickName', 'colorIndex', 'body', 'createdAt', 'likeCount', 'commentCount'])
         && data.authorId == request.auth.uid
         && data.nickName is string
         && data.colorIndex is int
@@ -83,7 +85,7 @@ service cloud.firestore {
         && data.likeCount is int && data.likeCount == 0
         && data.commentCount is int && data.commentCount == 0
         && validPostBody(data.body)
-        && matchesPostProfile(data);
+        && matchesAuthorProfile(data);
     }
 
     match /posts/{postId} {
@@ -104,8 +106,7 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.auth.uid == uid
         && request.auth.token.firebase.sign_in_provider == 'anonymous'
-        && request.resource.data.keys().hasAll(['nickName', 'colorIndex', 'createdAt'])
-        && request.resource.data.keys().hasOnly(['nickName', 'colorIndex', 'createdAt'])
+        && hasExactly(request.resource.data, ['nickName', 'colorIndex', 'createdAt'])
         && request.resource.data.nickName is string
         && request.resource.data.nickName.size() > 0
         && request.resource.data.nickName.size() <= 40
