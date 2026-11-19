@@ -52,6 +52,9 @@ jobs:
       - name: 단위·위젯 테스트
         run: flutter test --no-pub
 
+      - name: Firestore 글자 수 규칙 재생성 확인
+        run: python3 ../tests/firestore/generate_grapheme_rules.py "${PUB_CACHE:-$HOME/.pub-cache}/hosted/pub.dev/characters-1.4.1/third_party/Unicode_Consortium" --check
+
   firestore-rules:
     name: Firestore rules
     runs-on: ubuntu-latest
