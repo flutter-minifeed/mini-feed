@@ -11,6 +11,7 @@ import 'package:minifeed/screens/feed_screen.dart';
 import 'package:minifeed/screens/session_gate.dart';
 import 'package:minifeed/service/auth/auth_service.dart';
 import 'package:minifeed/theme/app_theme.dart';
+import 'package:minifeed/viewmodels/write_view_model.dart';
 import 'package:minifeed/widgets/author_tile.dart';
 
 const author = Author(
@@ -256,7 +257,13 @@ void main() {
           return RepositoryScope(
             postRepository: posts,
             commentRepository: InMemoryCommentRepository.fromJsonString('[]'),
-            child: MaterialApp(theme: appTheme, home: const FeedScreen()),
+            child: MaterialApp(
+              theme: appTheme,
+              home: FeedScreen(
+                createWriteViewModel: () =>
+                    WriteViewModelImpl(repository: posts),
+              ),
+            ),
           );
         },
       ),

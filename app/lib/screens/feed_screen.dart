@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 import '../models/post.dart';
 import '../repository/post/post_repository.dart';
 import '../repository/repository_scope.dart';
+import '../viewmodels/write_view_model.dart';
 import '../widgets/post_card.dart';
 import 'detail_screen.dart';
 import 'write_screen.dart';
 
 class FeedScreen extends StatefulWidget {
-  const FeedScreen({super.key});
+  const FeedScreen({super.key, required this.createWriteViewModel});
+
+  final WriteViewModel Function() createWriteViewModel;
 
   @override
   State<FeedScreen> createState() => _FeedScreenState();
@@ -33,7 +36,7 @@ class _FeedScreenState extends State<FeedScreen> {
     }
   }
 
-  Future<void> _loadPosts({bool revealNewPost = false}) async {
+  Future<void> _loadPosts() async {
     final requestId = ++_requestId;
     final repository = _repository!;
     setState(() {
@@ -45,21 +48,10 @@ class _FeedScreenState extends State<FeedScreen> {
       final posts = await repository.getPosts();
       if (!mounted || requestId != _requestId) return;
 
-      final showTop =
-          revealNewPost &&
-          posts.isNotEmpty &&
-          (_posts.isEmpty || posts.first.id != _posts.first.id);
       setState(() {
         _posts = posts;
         _loading = false;
       });
-      if (showTop) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted && _scrollController.hasClients) {
-            _scrollController.jumpTo(0);
-          }
-        });
-      }
     } catch (_) {
       if (!mounted || requestId != _requestId) return;
       setState(() {
@@ -70,13 +62,29 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   Future<void> _openWrite() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
+    final viewModel = widget.createWriteViewModel();
+    final post = await Navigator.of(context).push<Post>(
+      MaterialPageRoute<Post>(
         fullscreenDialog: true,
-        builder: (_) => const WriteScreen(),
+        builder: (_) => WriteScreen(viewModel: viewModel),
       ),
     );
-    if (mounted) await _loadPosts(revealNewPost: true);
+    if (!mounted) return;
+    if (post == null) {
+      await _loadPosts();
+      return;
+    }
+
+    setState(() {
+      _posts = [post, ..._posts.where((item) => item.id != post.id)];
+      _loading = false;
+      _failed = false;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _scrollController.hasClients) {
+        _scrollController.jumpTo(0);
+      }
+    });
   }
 
   void _openDetail(Post post, {bool focusComment = false}) {

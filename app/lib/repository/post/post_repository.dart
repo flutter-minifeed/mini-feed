@@ -5,7 +5,6 @@ import '../../models/post.dart';
 ///
 /// MP1은 메모리 구현, MP2는 Firestore 구현으로 바꿔 끼운다.
 abstract interface class PostRepository {
-  /// [addPost]로 만드는 글의 작성자. 글쓰기 화면이 작성자 줄을 그릴 때 쓴다.
   Author get currentUser;
 
   /// 모든 게시글을 최신순(작성 시각 내림차순)으로 돌려준다.
@@ -16,5 +15,6 @@ abstract interface class PostRepository {
 
   /// 현재 사용자 이름으로 새 글을 만들어 목록 맨 앞에 넣고, 만든 글을 돌려준다.
   /// 좋아요·댓글 수는 0으로 시작한다. 300자·공백 검사는 글쓰기 화면이 한다.
-  Future<Post> addPost(String body);
+  /// 같은 requestId로 다시 보내면 처음 만든 글을 돌려주고, 본문이 다르면 거부한다.
+  Future<Post> addPost(String body, {String? requestId});
 }

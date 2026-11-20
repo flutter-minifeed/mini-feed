@@ -8,6 +8,7 @@ import 'screens/feed_screen.dart';
 import 'screens/session_gate.dart';
 import 'service/auth/firebase_auth_service.dart';
 import 'theme/app_theme.dart';
+import 'viewmodels/write_view_model.dart';
 
 //앱 실행
 // 저장소는 여기서 한 번만 만들고 RepositoryScope로 모든 화면에 공유한다.
@@ -19,24 +20,34 @@ Future<void> main() async {
   runApp(
     SessionGate(
       authService: FirebaseAuthService(),
-      buildSession: (author) async => RepositoryScope(
-        postRepository: await InMemoryPostRepository.load(currentUser: author),
-        commentRepository: await InMemoryCommentRepository.load(),
-        child: const MyApp(),
-      ),
+      buildSession: (author) async {
+        final postRepository = await InMemoryPostRepository.load(
+          currentUser: author,
+        );
+        return RepositoryScope(
+          postRepository: postRepository,
+          commentRepository: await InMemoryCommentRepository.load(),
+          child: MyApp(
+            createWriteViewModel: () =>
+                WriteViewModelImpl(repository: postRepository),
+          ),
+        );
+      },
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, required this.createWriteViewModel});
+
+  final WriteViewModel Function() createWriteViewModel;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: '미니피드',
       theme: appTheme,
-      home: const FeedScreen(),
+      home: FeedScreen(createWriteViewModel: createWriteViewModel),
     );
   }
 }

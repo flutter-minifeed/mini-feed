@@ -121,6 +121,40 @@ void main() {
     expect(() => posts.removeAt(0), throwsUnsupportedError);
   });
 
+  test('같은 요청 ID를 동시에 저장해도 최초 게시글 하나를 반환한다', () async {
+    // given
+    final repository = InMemoryPostRepository.fromJsonString(
+      '[]',
+      currentUser: _me,
+    );
+
+    // when
+    final results = await Future.wait([
+      repository.addPost('첫 글', requestId: 'request-1'),
+      repository.addPost('첫 글', requestId: 'request-1'),
+    ]);
+    final posts = await repository.getPosts();
+
+    // then
+    expect(posts, hasLength(1));
+    expect(results.last, same(results.first));
+  });
+
+  test('같은 요청 ID로 다른 본문을 저장하면 거부한다', () async {
+    // given
+    final repository = InMemoryPostRepository.fromJsonString(
+      '[]',
+      currentUser: _me,
+    );
+    await repository.addPost('첫 글', requestId: 'request-1');
+
+    // when
+    final result = repository.addPost('다른 글', requestId: 'request-1');
+
+    // then
+    await expectLater(result, throwsArgumentError);
+  });
+
   test('조회한 목록을 고치려 해도 저장소 목록은 그대로다', () async {
     // given: 화면이 받은 목록
     final repository = await _loadPosts();
