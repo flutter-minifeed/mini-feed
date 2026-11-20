@@ -14,9 +14,11 @@ class PostCard extends StatelessWidget {
     required this.now,
     this.onOpen,
     required this.onComments,
+    this.highlighted = false,
   });
 
   final Post post;
+  final bool highlighted;
   final DateTime now;
 
   /// 본문을 눌렀을 때 할 일. null이면 본문을 눌러도 반응하지 않는다.
@@ -30,7 +32,7 @@ class PostCard extends StatelessWidget {
     final text = theme.textTheme;
     return Ink(
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: highlighted ? colors.surfaceContainerLow : colors.surface,
         border: Border(bottom: BorderSide(color: colors.outlineVariant)),
       ),
       child: Padding(

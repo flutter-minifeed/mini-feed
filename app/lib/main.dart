@@ -1,8 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'repository/comment/in_memory_comment_repository.dart';
-import 'repository/post/in_memory_post_repository.dart';
+import 'repository/comment/firestore_comment_repository.dart';
+import 'repository/post/firestore_post_repository.dart';
 import 'repository/repository_scope.dart';
 import 'screens/feed_screen.dart';
 import 'screens/session_gate.dart';
@@ -12,7 +13,7 @@ import 'theme/app_theme.dart';
 //앱 실행
 // 저장소는 여기서 한 번만 만들고 RepositoryScope로 모든 화면에 공유한다.
 Future<void> main() async {
-  // runApp 전에 asset을 읽으려면 Flutter 엔진을 먼저 준비해야 한다.
+  // Firebase·플랫폼 플러그인을 사용하기 전에 Flutter 엔진을 준비한다.
   WidgetsFlutterBinding.ensureInitialized();
 
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
@@ -20,8 +21,13 @@ Future<void> main() async {
     SessionGate(
       authService: FirebaseAuthService(),
       buildSession: (author) async => RepositoryScope(
-        postRepository: await InMemoryPostRepository.load(currentUser: author),
-        commentRepository: await InMemoryCommentRepository.load(),
+        postRepository: FirestorePostRepository(
+          firestore: FirebaseFirestore.instance,
+          currentUser: author,
+        ),
+        commentRepository: FirestoreCommentRepository(
+          firestore: FirebaseFirestore.instance,
+        ),
         child: const MyApp(),
       ),
     ),
