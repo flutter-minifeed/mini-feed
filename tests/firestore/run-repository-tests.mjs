@@ -70,10 +70,18 @@ const flutter = process.platform === 'win32'
   : { run: (args) => run('flutter', args, options), cleanup: () => {} };
 
 try {
+  // 동시에 실행한 다른 이슈의 로컬 서버와 데이터를 섞지 않는다.
+  const portArgs = [];
+  for (const [host, key] of [
+    [process.env.FIREBASE_AUTH_EMULATOR_HOST, 'AUTH_EMULATOR_PORT'],
+    [process.env.FIRESTORE_EMULATOR_HOST, 'FIRESTORE_EMULATOR_PORT'],
+  ]) {
+    if (host) portArgs.push(`--dart-define=${key}=${new URL('http://' + host).port}`);
+  }
   for (const file of ['test/firestore_emulator_test.dart', 'test/firestore_paging_emulator_test.dart']) {
     // Replace the data before each suite, including when paging runs after writes.
     run(process.execPath, ['seed-repository-fixtures.mjs'], { cwd: tests, stdio: 'inherit' });
-    flutter.run(['test', '--no-pub', '--platform', 'chrome', '--reporter', 'expanded', file]);
+    flutter.run(['test', '--no-pub', '--platform', 'chrome', '--reporter', 'expanded', ...portArgs, file]);
   }
 } finally {
   flutter.cleanup();
