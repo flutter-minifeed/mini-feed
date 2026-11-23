@@ -52,6 +52,18 @@ class FirestorePostRepository implements PostRepository {
   }
 
   @override
+  Future<bool> deletePost(String id) {
+    final post = _posts.doc(id);
+    final marker = _firestore.collection('deletedPosts').doc(id);
+    return _firestore.runTransaction((transaction) async {
+      if (!(await transaction.get(post)).exists) return false;
+      transaction.delete(post);
+      transaction.set(marker, {'deletedAt': FieldValue.serverTimestamp()});
+      return true;
+    }, timeout: const Duration(seconds: 10));
+  }
+
+  @override
   Future<Post> addPost(String body, {String? requestId}) async {
     final ref = _posts.doc(requestId);
     try {

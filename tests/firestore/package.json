@@ -2,7 +2,7 @@
   "name": "minifeed-profile-rules-tests",
   "private": true,
   "scripts": {
-    "test": "firebase --config ../../firebase.json emulators:exec --only firestore --project demo-minifeed-auth \"node --test --test-concurrency=1 profiles.rules.test.mjs posts.rules.test.mjs\"",
+    "test": "firebase --config ../../firebase.json emulators:exec --only firestore --project demo-minifeed-auth \"node --test --test-concurrency=1 profiles.rules.test.mjs posts.rules.test.mjs post-delete.rules.test.mjs\"",
     "test:repositories": "firebase --config ../../firebase.json emulators:exec --only auth,firestore --project demo-minifeed-repositories \"node run-repository-tests.mjs\""
   },
   "devDependencies": {

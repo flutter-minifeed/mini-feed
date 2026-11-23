@@ -33,6 +33,42 @@ void main() {
         .firestore;
   });
 
+  test('타인 삭제는 거부되고 본인의 두 삭제 요청 중 하나만 글을 제거한다', () async {
+    // given
+    final peer = await openFirestoreEmulatorClient('issue21-peer');
+    final peerAuthor = await signInToFirestoreEmulator(
+      peer.auth,
+      peer.firestore,
+    );
+    final peerPosts = FirestorePostRepository(
+      firestore: peer.firestore,
+      currentUser: peerAuthor,
+    );
+    final post = await posts.addPost('삭제 동시 조작 확인');
+    expect(await peerPosts.getPostById(post.id), isNotNull);
+
+    // when
+    await expectLater(
+      peerPosts.deletePost(post.id),
+      throwsA(
+        isA<FirebaseException>().having(
+          (error) => error.code,
+          '거부 사유',
+          'permission-denied',
+        ),
+      ),
+    );
+    final results = await Future.wait([
+      posts.deletePost(post.id),
+      posts.deletePost(post.id),
+    ]);
+
+    // then
+    expect(results, unorderedEquals([true, false]));
+    expect(await peerPosts.getPostById(post.id), isNull);
+    expect(await posts.getPostById(post.id), isNull);
+  });
+
   test('게시글 ID 조회는 문서 내용을 같은 모델로 반환한다', () async {
     // when
     final post = await posts.getPostById(_fixturePost);

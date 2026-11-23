@@ -569,6 +569,9 @@ class _ReadOverrideRepository implements PostRepository {
   Author get currentUser => original.currentUser;
 
   @override
+  Future<bool> deletePost(String id) => original.deletePost(id);
+
+  @override
   Future<List<Post>> getPosts() => read();
 
   @override

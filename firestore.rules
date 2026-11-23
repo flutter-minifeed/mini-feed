@@ -109,14 +109,25 @@ service cloud.firestore {
 
     match /posts/{postId} {
       allow get, list: if request.auth != null;
-      allow create: if request.auth != null && validNewPost(request.resource.data);
-      allow update, delete: if false;
+      allow create: if request.auth != null
+        && !exists(/databases/$(database)/documents/deletedPosts/$(postId))
+        && validNewPost(request.resource.data);
+      allow delete: if request.auth != null && resource.data.authorId == request.auth.uid
+        && getAfter(/databases/$(database)/documents/deletedPosts/$(postId)).data.deletedAt == request.time;
 
       match /comments/{commentId} {
         allow get, list: if request.auth != null
           && exists(/databases/$(database)/documents/posts/$(postId));
         allow write: if false;
       }
+    }
+
+    match /deletedPosts/{postId} {
+      allow create: if request.auth != null
+        && get(/databases/$(database)/documents/posts/$(postId)).data.authorId == request.auth.uid
+        && !existsAfter(/databases/$(database)/documents/posts/$(postId))
+        && request.resource.data.keys().hasOnly(['deletedAt'])
+        && request.resource.data.deletedAt == request.time;
     }
 
     // #12 본인 프로필을 조회하고 최초 1회 생성한다.
