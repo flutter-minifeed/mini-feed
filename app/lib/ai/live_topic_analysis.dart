@@ -31,14 +31,12 @@ class _LiveTopicAnalysisState extends State<LiveTopicAnalysis> {
     loadAnalyzer: widget.loadAnalyzer,
   );
   bool _expanded = true;
-  // 점수가 숨겨진 동안에도 직전 막대를 보존해 같은 값의 애니메이션을 반복하지 않는다.
-  TopicAnalysis? _lastResult;
 
   @override
   void initState() {
     super.initState();
     _syncInput();
-    _analysis.addListener(_onResult);
+    _analysis.addListener(_refresh);
   }
 
   @override
@@ -52,9 +50,7 @@ class _LiveTopicAnalysisState extends State<LiveTopicAnalysis> {
     keyboardVisible: widget.keyboardVisible,
   );
 
-  void _onResult() => setState(() {
-    _lastResult = _analysis.result ?? _lastResult;
-  });
+  void _refresh() => setState(() {});
 
   @override
   void dispose() {
@@ -116,7 +112,8 @@ class _LiveTopicAnalysisState extends State<LiveTopicAnalysis> {
               ),
             ),
           ),
-        if (_lastResult case final previous?)
+        // 숨겨진 막대도 유지해 같은 값으로 다시 애니메이션하지 않는다.
+        if (_analysis.lastResult case final previous?)
           Visibility(
             visible: showCard && result != null && _expanded,
             maintainState: true,

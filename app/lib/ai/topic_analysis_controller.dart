@@ -18,8 +18,11 @@ class TopicAnalysisController extends ChangeNotifier {
 
   TopicAnalysisStatus _status = TopicAnalysisStatus.idle;
   TopicAnalysisStatus get status => _status;
-  TopicAnalysis? _result;
-  TopicAnalysis? get result => _result;
+  String? _completedInput;
+  TopicAnalysis? _lastResult;
+  TopicAnalysis? get lastResult => _lastResult;
+  TopicAnalysis? get result =>
+      _status == TopicAnalysisStatus.ready ? _lastResult : null;
 
   /// 호출자는 분석할 문자열을 완성해 전달한다. 키보드가 닫혀 있으면 변경 즉시 분석한다.
   void updateInput(String input, {required bool keyboardVisible}) {
@@ -29,12 +32,16 @@ class TopicAnalysisController extends ChangeNotifier {
       _input = input;
       _revision++;
       _deadline?.cancel();
-      _result = null;
       _status = TopicAnalysisStatus.idle;
     }
     if (_status == TopicAnalysisStatus.idle &&
         !keyboardVisible &&
         input.trim().isNotEmpty) {
+      if (input == _completedInput) {
+        _status = TopicAnalysisStatus.ready;
+        notifyListeners();
+        return;
+      }
       _status = TopicAnalysisStatus.analyzing;
       final revision = _revision;
       _deadline = Timer(const Duration(seconds: 5), () {
@@ -70,7 +77,8 @@ class TopicAnalysisController extends ChangeNotifier {
       if (_revision != revision) return;
       final result = await analyzer.analyze(input);
       if (_revision != revision) return;
-      _result = result;
+      _lastResult = result;
+      _completedInput = input;
       _status = TopicAnalysisStatus.ready;
     } catch (_) {
       if (_revision != revision) return;

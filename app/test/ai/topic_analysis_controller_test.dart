@@ -30,6 +30,7 @@ void main() {
   late _Analyzer model;
   late TopicAnalysisController controller;
   late int loads;
+
   setUp(() {
     model = _Analyzer();
     loads = 0;
@@ -39,6 +40,26 @@ void main() {
         return model;
       },
     );
+  });
+
+  testWidgets('수정한 본문을 마지막 분석 입력으로 되돌리면 같은 결과를 재사용한다', (tester) async {
+    // given
+    controller.updateInput('여행', keyboardVisible: false);
+    await tester.pump();
+    model.replies.single.complete(_result);
+    await tester.pump();
+
+    // when
+    controller.updateInput('여행지', keyboardVisible: true);
+    expect(controller.result, isNull);
+    controller.updateInput('여행', keyboardVisible: true);
+    controller.updateInput('여행', keyboardVisible: false);
+    await tester.pump();
+
+    // then
+    expect(model.inputs, ['여행']);
+    expect(controller.result, _result);
+    controller.dispose();
   });
 
   testWidgets('입력 중에는 대기하고 키보드를 다시 닫아도 같은 입력은 한 번만 분석한다', (tester) async {
