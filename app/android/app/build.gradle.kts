@@ -21,7 +21,8 @@ android {
         applicationId = "com.minifeed"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = 24
+        // LiteRT 1.4.0 네이티브 라이브러리가 API 26부터 있는 strtod_l을 요구해 API 24·25에서는 모델 로드가 실패한다.
+        minSdk = 26
         targetSdk = flutter.targetSdkVersion
         // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
         // is added automatically by Flutter. (https://developer.android.com/studio/build/configure-apk-splits#configure-APK-versions)
@@ -36,6 +37,13 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+        }
+    }
+
+    // tflite_flutter가 litert-gpu를 항상 함께 넣지만, Dense 한 층 모델이라 GPU 위임을 쓰지 않는다.
+    packaging {
+        jniLibs {
+            excludes += "**/libtensorflowlite_gpu_jni.so"
         }
     }
 }

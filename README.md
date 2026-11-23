@@ -121,7 +121,9 @@ Android 앱은 시작 화면에서 익명 인증과 고정 프로필을 준비�
 firebase deploy --only firestore:rules --project <팀_프로젝트_ID>
 ```
 
-이 규칙은 자기 프로필의 생성·단건 조회만 허용하며, 프로필 변경·삭제·전체 목록 조회와 나머지 경로의 접근을 차단합니다. 게시글 규칙은 #16에서 추가합니다. `users/{uid}`에 `nickName`(문자열), `colorIndex`(0~7 정수), `createdAt`(서버 시각)을 저장합니다. 닉네임은 UID의 UTF-8 FNV-1a 32비트 해시로 고정된 30개 수식어와 30개 동물 이름 중에서 선택하고, 색은 해시를 8로 나눈 나머지로 결정합니다. 닉네임 중복을 허용하며 사용자 식별은 UID로 합니다.
+프로필 규칙은 본인 프로필의 생성·단건 조회만 허용하며, 프로필 변경·삭제·전체 목록 조회를 차단합니다. `users/{uid}`에 `nickName`(문자열), `colorIndex`(0~7 정수), `createdAt`(서버 시각)을 저장합니다. 닉네임은 UID의 UTF-8 FNV-1a 32비트 해시로 고정된 30개 수식어와 30개 동물 이름 중에서 선택하고, 색은 해시를 8로 나눈 나머지로 결정합니다. 닉네임 중복을 허용하며 사용자 식별은 UID로 합니다.
+
+게시글 규칙(#16)은 인증된 사용자의 목록·상세 조회와 정상 형식의 자기 글 생성을 허용합니다. 작성자는 본인 UID와 프로필의 닉네임·색상으로 기록하며, 최초 작성 시각은 서버 시각이고 두 초기 카운터는 0입니다. 빈 본문과 300개를 초과하는 Unicode 글자 묶음은 거부합니다. 가족 이모지처럼 여러 문자로 조합된 글자도 Flutter와 같은 Unicode 16 기준으로 셉니다. 인증된 사용자는 기존 게시글의 댓글을 조회할 수 있습니다. 게시글 수정·삭제와 댓글을 포함한 하위 경로 쓰기는 거부합니다.
 
 분석과 위젯 테스트는 `app/`에서 `flutter analyze`, `flutter test`로 실행합니다. 실제 설정 없이도 이 검사는 가능합니다. Android APK 빌드는 로컬 설정을 준비한 뒤 실행합니다.
 
@@ -129,7 +131,11 @@ firebase deploy --only firestore:rules --project <팀_프로젝트_ID>
 flutter build apk --debug --dart-define-from-file=../.env
 ```
 
-Firestore 접근 규칙 테스트는 **Node.js 24.12.0 이상**·Firebase CLI·Java 21 이상을 준비한 뒤 `tests/firestore/`에서 `npm ci`, `npm test`로 실행합니다. 잠금 파일의 Firebase 패키지가 Node.js 24.12.0 이상을 요구합니다. 검증한 환경은 Node.js 24.22.3 / Firebase CLI 15.36.0입니다. `demo-minifeed-auth` 프로젝트의 로컬 에뮬레이터를 사용하며 실제 팀 서버에 쓰지 않습니다.
+Firestore 접근 규칙 테스트는 **Node.js 24.12.0 이상**·Firebase CLI·Java 21 이상을 준비한 뒤 `tests/firestore/`에서 `npm ci`, `npm test`로 실행합니다. 잠금 파일의 Firebase 패키지가 Node.js 24.12.0 이상을 요구합니다. GitHub Actions의 `Firestore rules` 작업도 Node.js 24.22.3 / Firebase CLI 15.36.0 / Java 25로 같은 명령을 실행합니다. `demo-minifeed-auth` 프로젝트의 로컬 에뮬레이터에서 프로필·게시글 테스트를 순차 실행하며 실제 팀 서버에 쓰지 않습니다.
+
+300자 기준을 앱과 서버에서 같게 적용하려고 Unicode 16의 글자 묶음을 셉니다. Firestore의 `size()`만 쓰면 가족 이모지 300개처럼 앱에서 허용하는 글도 거부되고, Unicode 속성을 한 정규식에 모두 넣으면 에뮬레이터의 길이 제한을 넘습니다. 그래서 문자 속성을 먼저 짧은 기호로 바꾸고, 짧아진 패턴으로 글자 묶음을 세도록 구성했습니다. 이 방식은 무료 Firestore 규칙에서 실행할 수 있습니다.
+
+Firestore의 Unicode 글자 수 함수는 Dart `characters` 1.4.1이 사용하는 Unicode 16 데이터에서 생성합니다. 데이터 원본은 해당 패키지의 `third_party/Unicode_Consortium/`에 있습니다. 규칙을 다시 생성할 때 저장소 루트에서 `python tests/firestore/generate_grapheme_rules.py <Unicode_16_데이터_폴더>`를 실행합니다. 파일을 쓰지 않고 재현 여부를 검사하려면 같은 명령 뒤에 `--check`를 붙입니다.
 
 Git·제출 ZIP에는 `.env`, `app/android/app/google-services.json`, `app/lib/firebase_options.dart`, `app/firebase.json`, 빌드 결과·캐시를 넣지 않습니다. `.gitignore`는 ZIP에서 파일을 자동 제외하지 않으므로 압축할 때 직접 제외합니다. 루트 `.env.example`과 이 설정·실행 안내는 제출물에 포함합니다.
 

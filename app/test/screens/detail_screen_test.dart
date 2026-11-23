@@ -30,6 +30,16 @@ void main() {
     expect(find.text('테스트 댓글'), findsOneWidget);
   });
 
+  testWidgets('댓글이 없는 게시글의 상세를 열면 본문과 댓글 0이 표시된다', (tester) async {
+    // when
+    await _openDetail(tester, hasComments: false);
+
+    // then
+    expect(find.text('테스트 본문'), findsOneWidget);
+    expect(find.text('댓글 0'), findsOneWidget);
+    expect(find.text('테스트 댓글'), findsNothing);
+  });
+
   testWidgets('상세에서 본문을 눌러도 다른 화면이 열리지 않는다', (tester) async {
     // given
     await _openDetail(tester);
@@ -132,11 +142,11 @@ void main() {
 
 const _postId = 'post-1';
 
-// 가짜 저장소에 글 1개와 댓글 1개를 넣고 상세 화면만 띄운 뒤, 다 불러올 때까지 기다린다.
 Future<void> _openDetail(
   WidgetTester tester, {
   String postId = _postId,
   bool focusComment = false,
+  bool hasComments = true,
 }) async {
   final now = DateTime.now();
   final postRepository = FakePostRepository()
@@ -147,12 +157,13 @@ Future<void> _openDetail(
         body: '테스트 본문',
         createdAt: now.subtract(const Duration(minutes: 12)),
         likeCount: 3,
-        commentCount: 1,
+        commentCount: hasComments ? 1 : 0,
         likedByMe: false,
       ),
     );
-  final commentRepository = FakeCommentRepository()
-    ..comments.add(
+  final commentRepository = FakeCommentRepository();
+  if (hasComments) {
+    commentRepository.comments.add(
       Comment(
         id: 'comment-1',
         postId: _postId,
@@ -161,6 +172,7 @@ Future<void> _openDetail(
         createdAt: now.subtract(const Duration(minutes: 10)),
       ),
     );
+  }
 
   await tester.pumpWidget(
     RepositoryScope(
