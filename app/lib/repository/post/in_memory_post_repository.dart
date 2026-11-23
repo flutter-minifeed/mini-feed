@@ -69,10 +69,7 @@ class InMemoryPostRepository implements PostRepository {
     final id = requestId ?? _nextPostId();
     final saved = _findPost(id);
     if (saved != null) {
-      if (saved.author.id != currentUser.id || saved.body != body) {
-        throw ArgumentError('같은 요청 ID로 다른 게시글을 저장할 수 없습니다.');
-      }
-      return saved;
+      return checkSameRequest(saved, author: currentUser, body: body);
     }
 
     final post = Post(

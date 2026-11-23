@@ -76,10 +76,7 @@ class FirestorePostRepository implements PostRepository {
       });
 
       if (existing != null) {
-        if (existing.author.id != currentUser.id || existing.body != body) {
-          throw ArgumentError('같은 요청 ID로 다른 게시글을 저장할 수 없습니다.');
-        }
-        return existing;
+        return checkSameRequest(existing, author: currentUser, body: body);
       }
 
       // 최초 생성은 서버가 확정한 작성 시각까지 읽고 나서 성공으로 반환한다.

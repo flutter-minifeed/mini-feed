@@ -329,6 +329,20 @@ test('인증된 댓글 작성자도 댓글을 삭제할 수 없다', async () =>
   await assertFails(request);
 });
 
+for (const path of ['posts/example/likes/writer-a', 'posts/example/reports/report-1']) {
+  test('인증 사용자가 미구현 하위 경로 ' + path + '에 쓰면 거부된다', async () => {
+    // given
+    await seedPost();
+    const ref = doc(authenticated(), path);
+
+    // when
+    const request = setDoc(ref, { authorId: writer });
+
+    // then
+    await assertFails(request);
+  });
+}
+
 const family = '\u{1f468}\u200d\u{1f469}\u200d\u{1f467}\u200d\u{1f466}';
 for (const [name, body, expected] of [
   ['한글 299자', '가'.repeat(299), true],

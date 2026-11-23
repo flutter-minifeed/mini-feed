@@ -47,10 +47,7 @@ class FakePostRepository implements PostRepository {
     await addGate?.future; // addGate가 없으면(null) 바로 넘어간다.
     final saved = posts.where((post) => post.id == id).firstOrNull;
     if (saved != null) {
-      if (saved.author.id != currentUser.id || saved.body != body) {
-        throw ArgumentError('같은 요청 ID로 다른 게시글을 저장할 수 없습니다.');
-      }
-      return saved;
+      return checkSameRequest(saved, author: currentUser, body: body);
     }
 
     final post = Post(
