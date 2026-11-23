@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -102,11 +103,17 @@ List<double> _expectedVector(int length, List<int> activePositions) {
 ({List<Map<String, dynamic>> cases, double scoreTolerance})
 _readPythonFixture() {
   const encodedFixture = String.fromEnvironment('TOPIC_TAGGER_CASES');
-  expect(encodedFixture, isNotEmpty, reason: '실행할 때 기준 JSON을 전달해 주세요.');
+  const compressedFixture = String.fromEnvironment('TOPIC_TAGGER_CASES_GZIP');
+  expect(
+    encodedFixture.isNotEmpty || compressedFixture.isNotEmpty,
+    isTrue,
+    reason: '실행할 때 기준 JSON을 전달해 주세요.',
+  );
 
-  final fixture = jsonDecode(
-    utf8.decode(base64Decode(encodedFixture)),
-  ) as Map<String, dynamic>;
+  final bytes = compressedFixture.isNotEmpty
+      ? gzip.decode(base64Decode(compressedFixture))
+      : base64Decode(encodedFixture);
+  final fixture = jsonDecode(utf8.decode(bytes)) as Map<String, dynamic>;
   return (
     cases: (fixture['cases'] as List).cast<Map<String, dynamic>>(),
     scoreTolerance: (fixture['scoreTolerance'] as num).toDouble(),
