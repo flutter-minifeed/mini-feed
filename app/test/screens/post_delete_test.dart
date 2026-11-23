@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minifeed/main.dart';
 import 'package:minifeed/models/author.dart';
+import 'package:minifeed/models/comment.dart';
 import 'package:minifeed/models/post.dart';
 import 'package:minifeed/repository/repository_scope.dart';
 import 'package:minifeed/screens/detail_screen.dart';
@@ -12,6 +13,46 @@ import 'package:minifeed/viewmodels/write_view_model.dart';
 import '../helpers/test_app.dart';
 
 void main() {
+  testWidgets('삭제 확인창 바깥을 누르면 글을 그대로 둔다', (tester) async {
+    // given
+    final repo = await _openFeed(tester);
+    await _confirmScreen(tester);
+
+    // when
+    await tester.tapAt(const Offset(8, 8));
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(repo.calls, 0);
+    expect(find.text('글 0'), findsOneWidget);
+  });
+
+  testWidgets('댓글 상세를 여는 중 글이 삭제되면 안내 후 카드를 제거한다', (tester) async {
+    // given
+    final comments = _DelayedComments();
+    final repo = await _openFeed(
+      tester,
+      own: false,
+      commentRepository: comments,
+    );
+    await tester.tap(find.byKey(const ValueKey('comments-p0')));
+    await tester.pump();
+    expect(comments.requestedId, 'p0');
+
+    // when
+    repo.posts.clear();
+    comments.result.complete([]);
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.text('삭제된 글이에요'), findsOneWidget);
+    await tester.tapAt(const Offset(8, 8));
+    await tester.pumpAndSettle();
+    expect(find.byType(DetailScreen), findsNothing);
+    expect(find.text('글 0'), findsNothing);
+  });
+
   testWidgets('내 글 삭제를 취소하면 서버 요청 없이 글이 남는다', (tester) async {
     // given
     final repo = await _openFeed(tester);
@@ -60,6 +101,9 @@ void main() {
     await tester.tap(find.text('삭제'));
     await tester.pump();
     expect(repo.calls, 1);
+    await tester.tapAt(const Offset(8, 8));
+    await tester.pumpAndSettle();
+    expect(find.text('삭제 중…'), findsOneWidget);
     repo.pending!.completeError(StateError('거부'));
     await tester.pumpAndSettle();
 
@@ -84,15 +128,15 @@ void main() {
       await tester.tap(find.byTooltip('더보기'));
       await tester.pumpAndSettle();
       expect(find.text('내 글 삭제'), findsNothing);
-          expect(find.text('이 글 신고하기'), findsOneWidget);
-          await tester.binding.handlePopRoute();
+      expect(find.text('이 글 신고하기'), findsOneWidget);
+      await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       repo.posts.clear();
 
       // when
       if (comment) {
         await tester.enterText(find.byType(TextField), '댓글');
-            await tester.pump();
+        await tester.pump();
         await tester.tap(find.byTooltip('댓글 보내기'));
       } else {
         await tester.tap(find.byIcon(Icons.favorite_border));
@@ -118,6 +162,17 @@ Future<void> _confirmScreen(WidgetTester tester, {Finder? menu}) async {
   expect(find.text('이 글을 삭제할까요?'), findsOneWidget);
 }
 
+class _DelayedComments extends FakeCommentRepository {
+  final result = Completer<List<Comment>>();
+  String? requestedId;
+
+  @override
+  Future<List<Comment>> getComments(String postId) {
+    requestedId = postId;
+    return result.future;
+  }
+}
+
 class _DeleteRepository extends FakePostRepository {
   int calls = 0;
   String? deletedId;
@@ -137,6 +192,7 @@ Future<_DeleteRepository> _openFeed(
   WidgetTester tester, {
   int count = 1,
   bool own = true,
+  FakeCommentRepository? commentRepository,
 }) async {
   final repo = _DeleteRepository();
   final author = own
@@ -158,7 +214,7 @@ Future<_DeleteRepository> _openFeed(
   await tester.pumpWidget(
     RepositoryScope(
       postRepository: repo,
-      commentRepository: FakeCommentRepository(),
+      commentRepository: commentRepository ?? FakeCommentRepository(),
       child: MyApp(
         createWriteViewModel: () => WriteViewModelImpl(repository: repo),
       ),

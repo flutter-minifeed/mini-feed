@@ -62,11 +62,12 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   Future<_DetailData?> _load(RepositoryScope repositories) async {
+    // 댓글을 읽는 동안 삭제된 글의 본문을 다시 표시하지 않도록 글을 마지막에 확인한다.
+    final comments = await repositories.commentRepository.getComments(
+      widget.postId,
+    );
     final post = await repositories.postRepository.getPostById(widget.postId);
     if (post != null) {
-      final comments = await repositories.commentRepository.getComments(
-        post.id,
-      );
       return (post: post, comments: comments);
     }
     if (mounted &&

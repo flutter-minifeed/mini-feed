@@ -105,10 +105,10 @@ Future<({FirebaseFirestore db, FirestorePostRepository posts})> _client(
     ),
   );
   final auth = FirebaseAuth.instanceFor(app: app);
-  await auth.useAuthEmulator('127.0.0.1', 19219, automaticHostMapping: false);
+  await auth.useAuthEmulator('127.0.0.1', 9099, automaticHostMapping: false);
   final db = FirebaseFirestore.instanceFor(app: app);
   db.settings = const Settings(persistenceEnabled: false);
-  db.useFirestoreEmulator('127.0.0.1', 18210, automaticHostMapping: false);
+  db.useFirestoreEmulator('127.0.0.1', 8080, automaticHostMapping: false);
   final user = await FirebaseAuthService(
     auth: auth,
     firestore: db,

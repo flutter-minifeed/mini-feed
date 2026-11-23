@@ -41,7 +41,6 @@ Future<bool> handlePostMenu(
   }
   final deleted = await showDialog<bool>(
     context: context,
-    barrierDismissible: false,
     builder: (_) => _DeleteDialog(deletePost: deletePost),
   );
   if (!context.mounted || deleted == null) return false;
@@ -112,23 +111,19 @@ class _DeleteDialogState extends State<_DeleteDialog> {
 Future<void> showDeletedPostNotice(BuildContext context) {
   return showDialog<void>(
     context: context,
-    barrierDismissible: false,
-    builder: (context) => PopScope(
-      canPop: false,
-      child: AlertDialog(
-        icon: const Icon(Icons.info_outline),
-        title: const Text('삭제된 글이에요'),
-        content: const Text(
-          '작성자가 이 글을 지웠어요. 확인을 누르면 피드로 돌아가요.',
-          textAlign: TextAlign.center,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('확인'),
-          ),
-        ],
+    builder: (context) => AlertDialog(
+      icon: const Icon(Icons.info_outline),
+      title: const Text('삭제된 글이에요'),
+      content: const Text(
+        '작성자가 이 글을 지웠어요. 확인을 누르면 피드로 돌아가요.',
+        textAlign: TextAlign.center,
       ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('확인'),
+        ),
+      ],
     ),
   );
 }
