@@ -1,8 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'repository/comment/in_memory_comment_repository.dart';
-import 'repository/post/in_memory_post_repository.dart';
+import 'repository/comment/firestore_comment_repository.dart';
+import 'repository/post/firestore_post_repository.dart';
 import 'repository/repository_scope.dart';
 import 'screens/feed_screen.dart';
 import 'screens/session_gate.dart';
@@ -21,12 +22,14 @@ Future<void> main() async {
     SessionGate(
       authService: FirebaseAuthService(),
       buildSession: (author) async {
-        final postRepository = await InMemoryPostRepository.load(
+        final firestore = FirebaseFirestore.instance;
+        final postRepository = FirestorePostRepository(
+          firestore: firestore,
           currentUser: author,
         );
         return RepositoryScope(
           postRepository: postRepository,
-          commentRepository: await InMemoryCommentRepository.load(),
+          commentRepository: FirestoreCommentRepository(firestore: firestore),
           child: MyApp(
             createWriteViewModel: () =>
                 WriteViewModelImpl(repository: postRepository),
