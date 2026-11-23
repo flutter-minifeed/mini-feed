@@ -4,6 +4,7 @@ import '../models/post.dart';
 import '../repository/post/post_repository.dart';
 import '../repository/repository_scope.dart';
 import '../viewmodels/write_view_model.dart';
+import '../widgets/post_actions.dart';
 import '../widgets/post_card.dart';
 import 'detail_screen.dart';
 import 'write_screen.dart';
@@ -20,6 +21,7 @@ class FeedScreen extends StatefulWidget {
 class _FeedScreenState extends State<FeedScreen> {
   final _scrollController = ScrollController();
   PostRepository? _repository;
+  final _removedIds = <String>{};
   List<Post> _posts = const [];
   // 게시 결과로 먼저 표시했지만 아직 페이지 조회로 확인하지 않은 글.
   final _unpagedPostIds = <String>{};
@@ -33,6 +35,7 @@ class _FeedScreenState extends State<FeedScreen> {
   bool _refreshing = false;
   bool _loadingMore = false;
   bool _moreFailed = false;
+  bool _menuOpen = false;
   int _requestId = 0;
 
   @override
@@ -47,6 +50,7 @@ class _FeedScreenState extends State<FeedScreen> {
     final repository = RepositoryScope.of(context).postRepository;
     if (repository != _repository) {
       _repository = repository;
+      _removedIds.clear();
       _posts = const [];
       _unpagedPostIds.clear();
       _nextCursor = null;
@@ -260,13 +264,41 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   void _openDetail(Post post, {bool focusComment = false}) {
+    final repository = _repository!;
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         settings: RouteSettings(name: '/posts/${post.id}'),
-        builder: (_) =>
-            DetailScreen(postId: post.id, focusComment: focusComment),
+        builder: (_) => DetailScreen(
+          postId: post.id,
+          focusComment: focusComment,
+          onRemoved: () => _removePost(repository, post.id),
+        ),
       ),
     );
+  }
+
+  void _removePost(PostRepository repository, String id) {
+    if (!mounted || _repository != repository) return;
+    setState(() {
+      _removedIds.add(id);
+      _posts = _posts.where((post) => post.id != id).toList();
+    });
+  }
+
+  Future<void> _openMenu(Post post) async {
+    if (_menuOpen) return;
+    _menuOpen = true;
+    final repository = _repository!;
+    try {
+      final removed = await handlePostMenu(
+        context,
+        own: post.author.id == repository.currentUser.id,
+        deletePost: () => repository.deletePost(post.id),
+      );
+      if (removed) _removePost(repository, post.id);
+    } finally {
+      _menuOpen = false;
+    }
   }
 
   @override
@@ -400,6 +432,7 @@ class _FeedScreenState extends State<FeedScreen> {
           post: post,
           now: now,
           highlighted: postIndex < _highlightedPostCount,
+          onMore: () => _openMenu(post),
           onOpen: () => _openDetail(post),
           onComments: () => _openDetail(post, focusComment: true),
         );
