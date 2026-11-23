@@ -52,7 +52,12 @@ class FirestorePostRepository implements PostRepository {
   }
 
   @override
-  Future<Post> addPost(String body, {String? requestId}) async {
+  Future<Post> addPost(
+    String body, {
+    String? requestId,
+    List<String> tags = const [],
+  }) async {
+    final savedTags = List<String>.unmodifiable(tags);
     final ref = _posts.doc(requestId);
     try {
       // 같은 문서를 동시에 읽고 생성해도 커밋은 한 번만 성공한다.
@@ -68,6 +73,7 @@ class FirestorePostRepository implements PostRepository {
           'nickName': currentUser.nickName,
           'colorIndex': currentUser.colorIndex,
           'body': body,
+          if (savedTags.isNotEmpty) 'tags': savedTags,
           'createdAt': FieldValue.serverTimestamp(),
           'likeCount': 0,
           'commentCount': 0,
@@ -76,7 +82,12 @@ class FirestorePostRepository implements PostRepository {
       });
 
       if (existing != null) {
-        return checkSameRequest(existing, author: currentUser, body: body);
+        return checkSameRequest(
+          existing,
+          author: currentUser,
+          body: body,
+          tags: savedTags,
+        );
       }
 
       // 최초 생성은 서버가 확정한 작성 시각까지 읽고 나서 성공으로 반환한다.
@@ -103,6 +114,7 @@ Post _toPost(DocumentSnapshot<Map<String, dynamic>> snapshot) {
       colorIndex: data['colorIndex'] as int,
     ),
     body: data['body'] as String,
+    tags: (data['tags'] as List?)?.cast<String>() ?? const [],
     createdAt: (data['createdAt'] as Timestamp).toDate().toLocal(),
     likeCount: data['likeCount'] as int,
     commentCount: data['commentCount'] as int,

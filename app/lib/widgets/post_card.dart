@@ -67,6 +67,20 @@ class PostCard extends StatelessWidget {
                 child: Text(post.body, style: text.bodyLarge),
               ),
             ),
+            if (post.tags.isNotEmpty)
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: [
+                  for (final tag in post.tags)
+                    Text(
+                      '#$tag',
+                      style: text.labelMedium?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                ],
+              ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Row(

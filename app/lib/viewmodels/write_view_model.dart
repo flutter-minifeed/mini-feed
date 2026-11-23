@@ -14,7 +14,7 @@ enum WriteStatus { idle, saving, succeeded, failed, timedOut }
 abstract interface class WriteViewModel implements Listenable {
   Author get author;
   WriteStatus get status;
-  Future<Post?> submit(String validatedBody);
+  Future<Post?> submit(String validatedBody, {List<String> tags = const []});
   void dispose();
 }
 
@@ -24,6 +24,7 @@ class WriteViewModelImpl extends ChangeNotifier implements WriteViewModel {
   final PostRepository _repository;
   WriteStatus _status = WriteStatus.idle;
   String? _submittedBody;
+  List<String> _submittedTags = const [];
   String? _requestId;
   int _attempt = 0;
   bool _disposed = false;
@@ -37,16 +38,19 @@ class WriteViewModelImpl extends ChangeNotifier implements WriteViewModel {
   WriteStatus get status => _status;
 
   @override
-  Future<Post?> submit(String validatedBody) {
+  Future<Post?> submit(String validatedBody, {List<String> tags = const []}) {
     if (_disposed ||
         _status == WriteStatus.saving ||
         _status == WriteStatus.succeeded) {
       return Future.value();
     }
 
-    if (_requestId == null || validatedBody != _submittedBody) {
+    if (_requestId == null ||
+        validatedBody != _submittedBody ||
+        !listEquals(_submittedTags, tags)) {
       _requestId = _newRequestId();
       _submittedBody = validatedBody;
+      _submittedTags = List.unmodifiable(tags);
     }
 
     final attempt = ++_attempt;
@@ -59,7 +63,11 @@ class WriteViewModelImpl extends ChangeNotifier implements WriteViewModel {
     notifyListeners();
 
     Future.sync(
-      () => _repository.addPost(validatedBody, requestId: _requestId),
+      () => _repository.addPost(
+        validatedBody,
+        requestId: _requestId,
+        tags: _submittedTags,
+      ),
     ).then(
       (post) => _finish(attempt, WriteStatus.succeeded, post),
       onError: (Object error, StackTrace stack) {

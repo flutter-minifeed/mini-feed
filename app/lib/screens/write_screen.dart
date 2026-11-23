@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:minifeed/models/compose_tag.dart';
+import 'package:minifeed/widgets/compose_tag_editor.dart';
 import 'package:minifeed/viewmodels/write_view_model.dart';
 import 'package:minifeed/widgets/author_tile.dart';
 
 const maxPostLength = 300;
 
 class WriteScreen extends StatefulWidget {
-  const WriteScreen({super.key, required this.viewModel});
+  const WriteScreen({
+    super.key,
+    required this.viewModel,
+    this.recommendedTags = const [],
+  });
 
   final WriteViewModel viewModel;
+  final List<String> recommendedTags;
 
   @override
   State<WriteScreen> createState() => _WriteScreenState();
@@ -16,6 +23,9 @@ class WriteScreen extends StatefulWidget {
 class _WriteScreenState extends State<WriteScreen> {
   final _controller = TextEditingController();
   final _focusNode = FocusNode();
+  final _tagController = TextEditingController();
+  final _selection = ComposeTags();
+  String? _tagError;
 
   // 글쓰기 화면을 닫으면 실패 안내도 함께 없어지도록 화면 전용으로 둔다.
   final _messengerKey = GlobalKey<ScaffoldMessengerState>();
@@ -28,6 +38,7 @@ class _WriteScreenState extends State<WriteScreen> {
   void dispose() {
     _viewModel.dispose();
     _controller.dispose();
+    _tagController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
@@ -50,6 +61,16 @@ class _WriteScreenState extends State<WriteScreen> {
       _viewModel.status != WriteStatus.succeeded &&
       _hasText &&
       _withinLimit;
+
+  bool _addTag(String input, TagSource source) {
+    if (_isSaving) return false;
+    setState(() {
+      _tagError = _selection.add(input, source);
+      if (_tagError == null && source == TagSource.manual)
+        _tagController.clear();
+    });
+    return _tagError == null;
+  }
 
   Future<bool> _confirmDiscard() async {
     final colors = Theme.of(context).colorScheme;
@@ -98,9 +119,12 @@ class _WriteScreenState extends State<WriteScreen> {
   Future<void> _submit() async {
     if (!mounted || !_canPost) return;
     _messengerKey.currentState?.clearSnackBars();
-    _focusNode.unfocus();
+    if (_tagController.text.trim().isNotEmpty &&
+        !_addTag(_tagController.text, TagSource.manual))
+      return;
+    FocusManager.instance.primaryFocus?.unfocus();
     final viewModel = _viewModel;
-    final post = await viewModel.submit(_body);
+    final post = await viewModel.submit(_body, tags: _selection.names);
 
     if (!mounted || !identical(viewModel, _viewModel)) return;
     if (post != null) {
@@ -142,7 +166,11 @@ class _WriteScreenState extends State<WriteScreen> {
 
     return PopScope(
       canPop:
-          !_isSaving && !_hasText && _viewModel.status != WriteStatus.timedOut,
+          !_isSaving &&
+          !_hasText &&
+          _selection.tags.isEmpty &&
+          _tagController.text.trim().isEmpty &&
+          _viewModel.status != WriteStatus.timedOut,
       onPopInvokedWithResult: _onPopInvokedWithResult,
       child: Scaffold(
         appBar: AppBar(
@@ -177,6 +205,7 @@ class _WriteScreenState extends State<WriteScreen> {
                     ),
                   ),
                   TextField(
+                    key: const ValueKey('post-body'),
                     readOnly: _isSaving,
                     controller: _controller,
                     focusNode: _focusNode,
@@ -214,6 +243,33 @@ class _WriteScreenState extends State<WriteScreen> {
                       ),
                     ),
                   ),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ComposeTagEditor(
+                      tags: _selection.tags,
+                      controller: _tagController,
+                      enabled: !_isSaving,
+                      error: _tagError,
+                      onChanged: (_) => setState(() => _tagError = null),
+                      onAdd: () =>
+                          _addTag(_tagController.text, TagSource.manual),
+                      onRemove: (tag) => setState(() {
+                        _selection.remove(tag);
+                        _tagError = null;
+                      }),
+                    ),
+                  ),
+                  if (widget.recommendedTags.isNotEmpty)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: RecommendedTagChips(
+                        candidates: widget.recommendedTags,
+                        selected: _selection.names,
+                        onSelected: _isSaving
+                            ? null
+                            : (name) => _addTag(name, TagSource.recommended),
+                      ),
+                    ),
                 ],
               ),
             ),

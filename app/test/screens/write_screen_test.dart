@@ -12,6 +12,7 @@ Future<FakePostRepository> pumpWriteScreen(
   WidgetTester tester, {
   FakePostRepository? repository,
   WriteViewModel? viewModel,
+  List<String> recommendedTags = const [],
 }) async {
   final postRepository = repository ?? FakePostRepository();
   final writeViewModel =
@@ -25,7 +26,10 @@ Future<FakePostRepository> pumpWriteScreen(
   navigatorKey.currentState!.push(
     MaterialPageRoute<void>(
       fullscreenDialog: true,
-      builder: (_) => WriteScreen(viewModel: writeViewModel),
+      builder: (_) => WriteScreen(
+        viewModel: writeViewModel,
+        recommendedTags: recommendedTags,
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -34,6 +38,61 @@ Future<FakePostRepository> pumpWriteScreen(
 }
 
 void main() {
+  testWidgets('추천 선택과 직접 입력 후 저장이 실패해도 같은 태그로 재시도한다', (tester) async {
+    // given
+    final repository = await pumpWriteScreen(
+      tester,
+      recommendedTags: ['운동·건강', '여행'],
+    );
+    await tester.enterText(find.byKey(const ValueKey('post-body')), '달리기');
+    await tester.tap(find.text('운동·건강'));
+    await tester.pump();
+    await tester.enterText(find.widgetWithText(TextField, '#태그 입력'), ' #Run ');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pump();
+    final gate = Completer<void>();
+    repository.blockAddUntil = gate;
+
+    // when
+    await tester.tap(_postButton);
+    gate.completeError(StateError('저장 거부'));
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.text('#Run'), findsOneWidget);
+    expect(find.text('#운동·건강'), findsOneWidget);
+    expect(find.text('달리기'), findsOneWidget);
+    repository.blockAddUntil = null;
+    await tester.tap(find.text('다시 시도'));
+    await tester.pumpAndSettle();
+    expect(repository.posts.single.tags, ['운동·건강', 'Run']);
+    expect(repository.requestIds.toSet(), hasLength(1));
+  });
+
+  testWidgets('추천을 제거하고 직접 입력 태그만 남겨도 닫기 전에 확인한다', (tester) async {
+    // given
+    await pumpWriteScreen(tester, recommendedTags: ['여행']);
+    await tester.tap(find.text('여행'));
+    await tester.pump();
+    await tester.tap(find.byTooltip('여행 제거'));
+    await tester.enterText(find.widgetWithText(TextField, '#태그 입력'), '제주');
+    await tester.pump();
+    await tester.tap(find.byTooltip('태그 추가'));
+    await tester.pump();
+
+    // when
+    await tester.tap(find.byType(CloseButton));
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.byType(AlertDialog), findsOneWidget);
+    await tester.tap(find.text('계속 쓰기'));
+    await tester.pumpAndSettle();
+    expect(find.text('#제주'), findsOneWidget);
+    expect(find.text('#여행'), findsNothing);
+    expect(_canPost(tester), isFalse);
+  });
+
   group('게시 실패와 시간 초과', () {
     late FakePostRepository repository;
 
@@ -44,7 +103,7 @@ void main() {
     testWidgets('FakeViewModel이 실패하면 하단에 다시 시도 안내가 보인다', (tester) async {
       // given
       await pumpWriteScreen(tester, viewModel: FakeWriteViewModel());
-      await tester.enterText(find.byType(TextField), '작성한 글');
+      await tester.enterText(find.byKey(const ValueKey('post-body')), '작성한 글');
       await tester.pump();
 
       // when
@@ -59,7 +118,7 @@ void main() {
     testWidgets('FakeViewModel이 시간 초과를 알리면 결과 불확실성을 안내한다', (tester) async {
       // given
       await pumpWriteScreen(tester, viewModel: FakeWriteViewModel.timedOut());
-      await tester.enterText(find.byType(TextField), '작성한 글');
+      await tester.enterText(find.byKey(const ValueKey('post-body')), '작성한 글');
       await tester.pump();
 
       // when
@@ -78,7 +137,10 @@ void main() {
       final gate = Completer<void>();
       repository.blockAddUntil = gate;
       await pumpWriteScreen(tester, repository: repository);
-      await tester.enterText(find.byType(TextField), '  첫 줄\n둘째 줄  ');
+      await tester.enterText(
+        find.byKey(const ValueKey('post-body')),
+        '  첫 줄\n둘째 줄  ',
+      );
       await tester.pump();
 
       // when
@@ -87,7 +149,9 @@ void main() {
       await tester.pumpAndSettle();
 
       // then
-      final field = tester.widget<TextField>(find.byType(TextField));
+      final field = tester.widget<TextField>(
+        find.byKey(const ValueKey('post-body')),
+      );
       expect(field.controller!.text, '  첫 줄\n둘째 줄  ');
       expect(field.readOnly, isFalse);
       expect(_canPost(tester), isTrue);
@@ -98,7 +162,7 @@ void main() {
       final gate = Completer<void>();
       repository.blockAddUntil = gate;
       await pumpWriteScreen(tester, repository: repository);
-      await tester.enterText(find.byType(TextField), '작성한 글');
+      await tester.enterText(find.byKey(const ValueKey('post-body')), '작성한 글');
       await tester.pump();
       await tester.tap(_postButton);
       gate.completeError(StateError('저장 거부'));
@@ -120,14 +184,14 @@ void main() {
       final gate = Completer<void>();
       repository.blockAddUntil = gate;
       await pumpWriteScreen(tester, repository: repository);
-      await tester.enterText(find.byType(TextField), '작성한 글');
+      await tester.enterText(find.byKey(const ValueKey('post-body')), '작성한 글');
       await tester.pump();
 
       // when
       await tester.tap(_postButton);
       await tester.pump();
       final readOnly = tester
-          .widget<TextField>(find.byType(TextField))
+          .widget<TextField>(find.byKey(const ValueKey('post-body')))
           .readOnly;
       gate.complete();
       await tester.pumpAndSettle();
@@ -141,7 +205,7 @@ void main() {
       final gate = Completer<void>();
       repository.blockAddUntil = gate;
       await pumpWriteScreen(tester, repository: repository);
-      await tester.enterText(find.byType(TextField), '작성한 글');
+      await tester.enterText(find.byKey(const ValueKey('post-body')), '작성한 글');
       await tester.pump();
       await tester.tap(_postButton);
       await tester.pump(const Duration(seconds: 10));
@@ -160,7 +224,7 @@ void main() {
     testWidgets('실패 후 닫기 확인에서 계속 쓰기를 고르면 본문이 남는다', (tester) async {
       // given
       await pumpWriteScreen(tester, viewModel: FakeWriteViewModel());
-      await tester.enterText(find.byType(TextField), '작성한 글');
+      await tester.enterText(find.byKey(const ValueKey('post-body')), '작성한 글');
       await tester.pump();
       await tester.tap(_postButton);
       await tester.pumpAndSettle();
@@ -179,7 +243,7 @@ void main() {
     testWidgets('시간 초과 후 버리기를 고르면 화면과 실패 안내가 닫힌다', (tester) async {
       // given
       await pumpWriteScreen(tester, viewModel: FakeWriteViewModel.timedOut());
-      await tester.enterText(find.byType(TextField), '작성한 글');
+      await tester.enterText(find.byKey(const ValueKey('post-body')), '작성한 글');
       await tester.pump();
       await tester.tap(_postButton);
       await tester.pumpAndSettle();
@@ -205,7 +269,7 @@ void main() {
       final gate = Completer<void>();
       repository.blockAddUntil = gate;
       await pumpWriteScreen(tester, repository: repository);
-      await tester.enterText(find.byType(TextField), '작성한 글');
+      await tester.enterText(find.byKey(const ValueKey('post-body')), '작성한 글');
       await tester.pump();
       await tester.tap(_postButton);
       await tester.pump();
@@ -242,7 +306,7 @@ void main() {
     await pumpWriteScreen(tester);
 
     // when
-    await tester.enterText(find.byType(TextField), '  \n\n  ');
+    await tester.enterText(find.byKey(const ValueKey('post-body')), '  \n\n  ');
     await tester.pump();
 
     // then
@@ -254,7 +318,7 @@ void main() {
     await pumpWriteScreen(tester);
 
     // when
-    await tester.enterText(find.byType(TextField), '가' * 299);
+    await tester.enterText(find.byKey(const ValueKey('post-body')), '가' * 299);
     await tester.pump();
 
     // then
@@ -267,7 +331,7 @@ void main() {
     await pumpWriteScreen(tester);
 
     // when
-    await tester.enterText(find.byType(TextField), '안녕');
+    await tester.enterText(find.byKey(const ValueKey('post-body')), '안녕');
     await tester.pump();
 
     // then
@@ -298,7 +362,7 @@ void main() {
     await pumpWriteScreen(tester);
 
     // when
-    await tester.enterText(find.byType(TextField), '  안녕\n');
+    await tester.enterText(find.byKey(const ValueKey('post-body')), '  안녕\n');
     await tester.pump();
 
     // then
@@ -310,7 +374,7 @@ void main() {
     await pumpWriteScreen(tester);
 
     // when
-    await tester.enterText(find.byType(TextField), '가' * 300);
+    await tester.enterText(find.byKey(const ValueKey('post-body')), '가' * 300);
     await tester.pump();
 
     // then
@@ -322,11 +386,13 @@ void main() {
     await pumpWriteScreen(tester);
 
     // when
-    await tester.enterText(find.byType(TextField), '가' * 301);
+    await tester.enterText(find.byKey(const ValueKey('post-body')), '가' * 301);
     await tester.pump();
 
     // then
-    final field = tester.widget<TextField>(find.byType(TextField));
+    final field = tester.widget<TextField>(
+      find.byKey(const ValueKey('post-body')),
+    );
     expect(field.controller!.text, '가' * 300);
     expect(find.text('300 / 300'), findsOneWidget);
   });
@@ -334,7 +400,7 @@ void main() {
   testWidgets('iOS에서 한글 조합 중 301자가 되면 게시할 수 없다', (tester) async {
     // given
     await pumpWriteScreen(tester);
-    await tester.showKeyboard(find.byType(TextField));
+    await tester.showKeyboard(find.byKey(const ValueKey('post-body')));
 
     // when: 301번째 글자를 아직 조합 중인 상태
     // iOS는 조합이 끝날 때까지 maxLength를 넘는 입력을 허용한다.
@@ -348,7 +414,9 @@ void main() {
     await tester.pump();
 
     // then
-    final field = tester.widget<TextField>(find.byType(TextField));
+    final field = tester.widget<TextField>(
+      find.byKey(const ValueKey('post-body')),
+    );
     expect(field.controller!.text, hasLength(301));
     expect(_canPost(tester), isFalse);
   }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
@@ -356,7 +424,10 @@ void main() {
   testWidgets('게시하면 앞뒤 공백만 지운 본문이 저장되고 화면이 닫힌다', (tester) async {
     // given
     final repository = await pumpWriteScreen(tester);
-    await tester.enterText(find.byType(TextField), '  첫 줄\n\n둘째 줄  ');
+    await tester.enterText(
+      find.byKey(const ValueKey('post-body')),
+      '  첫 줄\n\n둘째 줄  ',
+    );
     await tester.pump();
 
     // when
@@ -372,7 +443,7 @@ void main() {
     // given: 저장이 끝나지 않고 멈춰 있는 상태
     final repository = await pumpWriteScreen(tester);
     repository.blockAddUntil = Completer<void>();
-    await tester.enterText(find.byType(TextField), '안녕');
+    await tester.enterText(find.byKey(const ValueKey('post-body')), '안녕');
     await tester.pump();
 
     // when
@@ -396,7 +467,7 @@ void main() {
     // given: 저장이 끝나지 않고 멈춰 있는 상태
     final repository = await pumpWriteScreen(tester);
     repository.blockAddUntil = Completer<void>();
-    await tester.enterText(find.byType(TextField), '안녕');
+    await tester.enterText(find.byKey(const ValueKey('post-body')), '안녕');
     await tester.pump();
     await tester.tap(_postButton);
     await tester.pump();
@@ -415,7 +486,7 @@ void main() {
   testWidgets('공백만 있는 본문은 X를 누르면 확인 없이 닫힌다', (tester) async {
     // given
     await pumpWriteScreen(tester);
-    await tester.enterText(find.byType(TextField), '  \n ');
+    await tester.enterText(find.byKey(const ValueKey('post-body')), '  \n ');
     await tester.pump();
 
     // when
@@ -430,7 +501,7 @@ void main() {
   testWidgets('본문이 있으면 X를 눌렀을 때 계속 쓰기를 고르면 입력이 남는다', (tester) async {
     // given
     await pumpWriteScreen(tester);
-    await tester.enterText(find.byType(TextField), '쓰던 글');
+    await tester.enterText(find.byKey(const ValueKey('post-body')), '쓰던 글');
     await tester.pump();
 
     // when
@@ -447,7 +518,7 @@ void main() {
   testWidgets('본문이 있으면 X를 눌렀을 때 버리기를 고르면 닫힌다', (tester) async {
     // given
     final repository = await pumpWriteScreen(tester);
-    await tester.enterText(find.byType(TextField), '쓰던 글');
+    await tester.enterText(find.byKey(const ValueKey('post-body')), '쓰던 글');
     await tester.pump();
 
     // when
@@ -464,7 +535,7 @@ void main() {
   testWidgets('본문이 있으면 Android 뒤로가기도 확인 창을 띄운다', (tester) async {
     // given
     await pumpWriteScreen(tester);
-    await tester.enterText(find.byType(TextField), '쓰던 글');
+    await tester.enterText(find.byKey(const ValueKey('post-body')), '쓰던 글');
     await tester.pump();
 
     // when: 시스템 뒤로가기 신호를 보낸다.

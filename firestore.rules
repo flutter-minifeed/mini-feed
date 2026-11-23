@@ -97,9 +97,27 @@ service cloud.firestore {
       return data.keys().hasAll(fields) && data.keys().hasOnly(fields);
     }
 
+    function validTag(tag) {
+      return tag is string && (tag.matches('[가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z0-9_]{1,20}')
+        || tag in ['운동·건강', '연애·가족', '일·알바']);
+    }
+
+    function validPostTags(tags) {
+      return tags is list && tags.size() <= 5
+        && (tags.size() == 0 || (
+          validTag(tags[0])
+          && (tags.size() < 2 || validTag(tags[1]))
+          && (tags.size() < 3 || validTag(tags[2]))
+          && (tags.size() < 4 || validTag(tags[3]))
+          && (tags.size() < 5 || validTag(tags[4]))
+          && tags.join(',').lower().split(',').toSet().size() == tags.size()
+        ));
+    }
+
     function validNewPost(data) {
       let fields = ['authorId', 'nickName', 'colorIndex', 'body', 'createdAt', 'likeCount', 'commentCount'];
-      return hasExactly(data, fields)
+      return data.keys().hasAll(fields) && data.keys().hasOnly(fields.concat(['tags']))
+        && validPostTags(data.get('tags', []))
         && hasValidPostAuthorFields(data)
         && data.createdAt is timestamp && data.createdAt == request.time
         && hasInitialPostCounters(data)

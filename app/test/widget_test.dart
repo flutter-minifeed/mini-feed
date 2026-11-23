@@ -82,14 +82,17 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('글쓰기'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), '게시글 0 본문');
+    await tester.enterText(find.byKey(const ValueKey('post-body')), '게시글 0 본문');
+    await tester.enterText(find.widgetWithText(TextField, '#태그 입력'), '제주');
     await tester.pump();
     await tester.tap(find.text('게시'));
     await tester.pumpAndSettle();
+    expect(find.text('#제주'), findsOneWidget);
     await tester.tap(find.text('게시글 0 본문'));
     await tester.pumpAndSettle();
 
     expect(find.byType(DetailScreen), findsOneWidget);
+    expect(find.text('#제주'), findsOneWidget);
 
     // when
     await tester.tap(find.byType(BackButton));
@@ -111,7 +114,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // when
-    await tester.enterText(find.byType(TextField), '방금 작성한 글');
+    await tester.enterText(find.byKey(const ValueKey('post-body')), '방금 작성한 글');
     await tester.pump();
     await tester.tap(find.text('게시'));
     await tester.pumpAndSettle();
@@ -152,7 +155,7 @@ void main() {
     repository.blockAddUntil = lateSave;
     await tester.tap(find.byTooltip('글쓰기'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), '늦게 저장된 글');
+    await tester.enterText(find.byKey(const ValueKey('post-body')), '늦게 저장된 글');
     await tester.pump();
     await tester.tap(find.text('게시'));
     await tester.pump(const Duration(seconds: 10));
@@ -184,7 +187,7 @@ void main() {
         .isNotEmpty;
     await tester.tap(find.byTooltip('글쓰기'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), '방금 저장한 글');
+    await tester.enterText(find.byKey(const ValueKey('post-body')), '방금 저장한 글');
     await tester.pump();
 
     // when
@@ -325,6 +328,9 @@ class _ReadOverrideRepository implements PostRepository {
   Future<Post?> getPostById(String id) => original.getPostById(id);
 
   @override
-  Future<Post> addPost(String body, {String? requestId}) =>
-      original.addPost(body, requestId: requestId);
+  Future<Post> addPost(
+    String body, {
+    String? requestId,
+    List<String> tags = const [],
+  }) => original.addPost(body, requestId: requestId, tags: tags);
 }

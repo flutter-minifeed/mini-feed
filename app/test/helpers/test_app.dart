@@ -41,19 +41,29 @@ class FakePostRepository implements PostRepository {
       posts.where((post) => post.id == id).firstOrNull;
 
   @override
-  Future<Post> addPost(String body, {String? requestId}) async {
+  Future<Post> addPost(
+    String body, {
+    String? requestId,
+    List<String> tags = const [],
+  }) async {
     addedBodies.add(body);
     requestIds.add(requestId);
     final id = requestId ?? 'fake-${addedBodies.length}';
     await blockAddUntil?.future;
     final saved = posts.where((post) => post.id == id).firstOrNull;
     if (saved != null) {
-      return checkSameRequest(saved, author: currentUser, body: body);
+      return checkSameRequest(
+        saved,
+        author: currentUser,
+        body: body,
+        tags: tags,
+      );
     }
     final post = Post(
       id: id,
       author: currentUser,
       body: body,
+      tags: tags,
       createdAt: DateTime.now(),
       likeCount: 0,
       commentCount: 0,

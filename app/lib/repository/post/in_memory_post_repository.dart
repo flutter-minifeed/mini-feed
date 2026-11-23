@@ -65,17 +65,27 @@ class InMemoryPostRepository implements PostRepository {
   Future<Post?> getPostById(String id) async => _findPost(id);
 
   @override
-  Future<Post> addPost(String body, {String? requestId}) async {
+  Future<Post> addPost(
+    String body, {
+    String? requestId,
+    List<String> tags = const [],
+  }) async {
     final id = requestId ?? _nextPostId();
     final saved = _findPost(id);
     if (saved != null) {
-      return checkSameRequest(saved, author: currentUser, body: body);
+      return checkSameRequest(
+        saved,
+        author: currentUser,
+        body: body,
+        tags: tags,
+      );
     }
 
     final post = Post(
       id: id,
       author: currentUser,
       body: body,
+      tags: tags,
       createdAt: DateTime.now(),
       likeCount: 0,
       commentCount: 0,
@@ -111,6 +121,7 @@ Post _postFromJson(Map<String, dynamic> json) {
       colorIndex: json['colorIndex'] as int,
     ),
     body: json['body'] as String,
+    tags: (json['tags'] as List?)?.cast<String>() ?? const [],
     // "+09:00"이 붙은 문자열은 UTC로 읽히므로 기기 시간대로 바꾼다.
     createdAt: DateTime.parse(json['createdAt'] as String).toLocal(),
     likeCount: json['likeCount'] as int,

@@ -11,6 +11,27 @@ void main() {
   // 테스트에서 rootBundle로 assets를 읽으려면 Flutter 엔진을 먼저 준비해야 한다.
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test('게시한 태그의 순서와 원문을 보존하고 태그가 다른 재시도는 거부한다', () async {
+    // given
+    final repository = InMemoryPostRepository.fromJsonString(
+      '[]',
+      currentUser: const Author(id: 'a', nickName: '펭귄', colorIndex: 0),
+    );
+    final tags = ['Jeju', '여행'];
+
+    // when
+    final post = await repository.addPost('본문', requestId: '태그', tags: tags);
+    tags.clear();
+
+    // then
+    expect((await repository.getPostById(post.id))!.tags, ['Jeju', '여행']);
+    expect(() => post.tags.clear(), throwsUnsupportedError);
+    await expectLater(
+      repository.addPost('본문', requestId: post.id),
+      throwsArgumentError,
+    );
+  });
+
   test('JSON을 불러오면 게시글 50개가 조회된다', () async {
     // when
     final posts = await (await _loadPosts()).getPosts();
