@@ -4,13 +4,14 @@ final _pythonWhitespace = RegExp(
   unicode: true,
 );
 
-Set<String> extractTopicGrams(String body) {
-  final normalized = body
-      .toLowerCase()
-      .split(_pythonWhitespace)
-      .where((word) => word.isNotEmpty)
-      .join(' ');
+String normalizeTopicText(String text) => text
+    .toLowerCase()
+    .split(_pythonWhitespace)
+    .where((word) => word.isNotEmpty)
+    .join(' ');
 
+Set<String> extractTopicGrams(String body) {
+  final normalized = normalizeTopicText(body);
   final codePoints = normalized.runes.toList();
   if (codePoints.length == 1) {
     return {normalized};

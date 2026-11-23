@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:minifeed/ai/topic_analysis_input.dart';
 import 'package:minifeed/ai/topic_analyzer.dart';
 import 'package:minifeed/ai/topic_model.dart';
 import 'package:minifeed/ai/topic_tagger.dart';
@@ -56,7 +57,11 @@ void _expectPythonResult(
   double tolerance,
 ) {
   // given
-  final body = example['body'] as String;
+  final rawBody = example['body'] as String;
+  final manualTags = example['manualTags'] as List?;
+  final body = manualTags == null
+      ? rawBody
+      : buildTopicAnalysisInput(rawBody, manualTags: manualTags.cast<String>());
   final activePositions = (example['activePositions'] as List).cast<int>();
   final expectedVector = _expectedVector(
     dictionary.features.length,
@@ -76,6 +81,7 @@ void _expectPythonResult(
   );
 
   // then
+  if (manualTags != null) expect(body, example['input']);
   expect(grams, unorderedEquals(example['grams'] as List), reason: body);
   expect(features.matchedFeatureCount, activePositions.length, reason: body);
   expect(features.vector, expectedVector, reason: body);
