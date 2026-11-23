@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:minifeed/ai/topic_analyzer.dart';
 import 'package:minifeed/screens/write_screen.dart';
 import 'package:minifeed/viewmodels/write_view_model.dart';
 
@@ -13,6 +14,7 @@ Future<FakePostRepository> pumpWriteScreen(
   FakePostRepository? repository,
   WriteViewModel? viewModel,
   List<String> recommendedTags = const [],
+  TopicAnalyzer? analyzer,
 }) async {
   final postRepository = repository ?? FakePostRepository();
   final writeViewModel =
@@ -28,7 +30,7 @@ Future<FakePostRepository> pumpWriteScreen(
       fullscreenDialog: true,
       builder: (_) => WriteScreen(
         viewModel: writeViewModel,
-        recommendedTags: recommendedTags,
+        loadAnalyzer: () async => analyzer ?? _TestAnalyzer(recommendedTags),
       ),
     ),
   );
@@ -38,21 +40,77 @@ Future<FakePostRepository> pumpWriteScreen(
 }
 
 void main() {
+  testWidgets('키보드가 닫힐 때만 새 입력을 분석하고 점수 접기 상태를 유지한다', (tester) async {
+    // given
+    final analyzer = _TestAnalyzer(['여행']);
+    tester.view.viewInsets = const FakeViewPadding(bottom: 200);
+    addTearDown(tester.view.resetViewInsets);
+    await pumpWriteScreen(tester, analyzer: analyzer);
+    final body = find.byKey(const ValueKey('post-body'));
+    await tester.enterText(body, '제주 여행');
+    await tester.pump();
+    expect(analyzer.inputs, isEmpty);
+    expect(find.text('주제 점수 접기'), findsNothing);
+
+    // when
+    tester.view.resetViewInsets();
+    await tester.pumpAndSettle();
+    expect(find.byType(LinearProgressIndicator), findsNWidgets(8));
+    await tester.tap(find.text('주제 점수 접기'));
+    await tester.pumpAndSettle();
+    expect(find.byType(LinearProgressIndicator), findsNothing);
+    tester.view.viewInsets = const FakeViewPadding(bottom: 200);
+    await tester.pump();
+    expect(find.widgetWithText(ActionChip, '여행'), findsNothing);
+    tester.view.resetViewInsets();
+    await tester.pumpAndSettle();
+
+    // then
+    expect(analyzer.inputs, ['제주 여행']);
+    expect(find.text('주제 점수 펼치기'), findsOneWidget);
+    await tester.tap(find.text('주제 점수 펼치기'));
+    await tester.pumpAndSettle();
+    expect(find.byType(LinearProgressIndicator), findsNWidgets(8));
+  });
+
+  testWidgets('분석 중에도 게시할 수 있고 화면을 닫은 뒤에 온 결과는 무시한다', (tester) async {
+    // given
+    final analyzer = _TestAnalyzer([])..pending = Completer<TopicAnalysis>();
+    final repository = await pumpWriteScreen(tester, analyzer: analyzer);
+    final body = find.byKey(const ValueKey('post-body'));
+    await tester.enterText(body, '작성한 글');
+    await tester.pumpAndSettle();
+    expect(find.text('주제를 분석하고 있어요.'), findsOneWidget);
+    expect(tester.widget<TextField>(body).readOnly, isFalse);
+
+    // when
+    await tester.tap(_postButton);
+    await tester.pumpAndSettle();
+    analyzer.pending!.completeError(StateError('늦은 오류'));
+    await tester.pump();
+
+    // then
+    expect(repository.addedBodies, ['작성한 글']);
+    expect(find.byType(WriteScreen), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('추천 선택과 직접 입력 후 저장이 실패해도 같은 태그로 재시도한다', (tester) async {
     // given
     final repository = await pumpWriteScreen(
       tester,
       recommendedTags: ['운동·건강', '여행'],
     );
+    await tester.enterText(find.byKey(const ValueKey('post-body')), '달리기');
+    await tester.pumpAndSettle();
     expect(find.text('이런 주제의 글 같아요'), findsOneWidget);
     expect(find.text('선택한 태그만 게시글에 추가돼요'), findsOneWidget);
-    await tester.enterText(find.byKey(const ValueKey('post-body')), '달리기');
-    await tester.tap(find.text('운동·건강'));
+    await tester.tap(find.widgetWithText(ActionChip, '운동·건강'));
     await tester.pump();
     await tester.tap(find.byTooltip('운동·건강 제거'));
     await tester.pump();
     expect(find.text('#운동·건강'), findsNothing);
-    await tester.tap(find.text('운동·건강'));
+    await tester.tap(find.widgetWithText(ActionChip, '운동·건강'));
     await tester.pump();
     await tester.enterText(find.widgetWithText(TextField, '#태그 입력'), ' #Run ');
     await tester.testTextInput.receiveAction(TextInputAction.done);
@@ -79,9 +137,13 @@ void main() {
   testWidgets('추천을 제거하고 직접 입력 태그만 남겨도 닫기 전에 확인한다', (tester) async {
     // given
     await pumpWriteScreen(tester, recommendedTags: ['여행']);
-    await tester.tap(find.text('여행'));
+    final body = find.byKey(const ValueKey('post-body'));
+    await tester.enterText(body, '떠나요');
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ActionChip, '여행'));
     await tester.pump();
     await tester.tap(find.byTooltip('여행 제거'));
+    await tester.enterText(body, '');
     await tester.enterText(find.widgetWithText(TextField, '#태그 입력'), '제주');
     await tester.pump();
     await tester.tap(find.byTooltip('태그 추가'));
@@ -553,6 +615,39 @@ void main() {
     expect(find.text('작성 중인 글을 버릴까요?'), findsOneWidget);
     expect(find.byType(WriteScreen), findsOneWidget);
   });
+}
+
+class _TestAnalyzer implements TopicAnalyzer {
+  _TestAnalyzer(this.candidates);
+  final List<String> candidates;
+  final inputs = <String>[];
+  Completer<TopicAnalysis>? pending;
+
+  @override
+  Future<TopicAnalysis> analyze(String input) async {
+    inputs.add(input);
+    if (pending case final reply?) return reply.future;
+    return (
+      candidates: candidates,
+      scores: [
+        for (final label in [
+          '일상',
+          '공부',
+          '음식',
+          '운동·건강',
+          '취미',
+          '여행',
+          '연애·가족',
+          '일·알바',
+        ])
+          (label: label, value: candidates.contains(label) ? 0.8 : 0.1),
+      ],
+      threshold: 0.3,
+    );
+  }
+
+  @override
+  void close() {}
 }
 
 // FilledButton.icon은 FilledButton의 하위 클래스라 byType으로는 찾지 못한다.
