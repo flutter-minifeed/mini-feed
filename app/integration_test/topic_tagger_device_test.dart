@@ -23,7 +23,7 @@ void main() {
 
     for (final example in fixture.cases) {
       // when
-      final result = await analyzer.analyze(example['body'] as String);
+      final result = await analyzer.analyze(_analysisInput(example));
       debugPrint('기기 내 주제 분석 ${clock.elapsedMilliseconds}ms');
 
       // then
@@ -58,11 +58,7 @@ void _expectPythonResult(
   double tolerance,
 ) {
   // given
-  final rawBody = example['body'] as String;
-  final manualTags = example['manualTags'] as List?;
-  final body = manualTags == null
-      ? rawBody
-      : buildTopicAnalysisInput(rawBody, manualTags: manualTags.cast<String>());
+  final body = _analysisInput(example);
   final activePositions = (example['activePositions'] as List).cast<int>();
   final expectedVector = _expectedVector(
     dictionary.features.length,
@@ -82,7 +78,7 @@ void _expectPythonResult(
   );
 
   // then
-  if (manualTags != null) expect(body, example['input']);
+  if (example.containsKey('input')) expect(body, example['input']);
   expect(grams, unorderedEquals(example['grams'] as List), reason: body);
   expect(features.matchedFeatureCount, activePositions.length, reason: body);
   expect(features.vector, expectedVector, reason: body);
@@ -90,6 +86,14 @@ void _expectPythonResult(
     for (final score in expectedScores) closeTo(score, tolerance),
   ], reason: '$body 점수 비교 · 라벨 순서 ${dictionary.labels.join(', ')}');
   expect(tags, example['tags'], reason: body);
+}
+
+String _analysisInput(Map<String, dynamic> example) {
+  final body = example['body'] as String;
+  final manualTags = example['manualTags'] as List?;
+  return manualTags == null
+      ? body
+      : buildTopicAnalysisInput(body, manualTags: manualTags.cast<String>());
 }
 
 List<double> _expectedVector(int length, List<int> activePositions) {
