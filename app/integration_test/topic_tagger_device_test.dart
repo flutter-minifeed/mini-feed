@@ -1,14 +1,39 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:minifeed/ai/topic_analyzer.dart';
 import 'package:minifeed/ai/topic_model.dart';
 import 'package:minifeed/ai/topic_tagger.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   testWidgets('실기기의 특징 벡터와 모델 점수, 추천 태그가 Python 기준과 일치한다', _compareWithPython);
+  testWidgets('작성 화면용 모델을 재사용해도 Python 기준의 8개 점수와 후보가 나온다', (tester) async {
+    // given
+    final fixture = _readPythonFixture();
+    final dictionary = await _loadDictionary();
+    final clock = Stopwatch()..start();
+    final analyzer = await TopicAnalyzer.load();
+    addTearDown(analyzer.close);
+
+    for (final example in fixture.cases) {
+      // when
+      final result = await analyzer.analyze(example['body'] as String);
+      debugPrint('기기 내 주제 분석 ${clock.elapsedMilliseconds}ms');
+
+      // then
+      expect(result.scores.map((score) => score.label), dictionary.labels);
+      expect(result.scores.map((score) => score.value), [
+        for (final score in (example['scores'] as List).cast<num>())
+          closeTo(score, fixture.scoreTolerance),
+      ]);
+      expect(result.candidates, example['tags']);
+      clock.reset();
+    }
+  });
 }
 
 Future<void> _compareWithPython(WidgetTester _) async {

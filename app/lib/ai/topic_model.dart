@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:tflite_flutter/tflite_flutter.dart';
 
 typedef TensorSpec = ({TensorType type, List<int> shape});
@@ -19,6 +21,9 @@ class TopicModel {
 
   static Future<TopicModel> load() async =>
       TopicModel._(await Interpreter.fromAsset(assetPath));
+
+  factory TopicModel.fromBuffer(Uint8List bytes) =>
+      TopicModel._(Interpreter.fromBuffer(bytes));
 
   static TensorSpec _specOf(Tensor tensor) =>
       (type: tensor.type, shape: List.unmodifiable(tensor.shape));
