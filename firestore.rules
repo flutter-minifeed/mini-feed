@@ -44,40 +44,67 @@ service cloud.firestore {
         .replace('[\\x{1160}-\\x{11A7}\\x{D7B0}-\\x{D7C6}\\x{16D63}\\x{16D67}-\\x{16D6A}]', '\uE010')
         .replace('[^\\x{E000}-\\x{E011}]', '\uE011');
     }
+    function classifyGraphemeSymbols(body) {
+      let symbolsAfterPass1 = mapGraphemeClasses0(body);
+      let symbolsAfterPass2 = mapGraphemeClasses1(symbolsAfterPass1);
+      let symbolsAfterPass3 = mapGraphemeClasses2(symbolsAfterPass2);
+      let symbolsAfterPass4 = mapGraphemeClasses3(symbolsAfterPass3);
+      return mapGraphemeClasses4(symbolsAfterPass4);
+    }
     function countGraphemes(body) {
-      let symbols = mapGraphemeClasses4(mapGraphemeClasses3(mapGraphemeClasses2(mapGraphemeClasses1(mapGraphemeClasses0(body)))));
-      return symbols.replace('(?:[\\x{E000}][\\x{E009}]|[\\x{E000}-\\x{E001}\\x{E009}]|[\\x{E00C}]*(?:(?:[\\x{E008}]*(?:[\\x{E010}]+|[\\x{E00A}][\\x{E010}]*|[\\x{E00B}])[\\x{E00F}]*|[\\x{E008}]+|[\\x{E00F}]+)|[\\x{E00D}]{2}|[\\x{E005}](?:[\\x{E002}-\\x{E004}]*[\\x{E007}][\\x{E005}])*|[\\x{E006}](?:[\\x{E003}-\\x{E004}\\x{E007}]*[\\x{E004}][\\x{E003}-\\x{E004}\\x{E007}]*[\\x{E006}])+|[^\\x{E000}-\\x{E001}\\x{E009}])[\\x{E002}-\\x{E004}\\x{E007}\\x{E00E}]*)', 'x').size();
+      let symbols = classifyGraphemeSymbols(body);
+      let graphemeMarkers = symbols.replace('(?:[\\x{E000}][\\x{E009}]|[\\x{E000}-\\x{E001}\\x{E009}]|[\\x{E00C}]*(?:(?:[\\x{E008}]*(?:[\\x{E010}]+|[\\x{E00A}][\\x{E010}]*|[\\x{E00B}])[\\x{E00F}]*|[\\x{E008}]+|[\\x{E00F}]+)|[\\x{E00D}]{2}|[\\x{E005}](?:[\\x{E002}-\\x{E004}]*[\\x{E007}][\\x{E005}])*|[\\x{E006}](?:[\\x{E003}-\\x{E004}\\x{E007}]*[\\x{E004}][\\x{E003}-\\x{E004}\\x{E007}]*[\\x{E006}])+|[^\\x{E000}-\\x{E001}\\x{E009}])[\\x{E002}-\\x{E004}\\x{E007}\\x{E00E}]*)', 'x');
+      return graphemeMarkers.size();
     }
     // END GENERATED UNICODE 16 GRAPHEME FUNCTIONS
 
-    function validPostBody(body) {
-      // Dart String.trim에서 사용하는 Unicode White_Space와 BOM으로만 된 글은 거부한다.
-      return body is string
-        && !body.matches('[\\x{9}-\\x{D}\\x{20}\\x{85}\\x{A0}\\x{1680}\\x{2000}-\\x{200A}\\x{2028}\\x{2029}\\x{202F}\\x{205F}\\x{3000}\\x{FEFF}]*')
-        // UTF-16 단위 수가 300 이하면 글자 묶음도 최대 300개다.
-        && (body.size() <= 300 || countGraphemes(body) <= 300);
+    // Dart String.trim이 지우는 Unicode White_Space와 BOM 집합이다.
+    function isBlankPostBody(body) {
+      return body.matches('[\\x{9}-\\x{D}\\x{20}\\x{85}\\x{A0}\\x{1680}\\x{2000}-\\x{200A}\\x{2028}\\x{2029}\\x{202F}\\x{205F}\\x{3000}\\x{FEFF}]*');
     }
 
-    function matchesPostProfile(data) {
+    function isWithinPostBodyLimit(body) {
+      let maxGraphemes = 300;
+      // 문자열 길이가 제한 이하면 글자 묶음 수도 제한 이하다.
+      return body.size() <= maxGraphemes || countGraphemes(body) <= maxGraphemes;
+    }
+
+    function validPostBody(body) {
+      return body is string && !isBlankPostBody(body) && isWithinPostBodyLimit(body);
+    }
+
+    function hasValidPostAuthorFields(data) {
+      return data.authorId == request.auth.uid
+        && data.nickName is string
+        && data.colorIndex is int
+        && data.colorIndex >= 0
+        && data.colorIndex <= 7;
+    }
+
+    function hasInitialPostCounters(data) {
+      return data.likeCount is int && data.likeCount == 0
+        && data.commentCount is int && data.commentCount == 0;
+    }
+
+    function matchesAuthorProfile(data) {
       let profile = get(/databases/$(database)/documents/users/$(request.auth.uid));
       return profile != null
         && data.nickName == profile.data.nickName
         && data.colorIndex == profile.data.colorIndex;
     }
 
+    function hasExactly(data, fields) {
+      return data.keys().hasAll(fields) && data.keys().hasOnly(fields);
+    }
+
     function validNewPost(data) {
       let fields = ['authorId', 'nickName', 'colorIndex', 'body', 'createdAt', 'likeCount', 'commentCount'];
-      return data.keys().hasAll(fields)
-        && data.keys().hasOnly(fields)
-        && data.authorId == request.auth.uid
-        && data.nickName is string
-        && data.colorIndex is int
-        && data.colorIndex >= 0 && data.colorIndex <= 7
+      return hasExactly(data, fields)
+        && hasValidPostAuthorFields(data)
         && data.createdAt is timestamp && data.createdAt == request.time
-        && data.likeCount is int && data.likeCount == 0
-        && data.commentCount is int && data.commentCount == 0
+        && hasInitialPostCounters(data)
         && validPostBody(data.body)
-        && matchesPostProfile(data);
+        && matchesAuthorProfile(data);
     }
 
     match /posts/{postId} {
@@ -98,8 +125,7 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.auth.uid == uid
         && request.auth.token.firebase.sign_in_provider == 'anonymous'
-        && request.resource.data.keys().hasAll(['nickName', 'colorIndex', 'createdAt'])
-        && request.resource.data.keys().hasOnly(['nickName', 'colorIndex', 'createdAt'])
+        && hasExactly(request.resource.data, ['nickName', 'colorIndex', 'createdAt'])
         && request.resource.data.nickName is string
         && request.resource.data.nickName.size() > 0
         && request.resource.data.nickName.size() <= 40

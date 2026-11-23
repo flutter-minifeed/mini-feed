@@ -142,7 +142,6 @@ void main() {
 
 const _postId = 'post-1';
 
-// 가짜 저장소에 글을 넣고 상세 화면을 띄운 뒤, 다 불러올 때까지 기다린다.
 Future<void> _openDetail(
   WidgetTester tester, {
   String postId = _postId,
