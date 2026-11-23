@@ -12,11 +12,11 @@ void main() {
     // when
     expect(selection.add('jeju', TagSource.manual), isNotNull);
     selection.remove(selection.tags[1]);
-    expect(selection.add('여행', TagSource.recommended), isNull);
+    expect(selection.add('운동·건강', TagSource.recommended), isNull);
 
     // then
     expect(selection.manualTags, ['Jeju', '사진_2']);
-    expect(selection.names, ['Jeju', '사진_2', '여행']);
+    expect(selection.names, ['Jeju', '사진_2', '운동·건강']);
   });
 
   test('형식이 틀리거나 여섯 번째인 태그는 목록에 들어가지 않는다', () {

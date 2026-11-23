@@ -44,7 +44,14 @@ void main() {
       tester,
       recommendedTags: ['운동·건강', '여행'],
     );
+    expect(find.text('이런 주제의 글 같아요'), findsOneWidget);
+    expect(find.text('선택한 태그만 게시글에 추가돼요'), findsOneWidget);
     await tester.enterText(find.byKey(const ValueKey('post-body')), '달리기');
+    await tester.tap(find.text('운동·건강'));
+    await tester.pump();
+    await tester.tap(find.byTooltip('운동·건강 제거'));
+    await tester.pump();
+    expect(find.text('#운동·건강'), findsNothing);
     await tester.tap(find.text('운동·건강'));
     await tester.pump();
     await tester.enterText(find.widgetWithText(TextField, '#태그 입력'), ' #Run ');

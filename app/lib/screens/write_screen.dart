@@ -66,8 +66,9 @@ class _WriteScreenState extends State<WriteScreen> {
     if (_isSaving) return false;
     setState(() {
       _tagError = _selection.add(input, source);
-      if (_tagError == null && source == TagSource.manual)
+      if (_tagError == null && source == TagSource.manual) {
         _tagController.clear();
+      }
     });
     return _tagError == null;
   }
@@ -120,8 +121,9 @@ class _WriteScreenState extends State<WriteScreen> {
     if (!mounted || !_canPost) return;
     _messengerKey.currentState?.clearSnackBars();
     if (_tagController.text.trim().isNotEmpty &&
-        !_addTag(_tagController.text, TagSource.manual))
+        !_addTag(_tagController.text, TagSource.manual)) {
       return;
+    }
     FocusManager.instance.primaryFocus?.unfocus();
     final viewModel = _viewModel;
     final post = await viewModel.submit(_body, tags: _selection.names);
@@ -260,14 +262,25 @@ class _WriteScreenState extends State<WriteScreen> {
                     ),
                   ),
                   if (widget.recommendedTags.isNotEmpty)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: RecommendedTagChips(
-                        candidates: widget.recommendedTags,
-                        selected: _selection.names,
-                        onSelected: _isSaving
-                            ? null
-                            : (name) => _addTag(name, TagSource.recommended),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: colors.surfaceContainerLow,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 8,
+                        children: [
+                          Text('이런 주제의 글 같아요', style: text.titleSmall),
+                          RecommendedTagChips(
+                            candidates: widget.recommendedTags,
+                            selected: _selection.names,
+                            onSelected: _isSaving ? null : (name) => _addTag(name, TagSource.recommended),
+                          ),
+                          Text('선택한 태그만 게시글에 추가돼요', style: text.bodySmall),
+                        ],
                       ),
                     ),
                 ],
