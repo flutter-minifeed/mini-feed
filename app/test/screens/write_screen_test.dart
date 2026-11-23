@@ -38,8 +38,10 @@ Future<FakePostRepository> pumpWriteScreen(
 }
 
 void main() {
-  testWidgets('추천 선택과 직접 입력 후 저장이 실패해도 같은 태그로 재시도한다', (tester) async {
+  testWidgets('추천과 직접 입력한 칩이 줄바꿈되고 실패 후 같은 여섯 태그로 재시도한다', (tester) async {
     // given
+    await tester.binding.setSurfaceSize(const Size(360, 800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     final repository = await pumpWriteScreen(
       tester,
       recommendedTags: ['운동·건강', '여행'],
@@ -54,9 +56,19 @@ void main() {
     expect(find.text('#운동·건강'), findsNothing);
     await tester.tap(find.text('운동·건강'));
     await tester.pump();
-    await tester.enterText(find.widgetWithText(TextField, '#태그 입력'), ' #Run ');
-    await tester.testTextInput.receiveAction(TextInputAction.done);
-    await tester.pump();
+    const names = ['운동·건강', 'Run', '제주여행', '친구', '휴식', '주말달리기'];
+    for (final name in names.skip(1)) {
+      await tester.enterText(
+        find.widgetWithText(TextField, '#태그 입력'),
+        ' #$name ',
+      );
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pump();
+    }
+    expect(
+      tester.getCenter(find.text('#주말달리기')).dy,
+      greaterThan(tester.getCenter(find.text('#운동·건강')).dy),
+    );
     final gate = Completer<void>();
     repository.blockAddUntil = gate;
 
@@ -66,13 +78,14 @@ void main() {
     await tester.pumpAndSettle();
 
     // then
+    expect(find.textContaining('저장 용량'), findsOneWidget);
     expect(find.text('#Run'), findsOneWidget);
     expect(find.text('#운동·건강'), findsOneWidget);
     expect(find.text('달리기'), findsOneWidget);
     repository.blockAddUntil = null;
     await tester.tap(find.text('다시 시도'));
     await tester.pumpAndSettle();
-    expect(repository.posts.single.tags, ['운동·건강', 'Run']);
+    expect(repository.posts.single.tags, names);
     expect(repository.requestIds.toSet(), hasLength(1));
   });
 
