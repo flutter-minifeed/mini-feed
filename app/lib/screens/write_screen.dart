@@ -277,7 +277,10 @@ class _WriteScreenState extends State<WriteScreen> {
                           RecommendedTagChips(
                             candidates: widget.recommendedTags,
                             selected: _selection.names,
-                            onSelected: _isSaving ? null : (name) => _addTag(name, TagSource.recommended),
+                            onSelected: _isSaving
+                                ? null
+                                : (name) =>
+                                      _addTag(name, TagSource.recommended),
                           ),
                           Text('선택한 태그만 게시글에 추가돼요', style: text.bodySmall),
                         ],
