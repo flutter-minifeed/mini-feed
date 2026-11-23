@@ -31,15 +31,27 @@ class FakePostRepository implements PostRepository {
   Future<List<Post>> getPosts() async => List.unmodifiable(posts);
 
   @override
+  Future<PostPage> getPostPage({PostCursor? after}) async {
+    final ordered = [...posts]..sort(comparePostsNewestFirst);
+    return PostPage.fromOrderedPosts(ordered, after: after);
+  }
+
+  @override
   Future<Post?> getPostById(String id) async =>
       posts.where((post) => post.id == id).firstOrNull;
 
   @override
-  Future<Post> addPost(String body) async {
+  Future<Post> addPost(String body, {String? requestId}) async {
     addedBodies.add(body);
+    final id = requestId ?? 'fake-${addedBodies.length}';
     await addGate?.future; // addGate가 없으면(null) 바로 넘어간다.
+    final saved = posts.where((post) => post.id == id).firstOrNull;
+    if (saved != null) {
+      return checkSameRequest(saved, author: currentUser, body: body);
+    }
+
     final post = Post(
-      id: 'fake-${addedBodies.length}',
+      id: id,
       author: testUser,
       body: body,
       createdAt: DateTime.now(),
