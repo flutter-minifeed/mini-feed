@@ -318,6 +318,10 @@ class _ReadOverrideRepository implements PostRepository {
   Future<List<Post>> getPosts() => read();
 
   @override
+  Future<PostPage> getPostPage({PostCursor? after}) =>
+      original.getPostPage(after: after);
+
+  @override
   Future<Post?> getPostById(String id) => original.getPostById(id);
 
   @override

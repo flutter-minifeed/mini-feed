@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:minifeed/models/author.dart';
@@ -170,6 +172,112 @@ void main() {
     // then
     expect(await repository.getPosts(), hasLength(50));
   });
+
+  test('게시글 45개를 20개씩 조회하면 중복 없이 마지막 5개까지 읽는다', () async {
+    // given
+    final repository = _pagedRepository(45);
+
+    // when
+    final first = await repository.getPostPage();
+    final second = await repository.getPostPage(after: first.nextCursor!);
+    final third = await repository.getPostPage(after: second.nextCursor!);
+
+    // then
+    expect(first.posts, hasLength(20));
+    expect(second.posts, hasLength(20));
+    expect(third.posts, hasLength(5));
+    expect(third.nextCursor, isNull);
+    expect(
+      [...first.posts, ...second.posts, ...third.posts].map((post) => post.id),
+      List.generate(45, (index) => _fixtureId(44 - index)),
+    );
+  });
+
+  test('페이지 경계의 작성 시각이 같으면 문서 ID로 조회 위치를 구분한다', () async {
+    // given
+    final repository = _pagedRepository(21, sameCreatedAt: true);
+
+    // when
+    final first = await repository.getPostPage();
+    final second = await repository.getPostPage(after: first.nextCursor!);
+
+    // then
+    expect(
+      first.posts.map((post) => post.id),
+      List.generate(20, (index) => _fixtureId(20 - index)),
+    );
+    expect(second.posts.single.id, _fixtureId(0));
+  });
+
+  test('마지막 페이지가 가득 차면 다음 빈 페이지에서 조회를 끝낸다', () async {
+    // given
+    final repository = _pagedRepository(20);
+
+    // when
+    final first = await repository.getPostPage();
+    final last = await repository.getPostPage(after: first.nextCursor!);
+
+    // then
+    expect(last.posts, isEmpty);
+    expect(last.nextCursor, isNull);
+  });
+
+  test('같은 요청 ID로 동시에 게시하면 글 한 건과 최초 작성 시각을 반환한다', () async {
+    // given
+    final repository = _pagedRepository(0);
+    const requestId = 'write-request-1';
+
+    // when
+    final results = await Future.wait([
+      repository.addPost('같은 본문', requestId: requestId),
+      repository.addPost('같은 본문', requestId: requestId),
+    ]);
+
+    // then
+    expect((await repository.getPosts()).single.id, requestId);
+    expect(results.first.id, requestId);
+    expect(results.last.id, results.first.id);
+    expect(results.last.createdAt, results.first.createdAt);
+  });
+
+  test('이미 쓴 요청 ID로 본문을 바꾸면 기존 글을 유지한다', () async {
+    // given
+    final repository = _pagedRepository(0);
+    const requestId = 'write-request-1';
+    final original = await repository.addPost('원래 본문', requestId: requestId);
+
+    // when, then
+    await expectLater(
+      repository.addPost('바꾼 본문', requestId: requestId),
+      throwsArgumentError,
+    );
+    expect((await repository.getPosts()).single, same(original));
+  });
+
+  test('다른 작성자의 게시글 ID를 게시 요청에 재사용할 수 없다', () async {
+    // given
+    final repository = _pagedRepository(1);
+
+    // when, then
+    await expectLater(
+      repository.addPost('테스트 본문', requestId: _fixtureId(0)),
+      throwsArgumentError,
+    );
+    expect((await repository.getPosts()).single.author.id, 'fixture-author');
+  });
+
+  test('요청 ID 없이 같은 본문을 각각 게시하면 새 글 두 건을 만든다', () async {
+    // given
+    final repository = _pagedRepository(0);
+
+    // when
+    final first = await repository.addPost('같은 본문');
+    final second = await repository.addPost('같은 본문');
+
+    // then
+    expect(first.id, isNot(second.id));
+    expect(await repository.getPosts(), hasLength(2));
+  });
 }
 
 // main.dart와 같은 현재 사용자.
@@ -178,4 +286,32 @@ const _me = Author(id: 'user-me', nickName: '처음 온 펭귄', colorIndex: 4);
 // 현재 사용자로 게시글 저장소를 불러온다.
 Future<InMemoryPostRepository> _loadPosts() {
   return InMemoryPostRepository.load(currentUser: _me);
+}
+
+String _fixtureId(int index) => 'fixture-${index.toString().padLeft(2, '0')}';
+
+InMemoryPostRepository _pagedRepository(
+  int count, {
+  bool sameCreatedAt = false,
+}) {
+  final start = DateTime.utc(2026);
+  final fixtures = List.generate(count, (index) {
+    return {
+      'id': _fixtureId(index),
+      'authorId': 'fixture-author',
+      'nickName': '조용한 펭귄',
+      'colorIndex': 0,
+      'body': '테스트 본문',
+      'createdAt': start
+          .add(Duration(minutes: sameCreatedAt ? 0 : index))
+          .toIso8601String(),
+      'likeCount': 0,
+      'commentCount': 0,
+      'likedByMe': false,
+    };
+  });
+  return InMemoryPostRepository.fromJsonString(
+    jsonEncode(fixtures),
+    currentUser: _me,
+  );
 }

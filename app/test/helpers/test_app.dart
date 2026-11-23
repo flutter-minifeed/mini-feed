@@ -31,6 +31,12 @@ class FakePostRepository implements PostRepository {
   Future<List<Post>> getPosts() async => List.unmodifiable(posts);
 
   @override
+  Future<PostPage> getPostPage({PostCursor? after}) async {
+    final ordered = [...posts]..sort(comparePostsNewestFirst);
+    return PostPage.fromOrderedPosts(ordered, after: after);
+  }
+
+  @override
   Future<Post?> getPostById(String id) async =>
       posts.where((post) => post.id == id).firstOrNull;
 
@@ -40,10 +46,9 @@ class FakePostRepository implements PostRepository {
     requestIds.add(requestId);
     final id = requestId ?? 'fake-${addedBodies.length}';
     await blockAddUntil?.future;
-    final previous = posts.where((post) => post.id == id).firstOrNull;
-    if (previous != null) {
-      if (previous.body != body) throw ArgumentError('같은 요청 ID의 본문이 다릅니다.');
-      return previous;
+    final saved = posts.where((post) => post.id == id).firstOrNull;
+    if (saved != null) {
+      return checkSameRequest(saved, author: currentUser, body: body);
     }
     final post = Post(
       id: id,
