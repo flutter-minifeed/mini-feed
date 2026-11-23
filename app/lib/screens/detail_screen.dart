@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../models/comment.dart';
@@ -73,7 +75,8 @@ class _DetailScreenState extends State<DetailScreen> {
     if (mounted &&
         widget.onRemoved != null &&
         ModalRoute.of(context)?.isCurrent == true) {
-      await _noticeAndLeave();
+      // 글 조회는 끝났으므로 안내창을 기다리는 동안 로딩을 계속 표시하지 않는다.
+      unawaited(_noticeAndLeave());
     }
     return null;
   }
