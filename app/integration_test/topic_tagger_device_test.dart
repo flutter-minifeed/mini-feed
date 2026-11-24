@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:minifeed/ai/topic_analysis_input.dart';
 import 'package:minifeed/ai/topic_analyzer.dart';
 import 'package:minifeed/ai/topic_model.dart';
 import 'package:minifeed/ai/topic_tagger.dart';
@@ -21,7 +23,7 @@ void main() {
 
     for (final example in fixture.cases) {
       // when
-      final result = await analyzer.analyze(example['body'] as String);
+      final result = await analyzer.analyze(_analysisInput(example));
       debugPrint('기기 내 주제 분석 ${clock.elapsedMilliseconds}ms');
 
       // then
@@ -56,7 +58,7 @@ void _expectPythonResult(
   double tolerance,
 ) {
   // given
-  final body = example['body'] as String;
+  final body = _analysisInput(example);
   final activePositions = (example['activePositions'] as List).cast<int>();
   final expectedVector = _expectedVector(
     dictionary.features.length,
@@ -76,6 +78,7 @@ void _expectPythonResult(
   );
 
   // then
+  if (example.containsKey('input')) expect(body, example['input']);
   expect(grams, unorderedEquals(example['grams'] as List), reason: body);
   expect(features.matchedFeatureCount, activePositions.length, reason: body);
   expect(features.vector, expectedVector, reason: body);
@@ -83,6 +86,14 @@ void _expectPythonResult(
     for (final score in expectedScores) closeTo(score, tolerance),
   ], reason: '$body 점수 비교 · 라벨 순서 ${dictionary.labels.join(', ')}');
   expect(tags, example['tags'], reason: body);
+}
+
+String _analysisInput(Map<String, dynamic> example) {
+  final body = example['body'] as String;
+  final manualTags = example['manualTags'] as List?;
+  return manualTags == null
+      ? body
+      : buildTopicAnalysisInput(body, manualTags: manualTags.cast<String>());
 }
 
 List<double> _expectedVector(int length, List<int> activePositions) {
@@ -96,11 +107,17 @@ List<double> _expectedVector(int length, List<int> activePositions) {
 ({List<Map<String, dynamic>> cases, double scoreTolerance})
 _readPythonFixture() {
   const encodedFixture = String.fromEnvironment('TOPIC_TAGGER_CASES');
-  expect(encodedFixture, isNotEmpty, reason: '실행할 때 기준 JSON을 전달해 주세요.');
+  const compressedFixture = String.fromEnvironment('TOPIC_TAGGER_CASES_GZIP');
+  expect(
+    encodedFixture.isNotEmpty || compressedFixture.isNotEmpty,
+    isTrue,
+    reason: '실행할 때 기준 JSON을 전달해 주세요.',
+  );
 
-  final fixture = jsonDecode(
-    utf8.decode(base64Decode(encodedFixture)),
-  ) as Map<String, dynamic>;
+  final bytes = compressedFixture.isNotEmpty
+      ? gzip.decode(base64Decode(compressedFixture))
+      : base64Decode(encodedFixture);
+  final fixture = jsonDecode(utf8.decode(bytes)) as Map<String, dynamic>;
   return (
     cases: (fixture['cases'] as List).cast<Map<String, dynamic>>(),
     scoreTolerance: (fixture['scoreTolerance'] as num).toDouble(),

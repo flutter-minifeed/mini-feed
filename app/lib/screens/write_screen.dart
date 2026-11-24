@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:minifeed/ai/topic_analysis_input.dart';
 import 'package:minifeed/ai/live_topic_analysis.dart';
 import 'package:minifeed/ai/topic_analyzer.dart';
 import 'package:minifeed/models/compose_tag.dart';
@@ -264,7 +265,10 @@ class _WriteScreenState extends State<WriteScreen> {
                     ),
                   ),
                   LiveTopicAnalysis(
-                    input: _body,
+                    input: buildTopicAnalysisInput(
+                      _body,
+                      manualTags: _selection.manualTags,
+                    ),
                     keyboardVisible:
                         MediaQuery.viewInsetsOf(context).bottom > 0,
                     loadAnalyzer: widget.loadAnalyzer,

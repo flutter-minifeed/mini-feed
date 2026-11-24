@@ -40,6 +40,77 @@ Future<FakePostRepository> pumpWriteScreen(
 }
 
 void main() {
+  testWidgets('추천 선택은 분석을 반복하지 않고 제거 후 직접 추가한 같은 이름은 분석한다', (tester) async {
+    // given
+    final analyzer = _TestAnalyzer(['여행']);
+    final repository = await pumpWriteScreen(tester, analyzer: analyzer);
+    await tester.enterText(find.byKey(const ValueKey('post-body')), '오늘 게임');
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ActionChip, '여행'));
+    await tester.pumpAndSettle();
+    final field = find.widgetWithText(TextField, '#태그 입력');
+    await tester.enterText(field, '여행');
+    await tester.pump();
+    await tester.tap(find.byTooltip('태그 추가'));
+    await tester.pump();
+    expect(find.text('이미 추가한 태그예요.'), findsOneWidget);
+    expect(analyzer.inputs, ['오늘 게임']);
+
+    // when
+    await tester.tap(find.byTooltip('여행 제거'));
+    await tester.pump();
+    await tester.tap(find.byTooltip('태그 추가'));
+    await tester.pumpAndSettle();
+
+    // then
+    expect(analyzer.inputs, ['오늘 게임', '오늘 게임 여행']);
+    await tester.tap(_postButton);
+    await tester.pumpAndSettle();
+    expect(repository.posts.single.body, '오늘 게임');
+    expect(repository.posts.single.tags, ['여행']);
+  });
+
+  testWidgets('태그만 바꾸고 키보드를 닫으면 새 입력을 분석하고 늦은 결과를 무시한다', (tester) async {
+    // given
+    final previous = Completer<TopicAnalysis>();
+    final analyzer = _TestAnalyzer(['여행'])..pending = previous;
+    await pumpWriteScreen(tester, analyzer: analyzer);
+    final field = find.widgetWithText(TextField, '#태그 입력');
+    await tester.enterText(field, '#Run');
+    await tester.pump();
+    await tester.tap(find.byTooltip('태그 추가'));
+    await tester.pumpAndSettle();
+    expect(analyzer.inputs, ['run']);
+    expect(find.text('#Run'), findsOneWidget);
+    expect(_canPost(tester), isFalse);
+
+    // when
+    tester.view.viewInsets = const FakeViewPadding(bottom: 200);
+    addTearDown(tester.view.resetViewInsets);
+    await tester.pump();
+    await tester.tap(find.byTooltip('Run 제거'));
+    await tester.pump();
+    analyzer.pending = null;
+    await tester.enterText(field, '#제주여행');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pump();
+    expect(analyzer.inputs, ['run']);
+    tester.view.resetViewInsets();
+    await tester.pumpAndSettle();
+    previous.completeError(StateError('이전 태그의 늦은 오류'));
+    await tester.pumpAndSettle();
+
+    // then
+    expect(analyzer.inputs, ['run', '제주여행']);
+    expect(find.widgetWithText(ActionChip, '여행'), findsOneWidget);
+    expect(find.text('#제주여행'), findsOneWidget);
+    expect(_canPost(tester), isFalse);
+    await tester.tap(find.byTooltip('제주여행 제거'));
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(ActionChip, '여행'), findsNothing);
+    expect(analyzer.inputs, ['run', '제주여행']);
+  });
+
   testWidgets('키보드가 닫힐 때만 새 입력을 분석하고 점수 접기 상태를 유지한다', (tester) async {
     // given
     final analyzer = _TestAnalyzer(['여행']);
