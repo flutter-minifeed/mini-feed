@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minifeed/screens/write_screen.dart';
+import 'package:minifeed/repository/post/post_repository.dart';
 import 'package:minifeed/viewmodels/write_view_model.dart';
 
 import '../helpers/fake_write_view_model.dart';
@@ -78,7 +79,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // then
-    expect(find.textContaining('저장 용량'), findsOneWidget);
+    expect(find.text('올리지 못했어요. 입력한 글은 그대로 있어요.'), findsOneWidget);
     expect(find.text('#Run'), findsOneWidget);
     expect(find.text('#운동·건강'), findsOneWidget);
     expect(find.text('달리기'), findsOneWidget);
@@ -87,6 +88,29 @@ void main() {
     await tester.pumpAndSettle();
     expect(repository.posts.single.tags, names);
     expect(repository.requestIds.toSet(), hasLength(1));
+  });
+
+  testWidgets('문서 용량을 초과하면 입력을 보존하고 태그를 줄여 게시할 수 있다', (tester) async {
+    final repository = await pumpWriteScreen(tester, recommendedTags: ['여행']);
+    await tester.enterText(find.byKey(const ValueKey('post-body')), '달리기');
+    await tester.tap(find.text('여행'));
+    await tester.pump();
+    final gate = Completer<void>();
+    repository.blockAddUntil = gate;
+    await tester.tap(_postButton);
+    gate.completeError(const PostTooLargeException());
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('저장 용량을 넘었어요'), findsOneWidget);
+    expect(find.text('#여행'), findsOneWidget);
+    expect(find.text('달리기'), findsOneWidget);
+    await tester.tap(find.byTooltip('여행 제거'));
+    await tester.pump();
+    repository.blockAddUntil = null;
+    await tester.tap(_postButton);
+    await tester.pumpAndSettle();
+    expect(repository.posts.single.body, '달리기');
+    expect(repository.posts.single.tags, isEmpty);
   });
 
   testWidgets('추천을 제거하고 직접 입력 태그만 남겨도 닫기 전에 확인한다', (tester) async {

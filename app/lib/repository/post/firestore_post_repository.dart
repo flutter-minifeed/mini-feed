@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -59,6 +60,17 @@ class FirestorePostRepository implements PostRepository {
   }) async {
     final savedTags = List<String>.unmodifiable(tags);
     final ref = _posts.doc(requestId);
+    final fields = <String, Object>{
+      'authorId': currentUser.id,
+      'nickName': currentUser.nickName,
+      'colorIndex': currentUser.colorIndex,
+      'body': body,
+      if (savedTags.isNotEmpty) 'tags': savedTags,
+      'createdAt': FieldValue.serverTimestamp(),
+      'likeCount': 0,
+      'commentCount': 0,
+    };
+    _checkPostSize(ref.path, fields);
     try {
       // 같은 문서를 동시에 읽고 생성해도 커밋은 한 번만 성공한다.
       // 재시도된 트랜잭션은 기존 문서를 읽고 쓰기 없이 끝난다.
@@ -68,16 +80,7 @@ class FirestorePostRepository implements PostRepository {
         final snapshot = await transaction.get(ref);
         if (snapshot.exists) return _toPost(snapshot);
 
-        transaction.set(ref, {
-          'authorId': currentUser.id,
-          'nickName': currentUser.nickName,
-          'colorIndex': currentUser.colorIndex,
-          'body': body,
-          if (savedTags.isNotEmpty) 'tags': savedTags,
-          'createdAt': FieldValue.serverTimestamp(),
-          'likeCount': 0,
-          'commentCount': 0,
-        });
+        transaction.set(ref, fields);
         return null;
       });
 
@@ -99,6 +102,26 @@ class FirestorePostRepository implements PostRepository {
       rethrow;
     }
   }
+}
+
+// Firestore 문서명에는 16바이트, 문서에는 별도로 32바이트가 더해진다.
+// https://firebase.google.com/docs/firestore/storage-size
+void _checkPostSize(String path, Map<String, Object> fields) {
+  int stringBytes(String value) => utf8.encode(value).length + 1;
+  int stringsBytes(Iterable<String> values) =>
+      values.fold<int>(0, (bytes, value) => bytes + stringBytes(value));
+
+  var bytes = 16 + stringsBytes(path.split('/')) + 32;
+  for (final entry in fields.entries) {
+    bytes += stringBytes(entry.key);
+    bytes += switch (entry.value) {
+      String value => stringBytes(value),
+      List<String> tags => stringsBytes(tags),
+      int() || FieldValue() => 8, // 정수와 서버 작성 시각
+      _ => throw StateError('크기 계산이 필요한 게시글 필드: ${entry.key}'),
+    };
+  }
+  if (bytes > 1024 * 1024) throw const PostTooLargeException();
 }
 
 Post _toPost(DocumentSnapshot<Map<String, dynamic>> snapshot) {
