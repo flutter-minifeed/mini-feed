@@ -129,7 +129,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('내 글 삭제'), findsNothing);
       expect(find.text('이 글 신고하기'), findsOneWidget);
-      await tester.binding.handlePopRoute();
+      await tester.tap(find.text('이 글 신고하기'));
       await tester.pumpAndSettle();
       repo.posts.clear();
 

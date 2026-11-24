@@ -10,6 +10,7 @@ import 'package:minifeed/repository/post/firestore_post_repository.dart';
 import 'package:minifeed/repository/repository_scope.dart';
 import 'package:minifeed/service/auth/firebase_auth_service.dart';
 import 'package:minifeed/viewmodels/write_view_model.dart';
+import 'package:minifeed/widgets/post_card.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -17,8 +18,12 @@ void main() {
     // given
     final owner = await _client('owner');
     final peer = await _client('peer');
+    for (var n = 0; n < 14; n++) {
+      await owner.posts.addPost('피드 위치 검증 글 $n');
+    }
     final ownPost = await owner.posts.addPost('내 삭제 검증 글');
     final otherPost = await peer.posts.addPost('다른 작성자의 삭제 검증 글');
+    final commentPost = await peer.posts.addPost('댓글 전송 중 삭제 검증 글');
     final ownBody = find.byKey(ValueKey('body-${ownPost.id}'));
     final otherBody = find.byKey(ValueKey('body-${otherPost.id}'));
 
@@ -73,6 +78,39 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('미니피드'), findsOneWidget);
     expect(otherBody, findsNothing);
+
+    // when: 댓글을 입력한 뒤 작성자가 글을 삭제한다.
+    await tester.tap(find.byKey(ValueKey('body-${commentPost.id}')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '테스트 댓글');
+    await tester.pumpAndSettle();
+    expect(await peer.posts.deletePost(commentPost.id), isTrue);
+    await tester.tap(find.byTooltip('댓글 보내기'));
+    await _until(tester, () => find.text('삭제된 글이에요').evaluate().isNotEmpty);
+    await tester.tap(find.text('확인'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(ValueKey('body-${commentPost.id}')), findsNothing);
+
+    // when: 피드 중간에서 본인 글 하나를 삭제한다.
+    final scroll = tester.widget<ListView>(find.byType(ListView)).controller!;
+    await tester.drag(find.byType(ListView), const Offset(0, -640));
+    await tester.pumpAndSettle();
+    final offset = scroll.offset;
+    expect(offset, greaterThan(0));
+    final menu = find.byTooltip('더보기').hitTestable().first;
+    final card = tester.widget<PostCard>(
+      find.ancestor(of: menu, matching: find.byType(PostCard)),
+    );
+    await tester.tap(menu);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('내 글 삭제'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('삭제'));
+    await _until(tester, () => find.byType(AlertDialog).evaluate().isEmpty);
+
+    // then
+    expect(scroll.offset, offset);
+    expect(await peer.posts.getPostById(card.post.id), isNull);
   });
 }
 

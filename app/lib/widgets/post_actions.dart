@@ -35,8 +35,13 @@ Future<bool> handlePostMenu(
   if (!context.mounted || action == null) return false;
   if (action == PostAction.report) {
     // 신고 사유 선택·접수는 신고 기능에서 연결한다.
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('신고 기능을 준비 중이에요.')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('신고 기능을 준비 중이에요.'),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.fromLTRB(16, 0, 16, 72),
+      ),
+    );
     return false;
   }
   final deleted = await showDialog<bool>(
