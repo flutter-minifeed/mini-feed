@@ -76,23 +76,34 @@ void main() {
     expect(tester.testTextInput.isVisible, isTrue);
   });
 
-  testWidgets('상세 화면에서 화살표를 누르면 피드로 돌아온다', (tester) async {
+  testWidgets('태그 여섯 개가 피드와 상세에 표시되고 뒤로 가면 피드로 돌아온다', (tester) async {
     // given
     await pumpApp(tester);
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('글쓰기'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const ValueKey('post-body')), '게시글 0 본문');
-    await tester.enterText(find.widgetWithText(TextField, '#태그 입력'), '제주');
+    const tags = ['제주여행', '게임', '여행', '주말', '친구', '휴식'];
+    final tagField = find.widgetWithText(TextField, '#태그 입력');
+    for (final tag in tags.take(5)) {
+      await tester.enterText(tagField, tag);
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pump();
+    }
+    await tester.enterText(tagField, tags.last);
     await tester.pump();
     await tester.tap(find.text('게시'));
     await tester.pumpAndSettle();
-    expect(find.text('#제주'), findsOneWidget);
+    for (final tag in tags) {
+      expect(find.text('#$tag'), findsOneWidget);
+    }
     await tester.tap(find.text('게시글 0 본문'));
     await tester.pumpAndSettle();
 
     expect(find.byType(DetailScreen), findsOneWidget);
-    expect(find.text('#제주'), findsOneWidget);
+    for (final tag in tags) {
+      expect(find.text('#$tag'), findsOneWidget);
+    }
 
     // when
     await tester.tap(find.byType(BackButton));
