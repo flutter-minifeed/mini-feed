@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minifeed/main.dart';
+import 'package:minifeed/viewmodels/write_view_model.dart';
 import 'package:minifeed/widgets/post_card.dart';
 import 'package:minifeed/models/author.dart';
 import 'package:minifeed/models/post.dart';
@@ -280,7 +281,9 @@ List<String> _expectedIds(int count) => List.generate(
 Widget _app(PostRepository repository) => RepositoryScope(
   postRepository: repository,
   commentRepository: InMemoryCommentRepository.fromJsonString('[]'),
-  child: const MyApp(),
+  child: MyApp(
+    createWriteViewModel: () => WriteViewModelImpl(repository: repository),
+  ),
 );
 
 ScrollController _controller(WidgetTester tester) =>

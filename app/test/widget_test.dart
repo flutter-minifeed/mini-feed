@@ -13,6 +13,7 @@ import 'package:minifeed/repository/post/post_repository.dart';
 import 'package:minifeed/repository/repository_scope.dart';
 import 'package:minifeed/screens/detail_screen.dart';
 import 'package:minifeed/widgets/post_card.dart';
+import 'package:minifeed/viewmodels/write_view_model.dart';
 
 import 'helpers/test_app.dart';
 
@@ -141,6 +142,60 @@ void main() {
 
     // then
     expect(scroll.position.pixels, previousOffset);
+  });
+
+  testWidgets('시간 초과 뒤 늦게 저장된 글은 글쓰기를 버리고 닫아도 피드에 보인다', (tester) async {
+    // given
+    final repository = await pumpApp(tester);
+    await tester.pumpAndSettle();
+    final lateSave = Completer<void>();
+    repository.blockAddUntil = lateSave;
+    await tester.tap(find.byTooltip('글쓰기'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '늦게 저장된 글');
+    await tester.pump();
+    await tester.tap(find.text('게시'));
+    await tester.pump(const Duration(seconds: 10));
+    lateSave.complete();
+    await tester.pumpAndSettle();
+
+    // when
+    await tester.tap(find.byType(CloseButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('버리기'));
+    await tester.pumpAndSettle();
+
+    // then
+    final card = tester.widget<PostCard>(find.byType(PostCard).first);
+    expect(card.post.body, '늦게 저장된 글');
+  });
+
+  testWidgets('목록 조회에 실패한 상태에서 게시하면 오류 대신 새 글이 보인다', (tester) async {
+    // given
+    final repository = _ReadOverrideRepository(
+      _repository(),
+      () async => throw StateError('목록 조회 실패'),
+    );
+    await tester.pumpWidget(_app(repository));
+    await tester.pumpAndSettle();
+    final errorShownBeforePost = find
+        .text('게시글을 불러오지 못했습니다.')
+        .evaluate()
+        .isNotEmpty;
+    await tester.tap(find.byTooltip('글쓰기'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '방금 저장한 글');
+    await tester.pump();
+
+    // when
+    await tester.tap(find.text('게시'));
+    await tester.pumpAndSettle();
+
+    // then
+    expect(errorShownBeforePost, isTrue);
+    expect(find.text('게시글을 불러오지 못했습니다.'), findsNothing);
+    final card = tester.widget<PostCard>(find.byType(PostCard).first);
+    expect(card.post.body, '방금 저장한 글');
   });
 
   testWidgets('피드를 스크롤하면 마지막 게시글도 표시된다', (tester) async {
@@ -433,7 +488,10 @@ void main() {
     await tester.tap(find.text('게시'));
     await tester.pump(const Duration(seconds: 1));
     expect(reads, 3);
-    expect(find.byKey(const ValueKey('body-post-local-1')), findsOneWidget);
+    final saved = (await original.getPosts()).singleWhere(
+      (post) => post.body == '늦은 응답보다 최신 글',
+    );
+    expect(find.byKey(ValueKey('body-${saved.id}')), findsOneWidget);
 
     // when
     pending.complete(oldPosts);
@@ -494,7 +552,9 @@ Widget _app(PostRepository repository) {
   return RepositoryScope(
     postRepository: repository,
     commentRepository: InMemoryCommentRepository.fromJsonString('[]'),
-    child: const MyApp(),
+    child: MyApp(
+      createWriteViewModel: () => WriteViewModelImpl(repository: repository),
+    ),
   );
 }
 

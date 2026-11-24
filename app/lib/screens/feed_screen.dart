@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 import '../models/post.dart';
 import '../repository/post/post_repository.dart';
 import '../repository/repository_scope.dart';
+import '../viewmodels/write_view_model.dart';
 import '../widgets/post_card.dart';
 import 'detail_screen.dart';
 import 'write_screen.dart';
 
 class FeedScreen extends StatefulWidget {
-  const FeedScreen({super.key});
+  const FeedScreen({super.key, required this.createWriteViewModel});
+
+  final WriteViewModel Function() createWriteViewModel;
 
   @override
   State<FeedScreen> createState() => _FeedScreenState();
@@ -80,7 +83,8 @@ class _FeedScreenState extends State<FeedScreen> {
                   (post) => comparePostsNewestFirst(post, previousFirst) < 0,
                 )
                 .length;
-      final showChip = isRefresh && _posts.isNotEmpty && newPostCount > 0;
+      final showChip =
+          isRefresh && !revealNewPost && _posts.isNotEmpty && newPostCount > 0;
       final showTop = revealNewPost && newPostCount > 0;
       final recovered = isRefresh && _failed;
       setState(() {
@@ -90,10 +94,7 @@ class _FeedScreenState extends State<FeedScreen> {
         _pendingPage = showChip ? page : null;
         _newPostCount = showChip ? newPostCount : 0;
         if (!showChip) {
-          _applyFirstPage(
-            page,
-            keepTail: isRefresh || (revealNewPost && newPostCount == 0),
-          );
+          _applyFirstPage(page, keepTail: isRefresh);
           _highlightedPostCount = 0;
           _highlightBoundary = null;
         }
@@ -216,14 +217,37 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   Future<void> _openWrite() async {
-    final created = await Navigator.of(context).push<Post>(
+    final viewModel = widget.createWriteViewModel();
+    final post = await Navigator.of(context).push<Post>(
       MaterialPageRoute<Post>(
         fullscreenDialog: true,
-        builder: (_) => const WriteScreen(),
+        builder: (_) => WriteScreen(viewModel: viewModel),
       ),
     );
-    // 취소한 경우에는 목록과 새 글 구분선을 그대로 두어 위치를 유지한다.
-    if (mounted && created != null) await _loadPosts(revealNewPost: true);
+    if (!mounted) return;
+    if (post == null) {
+      // 시간 초과 뒤 실제 저장이 끝났을 수 있다. 일반 취소는 읽던 상태를 유지한다.
+      if (viewModel.status == WriteStatus.timedOut) {
+        await _loadPosts(isRefresh: true, revealNewPost: true);
+      }
+      return;
+    }
+
+    setState(() {
+      _posts = [post, ..._posts.where((item) => item.id != post.id)];
+      _pendingPage = null;
+      _newPostCount = 0;
+      _highlightedPostCount = 0;
+      _highlightBoundary = null;
+      _loading = false;
+      _failed = false;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _scrollController.hasClients) {
+        _scrollController.jumpTo(0);
+      }
+    });
+    await _loadPosts(isRefresh: true);
   }
 
   void _openDetail(Post post, {bool focusComment = false}) {

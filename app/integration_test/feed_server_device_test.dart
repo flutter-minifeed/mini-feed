@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:minifeed/main.dart';
+import 'package:minifeed/viewmodels/write_view_model.dart';
 import 'package:minifeed/models/author.dart';
 import 'package:minifeed/repository/comment/firestore_comment_repository.dart';
 import 'package:minifeed/repository/post/firestore_post_repository.dart';
@@ -74,7 +75,9 @@ void main() {
       RepositoryScope(
         postRepository: posts,
         commentRepository: comments,
-        child: const MyApp(),
+        child: MyApp(
+          createWriteViewModel: () => WriteViewModelImpl(repository: posts),
+        ),
       ),
     );
     await _settle(tester);
