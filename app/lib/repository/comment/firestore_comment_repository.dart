@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../models/author.dart';
 import '../../models/comment.dart';
+import '../offline_exception.dart';
 import 'comment_repository.dart';
 
 class FirestoreCommentRepository implements CommentRepository {
@@ -25,6 +26,8 @@ class FirestoreCommentRepository implements CommentRepository {
         result.docs.map((comment) => _toComment(comment, postId)),
       );
     } on FirebaseException catch (error) {
+      // #15 연결이 없으면 캐시에 남은 예전 댓글 대신 조회 불가를 알린다.
+      if (error.code == 'unavailable') throw const OfflineException();
       if (error.code != 'permission-denied') rethrow;
       // #16 가드가 원본 글이 없는 하위 경로의 조회를 차단한다.
       // 부모도 읽지 못하거나 실제로 존재하면 실패를 그대로 전달한다.
