@@ -75,6 +75,7 @@ try {
     'test/firestore_paging_emulator_test.dart',
     'test/firestore_like_emulator_test.dart',
     'test/firestore_comment_emulator_test.dart',
+    'test/firestore_offline_emulator_test.dart',
   ]) {
     // Replace the data before each suite, including when paging runs after writes.
     run(process.execPath, ['seed-repository-fixtures.mjs'], { cwd: tests, stdio: 'inherit' });
