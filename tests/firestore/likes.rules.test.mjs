@@ -266,12 +266,13 @@ test('본인 좋아요 문서는 읽을 수 있고 다른 사용자의 문서는
   await seedLikes(userA);
 
   // when
-  const own = getDoc(likeRef(authenticated(userA), userA));
-  const other = getDoc(likeRef(authenticated(userB), userA));
+  // 요청을 미리 만들어 두면 기다리는 사이 거부가 처리되지 않은 오류로 잡혀서 차례로 보낸다.
+  const readOwn = () => getDoc(likeRef(authenticated(userA), userA));
+  const readOther = () => getDoc(likeRef(authenticated(userB), userA));
 
   // then
-  await assertSucceeds(own);
-  await assertFails(other);
+  await assertSucceeds(readOwn());
+  await assertFails(readOther());
 });
 
 test('좋아요 목록은 누른 사람이라도 조회할 수 없다', async () => {
