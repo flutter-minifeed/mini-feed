@@ -329,7 +329,8 @@ test('인증된 댓글 작성자도 댓글을 삭제할 수 없다', async () =>
   await assertFails(request);
 });
 
-for (const path of ['posts/example/likes/writer-a', 'posts/example/reports/report-1']) {
+// 좋아요(#18) 쓰기 규칙은 likes.rules.test.mjs에서 검사한다.
+for (const path of ['posts/example/reports/report-1']) {
   test('인증 사용자가 미구현 하위 경로 ' + path + '에 쓰면 거부된다', async () => {
     // given
     await seedPost();
