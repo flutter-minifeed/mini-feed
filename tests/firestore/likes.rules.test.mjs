@@ -11,6 +11,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  increment,
   runTransaction,
   serverTimestamp,
   setDoc,
@@ -66,14 +67,13 @@ function setLike(db, uid, liked) {
   return runTransaction(db, async (transaction) => {
     const post = await transaction.get(postRef(db));
     const like = await transaction.get(likeRef(db, uid));
-    if (like.exists() === liked) return;
-    const likeCount = post.data().likeCount;
+    if (!post.exists() || like.exists() === liked) return;
     if (liked) {
       transaction.set(likeRef(db, uid), { createdAt: serverTimestamp() });
     } else {
       transaction.delete(likeRef(db, uid));
     }
-    transaction.update(postRef(db), { likeCount: likeCount + (liked ? 1 : -1) });
+    transaction.update(postRef(db), { likeCount: increment(liked ? 1 : -1) });
   });
 }
 
