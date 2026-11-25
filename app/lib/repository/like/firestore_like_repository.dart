@@ -30,15 +30,16 @@ class FirestoreLikeRepository implements LikeRepository {
         return (liked: liked, likeCount: likeCount);
       }
 
-      final next = liked ? likeCount + 1 : likeCount - 1;
+      final change = liked ? 1 : -1;
       if (liked) {
         transaction.set(like, {'createdAt': FieldValue.serverTimestamp()});
       } else {
         transaction.delete(like);
       }
-      // 규칙이 좋아요 문서 변경과 개수 ±1이 같은 작업에 들어왔는지 확인한다.
-      transaction.update(post, {'likeCount': next});
-      return (liked: liked, likeCount: next);
+      // 읽은 개수를 그대로 쓰면, 다른 사용자가 먼저 커밋했을 때 규칙의 ±1 검사에
+      // 걸려 재시도 없이 권한 거부가 난다. 서버가 현재 값에 더하도록 increment를 쓴다.
+      transaction.update(post, {'likeCount': FieldValue.increment(change)});
+      return (liked: liked, likeCount: likeCount + change);
     });
   }
 }
