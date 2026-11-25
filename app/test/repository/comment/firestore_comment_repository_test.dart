@@ -26,7 +26,8 @@ void main() {
   late FirestoreCommentRepository repository;
 
   setUpAll(() {
-    registerFallbackValue<Object>('field');
+    // orderBy(FieldPath.documentId)의 인자를 any()로 받기 위한 대체값.
+    registerFallbackValue(FieldPath.documentId);
     registerFallbackValue(const GetOptions());
   });
 
