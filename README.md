@@ -137,7 +137,7 @@ flutter build apk --debug --dart-define-from-file=../.env
 
 Firestore 접근 규칙 테스트는 **Node.js 24.12.0 이상**·Firebase CLI·Java 21 이상을 준비한 뒤 `tests/firestore/`에서 `npm ci`, `npm test`로 실행합니다. 잠금 파일의 Firebase 패키지가 Node.js 24.12.0 이상을 요구합니다. GitHub Actions의 `Firestore rules` 작업도 Node.js 24.22.3 / Firebase CLI 15.36.0 / Java 25로 같은 명령을 실행합니다. `demo-minifeed-auth` 프로젝트의 로컬 에뮬레이터에서 프로필·게시글·좋아요·댓글 테스트를 순차 실행하며 실제 팀 서버에 쓰지 않습니다.
 
-Firestore 저장소 통합 검사는 Chrome과 `app/`의 잠금 파일 의존성을 준비한 뒤 `tests/firestore/`에서 `npm run test:repositories`로 실행합니다. `demo-minifeed-repositories`용 Auth·Firestore 에뮬레이터가 #16 규칙으로 동작하는 동안 Flutter SDK에서 페이지 조회, 게시, 재시도, 댓글 읽기, 좋아요 설정·취소와 동시 요청, 댓글 등록·재시도와 동시 요청을 검사합니다.
+Firestore 저장소 통합 검사는 Chrome과 `app/`의 잠금 파일 의존성을 준비한 뒤 `tests/firestore/`에서 `npm run test:repositories`로 실행합니다. `demo-minifeed-repositories`용 Auth·Firestore 에뮬레이터가 #16 규칙으로 동작하는 동안 Flutter SDK에서 페이지 조회, 게시, 재시도, 댓글 읽기, 좋아요 설정·취소와 동시 요청, 댓글 등록·재시도와 동시 요청, 연결을 끊고 다시 이을 때의 캐시 조회를 검사합니다.
 
 게시·댓글 테스트와 페이지 조회 테스트는 각 테스트 파일이 시작되기 전에 에뮬레이터 데이터를 다시 준비합니다. Windows에서는 Flutter 3.47.5 웹 러너의 CanvasKit URL 경로를 임시 러너에서 보정합니다. 사용 중인 Flutter는 PATH에 등록하고, 실행 전에 앱의 의존성을 설치해 주세요.
 
