@@ -29,7 +29,7 @@ class FirestorePostRepository implements PostRepository {
   @override
   Future<List<Post>> getPosts() async {
     final snapshot = await _newestFirst.get(_server);
-    return List.unmodifiable(snapshot.docs.map(_toPost));
+    return List.unmodifiable(await _withLikedByMe(snapshot.docs));
   }
 
   @override
@@ -42,13 +42,38 @@ class FirestorePostRepository implements PostRepository {
       ]);
     }
     final snapshot = await query.limit(PostPage.pageSize).get(_server);
-    return PostPage(snapshot.docs.map(_toPost).toList());
+    return PostPage(await _withLikedByMe(snapshot.docs));
   }
 
   @override
   Future<Post?> getPostById(String id) async {
     final snapshot = await _posts.doc(id).get(_server);
-    return snapshot.exists ? _toPost(snapshot) : null;
+    if (!snapshot.exists) return null;
+    return _toPost(snapshot, likedByMe: await _isLikedByMe(snapshot.reference));
+  }
+
+  // likedByMe는 공용 게시글 필드가 아니라 내 좋아요 문서가 있는지로 정한다(#18).
+  // 규칙상 다른 사용자의 좋아요 문서는 읽을 수 없어서 글마다 내 문서만 확인한다.
+  Future<bool> _isLikedByMe(
+    DocumentReference<Map<String, dynamic>> post,
+  ) async {
+    final like = await post
+        .collection('likes')
+        .doc(currentUser.id)
+        .get(_server);
+    return like.exists;
+  }
+
+  // Future.wait는 넘긴 순서대로 결과를 돌려주므로 조회 순서가 유지된다.
+  Future<List<Post>> _withLikedByMe(
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+  ) {
+    return Future.wait(
+      docs.map(
+        (doc) async =>
+            _toPost(doc, likedByMe: await _isLikedByMe(doc.reference)),
+      ),
+    );
   }
 
   @override
@@ -61,7 +86,7 @@ class FirestorePostRepository implements PostRepository {
         transaction,
       ) async {
         final snapshot = await transaction.get(ref);
-        if (snapshot.exists) return _toPost(snapshot);
+        if (snapshot.exists) return _toPost(snapshot, likedByMe: false);
 
         transaction.set(ref, {
           'authorId': currentUser.id,
@@ -80,7 +105,8 @@ class FirestorePostRepository implements PostRepository {
       }
 
       // 최초 생성은 서버가 확정한 작성 시각까지 읽고 나서 성공으로 반환한다.
-      return _toPost(await ref.get(_server));
+      // 방금 만든 글이라 내 좋아요는 아직 없다.
+      return _toPost(await ref.get(_server), likedByMe: false);
     } on FirebaseException catch (error) {
       if (error.code == 'deadline-exceeded') {
         throw TimeoutException(error.message);
@@ -90,7 +116,10 @@ class FirestorePostRepository implements PostRepository {
   }
 }
 
-Post _toPost(DocumentSnapshot<Map<String, dynamic>> snapshot) {
+Post _toPost(
+  DocumentSnapshot<Map<String, dynamic>> snapshot, {
+  required bool likedByMe,
+}) {
   final data = snapshot.data();
   if (data == null) {
     throw StateError('게시글 ${snapshot.id}의 데이터가 없습니다.');
@@ -106,6 +135,6 @@ Post _toPost(DocumentSnapshot<Map<String, dynamic>> snapshot) {
     createdAt: (data['createdAt'] as Timestamp).toDate().toLocal(),
     likeCount: data['likeCount'] as int,
     commentCount: data['commentCount'] as int,
-    likedByMe: false,
+    likedByMe: likedByMe,
   );
 }
