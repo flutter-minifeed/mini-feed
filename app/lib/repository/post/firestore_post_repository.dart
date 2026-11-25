@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../models/author.dart';
 import '../../models/post.dart';
+import '../offline_exception.dart';
 import 'post_repository.dart';
 
 class FirestorePostRepository implements PostRepository {
@@ -13,6 +14,7 @@ class FirestorePostRepository implements PostRepository {
   });
 
   static const _server = GetOptions(source: Source.server);
+  static const _cache = GetOptions(source: Source.cache);
 
   final FirebaseFirestore _firestore;
 
@@ -29,7 +31,9 @@ class FirestorePostRepository implements PostRepository {
   @override
   Future<List<Post>> getPosts() async {
     final snapshot = await _newestFirst.get(_server);
-    return List.unmodifiable(await _withLikedByMe(snapshot.docs));
+    return List.unmodifiable(
+      await _withLikedByMe(snapshot.docs, fromCache: false),
+    );
   }
 
   @override
@@ -41,37 +45,73 @@ class FirestorePostRepository implements PostRepository {
         after.postId,
       ]);
     }
-    final snapshot = await query.limit(PostPage.pageSize).get(_server);
-    return PostPage(await _withLikedByMe(snapshot.docs));
+    final snapshot = await _serverOrCache(query.limit(PostPage.pageSize).get);
+    final fromCache = snapshot.metadata.isFromCache;
+    return PostPage(
+      await _withLikedByMe(snapshot.docs, fromCache: fromCache),
+      fromCache: fromCache,
+    );
   }
 
   @override
   Future<Post?> getPostById(String id) async {
-    final snapshot = await _posts.doc(id).get(_server);
+    final snapshot = await _serverOrCache(_posts.doc(id).get);
     if (!snapshot.exists) return null;
-    return _toPost(snapshot, likedByMe: await _isLikedByMe(snapshot.reference));
+    final likedByMe = await _isLikedByMe(
+      snapshot.reference,
+      fromCache: snapshot.metadata.isFromCache,
+    );
+    return _toPost(snapshot, likedByMe: likedByMe);
+  }
+
+  // 서버에 연결할 수 없을 때만 기기 캐시에서 다시 읽는다(#15).
+  // 권한 거부 같은 다른 오류는 캐시 값으로 가리지 않고 그대로 전달한다.
+  // 캐시에도 없는 문서면 OfflineException으로 알린다.
+  static Future<T> _serverOrCache<T>(
+    Future<T> Function(GetOptions options) read,
+  ) async {
+    try {
+      return await read(_server);
+    } on FirebaseException catch (error) {
+      if (error.code != 'unavailable') rethrow;
+    }
+    try {
+      return await read(_cache);
+    } on FirebaseException catch (error) {
+      if (error.code != 'unavailable') rethrow;
+      throw const OfflineException();
+    }
   }
 
   // likedByMe는 공용 게시글 필드가 아니라 내 좋아요 문서가 있는지로 정한다(#18).
   // 규칙상 다른 사용자의 좋아요 문서는 읽을 수 없어서 글마다 내 문서만 확인한다.
+  // 글을 캐시에서 읽었으면 좋아요도 서버에 다시 묻지 않고 캐시에서 읽는다.
   Future<bool> _isLikedByMe(
-    DocumentReference<Map<String, dynamic>> post,
-  ) async {
-    final like = await post
-        .collection('likes')
-        .doc(currentUser.id)
-        .get(_server);
-    return like.exists;
+    DocumentReference<Map<String, dynamic>> post, {
+    required bool fromCache,
+  }) async {
+    final like = post.collection('likes').doc(currentUser.id);
+    if (!fromCache) return (await like.get(_server)).exists;
+    try {
+      return (await like.get(_cache)).exists;
+    } on FirebaseException catch (error) {
+      if (error.code != 'unavailable') rethrow;
+      // 온라인일 때 한 번도 읽지 않은 기록은 캐시에 없어서 누르지 않은 것으로 표시한다.
+      return false;
+    }
   }
 
   // Future.wait는 넘긴 순서대로 결과를 돌려주므로 조회 순서가 유지된다.
   Future<List<Post>> _withLikedByMe(
-    List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
-  ) {
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> docs, {
+    required bool fromCache,
+  }) {
     return Future.wait(
       docs.map(
-        (doc) async =>
-            _toPost(doc, likedByMe: await _isLikedByMe(doc.reference)),
+        (doc) async => _toPost(
+          doc,
+          likedByMe: await _isLikedByMe(doc.reference, fromCache: fromCache),
+        ),
       ),
     );
   }
