@@ -43,7 +43,7 @@ class InMemoryCommentRepository implements CommentRepository {
     return List.unmodifiable(result);
   }
 
-  /// 메모리 구현은 게시글 목록을 모르므로 게시글이 있다고 보고 저장한다.
+  /// 게시글 목록을 모르므로 null을 돌려주지 않고 항상 저장한다(인터페이스 계약 참고).
   /// 댓글 수는 메모리에 있는 그 게시글의 댓글 수다.
   @override
   Future<AddedComment?> addComment(

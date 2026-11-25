@@ -12,7 +12,9 @@ abstract interface class CommentRepository {
   Future<List<Comment>> getComments(String postId);
 
   /// [author] 이름으로 [postId] 게시글에 검증된 [body] 댓글을 저장한다.
-  /// 저장된 댓글과 서버가 확정한 게시글의 댓글 수를 돌려준다. 게시글이 없으면 null이다.
+  /// 저장된 댓글과 서버가 확정한 게시글의 댓글 수를 돌려준다.
+  /// 게시글 목록을 확인할 수 있는 구현은 게시글이 없으면 null을 돌려준다.
+  /// 메모리 구현(MP1)은 게시글 목록을 모르므로 항상 저장한다.
   ///
   /// [requestId]를 댓글 ID로 쓴다. 같은 ID·작성자·본문이면 기존 댓글을 돌려주고 개수를 다시 올리지 않는다.
   /// 같은 ID의 작성자나 본문이 다르면 [ArgumentError]로 거부한다.
