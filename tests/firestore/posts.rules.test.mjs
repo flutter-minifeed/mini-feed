@@ -291,7 +291,8 @@ test('인증 사용자도 게시글이 없는 댓글 목록은 읽을 수 없다
   await assertFails(request);
 });
 
-test('인증 사용자도 댓글을 만들 수 없다', async () => {
+// 정상 댓글 등록(#20)은 comments.rules.test.mjs에서 검사한다.
+test('게시글 개수 갱신 없이 만든 댓글은 거부된다', async () => {
   // given
   await seedPost();
   const ref = commentRef(authenticated());
