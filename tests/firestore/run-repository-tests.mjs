@@ -70,7 +70,11 @@ const flutter = process.platform === 'win32'
   : { run: (args) => run('flutter', args, options), cleanup: () => {} };
 
 try {
-  for (const file of ['test/firestore_emulator_test.dart', 'test/firestore_paging_emulator_test.dart']) {
+  for (const file of [
+    'test/firestore_emulator_test.dart',
+    'test/firestore_paging_emulator_test.dart',
+    'test/firestore_like_emulator_test.dart',
+  ]) {
     // Replace the data before each suite, including when paging runs after writes.
     run(process.execPath, ['seed-repository-fixtures.mjs'], { cwd: tests, stdio: 'inherit' });
     flutter.run(['test', '--no-pub', '--platform', 'chrome', '--reporter', 'expanded', file]);
