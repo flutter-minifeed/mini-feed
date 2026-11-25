@@ -86,6 +86,7 @@ class FirestoreCommentRepository implements CommentRepository {
       if (error.code == 'deadline-exceeded') {
         throw TimeoutException(error.message);
       }
+      if (error.code == 'unavailable') throw const OfflineException();
       rethrow;
     }
   }

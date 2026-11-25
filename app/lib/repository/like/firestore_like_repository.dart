@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../offline_exception.dart';
 import 'like_repository.dart';
 
 /// `posts/{postId}/likes/{uid}` 문서 하나가 좋아요 하나다.
@@ -13,7 +14,17 @@ class FirestoreLikeRepository implements LikeRepository {
   final String _userId;
 
   @override
-  Future<LikeState?> setLike(String postId, {required bool liked}) {
+  Future<LikeState?> setLike(String postId, {required bool liked}) async {
+    try {
+      return await _setLike(postId, liked: liked);
+    } on FirebaseException catch (error) {
+      // #15 트랜잭션은 서버 연결이 필요하다. 화면이 Firestore 코드를 몰라도 되게 바꾼다.
+      if (error.code == 'unavailable') throw const OfflineException();
+      rethrow;
+    }
+  }
+
+  Future<LikeState?> _setLike(String postId, {required bool liked}) {
     final post = _firestore.collection('posts').doc(postId);
     final like = post.collection('likes').doc(_userId);
 
