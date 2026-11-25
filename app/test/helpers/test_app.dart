@@ -71,6 +71,25 @@ class FakeCommentRepository implements CommentRepository {
   @override
   Future<List<Comment>> getComments(String postId) async =>
       comments.where((comment) => comment.postId == postId).toList();
+
+  @override
+  Future<AddedComment?> addComment(
+    String postId,
+    String body, {
+    required Author author,
+    required String requestId,
+  }) async {
+    final comment = Comment(
+      id: requestId,
+      postId: postId,
+      author: author,
+      body: body,
+      createdAt: DateTime.now(),
+    );
+    comments.add(comment);
+    final count = comments.where((c) => c.postId == postId).length;
+    return (comment: comment, commentCount: count);
+  }
 }
 
 Future<FakePostRepository> pumpApp(WidgetTester tester) async {

@@ -42,6 +42,30 @@ class InMemoryCommentRepository implements CommentRepository {
       ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
     return List.unmodifiable(result);
   }
+
+  /// 메모리 구현은 게시글 목록을 모르므로 게시글이 있다고 보고 저장한다.
+  /// 댓글 수는 메모리에 있는 그 게시글의 댓글 수다.
+  @override
+  Future<AddedComment?> addComment(
+    String postId,
+    String body, {
+    required Author author,
+    required String requestId,
+  }) async {
+    final saved = _comments.where((c) => c.id == requestId).firstOrNull;
+    final comment = saved != null
+        ? checkSameComment(saved, author: author, body: body)
+        : Comment(
+            id: requestId,
+            postId: postId,
+            author: author,
+            body: body,
+            createdAt: DateTime.now(),
+          );
+    if (saved == null) _comments.add(comment);
+    final count = _comments.where((c) => c.postId == postId).length;
+    return (comment: comment, commentCount: count);
+  }
 }
 
 // JSON 한 건을 Comment로 바꾼다. JSON 형식을 아는 곳은 이 파일뿐이다.
