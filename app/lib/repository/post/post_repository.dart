@@ -15,6 +15,7 @@ abstract interface class PostRepository {
   /// 작성 시각 내림차순이며 시각이 같으면 문서 ID 내림차순으로 정렬한다.
   /// 서버에 연결할 수 없으면 기기 캐시에 남은 글로 같은 순서의 페이지를 만들고
   /// [PostPage.fromCache]를 true로 둔다. 캐시가 비어 있으면 빈 페이지다(#15).
+  /// 글은 서버에서 읽었어도 내 좋아요를 캐시로 대신 읽었으면 [PostPage.fromCache]는 true다.
   Future<PostPage> getPostPage({PostCursor? after});
 
   /// id가 같은 게시글을 돌려준다. 없는 id면 null을 돌려준다.
@@ -56,7 +57,7 @@ class PostPage {
   /// 가득 찬 페이지는 커서가 있다. 정확히 20의 배수면 다음 빈 페이지에서 끝난다.
   final PostCursor? nextCursor;
 
-  /// 서버에 연결하지 못해 기기 캐시에서 읽은 페이지면 true다.
+  /// 서버에 연결하지 못해 글이나 내 좋아요를 기기 캐시에서 읽은 페이지면 true다.
   /// 화면은 이 값으로 오프라인 상태를 표시한다.
   final bool fromCache;
 }

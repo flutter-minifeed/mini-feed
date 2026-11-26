@@ -28,6 +28,14 @@ class _Snapshot extends Mock
 
 class _Metadata extends Mock implements SnapshotMetadata {}
 
+class _Query extends Mock implements Query<Map<String, dynamic>> {}
+
+class _QuerySnapshot extends Mock
+    implements QuerySnapshot<Map<String, dynamic>> {}
+
+class _QueryDoc extends Mock
+    implements QueryDocumentSnapshot<Map<String, dynamic>> {}
+
 const _server = GetOptions(source: Source.server);
 const _cache = GetOptions(source: Source.cache);
 
@@ -64,17 +72,20 @@ _Snapshot _snapshot(
 
 void main() {
   late _Firestore firestore;
+  late _Posts posts;
   late _PostRef post;
   late _PostRef like;
   late FirestorePostRepository repository;
 
   setUpAll(() {
     registerFallbackValue((Transaction _) async => null as Post?);
+    // orderBy(FieldPath.documentId)의 인자를 any()로 받기 위한 대체값.
+    registerFallbackValue(FieldPath.documentId);
   });
 
   setUp(() {
     firestore = _Firestore();
-    final posts = _Posts();
+    posts = _Posts();
     final likes = _Likes();
     post = _PostRef();
     like = _PostRef();
@@ -179,6 +190,40 @@ void main() {
 
       // then
       expect((result?.body, result?.likedByMe), ('캐시된 글', true));
+    });
+
+    test('글 목록을 서버에서 읽은 뒤 좋아요를 캐시로 대신 읽으면 오프라인 페이지로 알린다', () async {
+      // given: 서버에서 글 한 개를 읽었고, 좋아요를 읽기 전에 연결이 끊긴다
+      final byTime = _Query();
+      final ordered = _Query();
+      final limited = _Query();
+      final page = _QuerySnapshot();
+      final metadata = _Metadata();
+      final doc = _QueryDoc();
+      when(
+        () => posts.orderBy('createdAt', descending: true),
+      ).thenReturn(byTime);
+      when(
+        () => byTime.orderBy(any(), descending: any(named: 'descending')),
+      ).thenReturn(ordered);
+      when(() => ordered.limit(20)).thenReturn(limited);
+      when(() => limited.get(_server)).thenAnswer((_) async => page);
+      when(() => metadata.isFromCache).thenReturn(false);
+      when(() => page.metadata).thenReturn(metadata);
+      when(() => page.docs).thenReturn([doc]);
+      when(() => doc.id).thenReturn('test-post');
+      when(() => doc.data()).thenReturn(cachedPost);
+      when(() => doc.reference).thenReturn(post);
+      when(() => like.get(_server)).thenThrow(_firebaseError('unavailable'));
+      when(() => like.get(_cache)).thenThrow(_firebaseError('unavailable'));
+
+      // when
+      final result = await repository.getPostPage();
+
+      // then: 글은 그대로 돌려주되 화면이 오프라인으로 다루게 한다
+      expect(result.posts.single.body, '캐시된 글');
+      expect(result.posts.single.likedByMe, isFalse);
+      expect(result.fromCache, isTrue);
     });
 
     test('서버와 캐시 모두에서 글을 읽지 못하면 없는 글이 아니라 오프라인으로 알린다', () async {

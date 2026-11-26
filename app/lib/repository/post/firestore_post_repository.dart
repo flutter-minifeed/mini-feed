@@ -31,9 +31,8 @@ class FirestorePostRepository implements PostRepository {
   @override
   Future<List<Post>> getPosts() async {
     final snapshot = await _newestFirst.get(_server);
-    return List.unmodifiable(
-      await _withLikedByMe(snapshot.docs, fromCache: false),
-    );
+    final page = await _withLikedByMe(snapshot.docs, fromCache: false);
+    return List.unmodifiable(page.posts);
   }
 
   @override
@@ -46,22 +45,24 @@ class FirestorePostRepository implements PostRepository {
       ]);
     }
     final snapshot = await _serverOrCache(query.limit(PostPage.pageSize).get);
-    final fromCache = snapshot.metadata.isFromCache;
-    return PostPage(
-      await _withLikedByMe(snapshot.docs, fromCache: fromCache),
-      fromCache: fromCache,
+    final page = await _withLikedByMe(
+      snapshot.docs,
+      fromCache: snapshot.metadata.isFromCache,
     );
+    // 글은 서버에서 읽었어도 좋아요를 캐시로 대신 읽었으면 오프라인 페이지로 알려
+    // 화면이 안내를 띄우고 연결되면 다시 읽게 한다(#15).
+    return PostPage(page.posts, fromCache: page.fromCache);
   }
 
   @override
   Future<Post?> getPostById(String id) async {
     final snapshot = await _serverOrCache(_posts.doc(id).get);
     if (!snapshot.exists) return null;
-    final likedByMe = await _isLikedByMe(
+    final like = await _readLike(
       snapshot.reference,
       fromCache: snapshot.metadata.isFromCache,
     );
-    return _toPost(snapshot, likedByMe: likedByMe);
+    return _toPost(snapshot, likedByMe: like.liked);
   }
 
   // 서버에 연결할 수 없을 때만 기기 캐시에서 다시 읽는다(#15).
@@ -87,39 +88,43 @@ class FirestorePostRepository implements PostRepository {
   // 규칙상 다른 사용자의 좋아요 문서는 읽을 수 없어서 글마다 내 문서만 확인한다.
   // 글을 캐시에서 읽었으면 좋아요도 서버에 다시 묻지 않고 캐시에서 읽는다.
   // 글을 읽은 뒤 좋아요를 읽기 전에 연결이 끊겨도 읽은 글을 버리지 않고 캐시로 대신한다.
-  Future<bool> _isLikedByMe(
+  // 캐시로 대신 읽었는지도 함께 돌려줘 호출하는 쪽이 오프라인 상태로 다룰 수 있게 한다.
+  Future<({bool liked, bool fromCache})> _readLike(
     DocumentReference<Map<String, dynamic>> post, {
     required bool fromCache,
   }) async {
     final like = post.collection('likes').doc(currentUser.id);
     if (!fromCache) {
       try {
-        return (await like.get(_server)).exists;
+        return (liked: (await like.get(_server)).exists, fromCache: false);
       } on FirebaseException catch (error) {
         if (error.code != 'unavailable') rethrow;
       }
     }
     try {
-      return (await like.get(_cache)).exists;
+      return (liked: (await like.get(_cache)).exists, fromCache: true);
     } on FirebaseException catch (error) {
       if (error.code != 'unavailable') rethrow;
       // 온라인일 때 한 번도 읽지 않은 기록은 캐시에 없어서 누르지 않은 것으로 표시한다.
-      return false;
+      return (liked: false, fromCache: true);
     }
   }
 
   // Future.wait는 넘긴 순서대로 결과를 돌려주므로 조회 순서가 유지된다.
-  Future<List<Post>> _withLikedByMe(
+  // 글이나 좋아요 중 하나라도 캐시에서 읽었으면 fromCache가 true다.
+  Future<({List<Post> posts, bool fromCache})> _withLikedByMe(
     List<QueryDocumentSnapshot<Map<String, dynamic>>> docs, {
     required bool fromCache,
-  }) {
-    return Future.wait(
-      docs.map(
-        (doc) async => _toPost(
-          doc,
-          likedByMe: await _isLikedByMe(doc.reference, fromCache: fromCache),
-        ),
-      ),
+  }) async {
+    final likes = await Future.wait(
+      docs.map((doc) => _readLike(doc.reference, fromCache: fromCache)),
+    );
+    return (
+      posts: [
+        for (var i = 0; i < docs.length; i++)
+          _toPost(docs[i], likedByMe: likes[i].liked),
+      ],
+      fromCache: fromCache || likes.any((like) => like.fromCache),
     );
   }
 
