@@ -110,7 +110,7 @@ void main() {
     await tester.tap(find.byTooltip('글쓰기'));
     await tester.pumpAndSettle();
 
-    // when
+    // when: 글쓰기 화면의 실제 게시 결과로 돌아온다.
     await tester.enterText(find.byType(TextField), '방금 작성한 글');
     await tester.pump();
     await tester.tap(find.text('게시'));
@@ -249,6 +249,260 @@ void main() {
     expect(find.text('게시글을 불러오지 못했습니다.'), findsNothing);
   });
 
+  testWidgets('피드를 당기면 기존 글을 유지하고 조회가 끝난 뒤 새 글이 표시된다', (tester) async {
+    // given
+    final original = _repository();
+    final pending = Completer<List<Post>>();
+    var reads = 0;
+    final repository = _ReadOverrideRepository(original, () {
+      reads++;
+      return reads == 1 ? original.getPosts() : pending.future;
+    });
+    await tester.pumpWidget(_app(repository));
+    await tester.pumpAndSettle();
+    await original.addPost('새로고침으로 가져온 글');
+
+    // when
+    await tester.drag(find.byType(ListView), const Offset(0, 400));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
+    // then
+    expect(reads, 2);
+    expect(find.text('게시글 0 본문'), findsOneWidget);
+    expect(find.text('새로고침으로 가져온 글'), findsNothing);
+    expect(find.byType(RefreshProgressIndicator), findsOneWidget);
+    // 응답 대기 중 다시 당겨도 조회를 중복 실행하지 않는다.
+    await tester.drag(find.byType(ListView), const Offset(0, 400));
+    await tester.pump();
+    expect(reads, 2);
+    pending.complete(await original.getPosts());
+    await tester.pumpAndSettle();
+    expect(find.text('새 글 1개'), findsOneWidget);
+    await tester.tap(find.text('새 글 1개'));
+    await tester.pumpAndSettle();
+    expect(find.text('새로고침으로 가져온 글'), findsOneWidget);
+    expect(find.byType(RefreshProgressIndicator), findsNothing);
+  });
+
+  testWidgets('화면보다 짧은 피드도 당기면 새 글을 가져온다', (tester) async {
+    // given
+    final repository = _repository(count: 1);
+    await tester.pumpWidget(_app(repository));
+    await tester.pumpAndSettle();
+    await repository.addPost('짧은 피드에 추가한 글');
+
+    // when
+    await tester.drag(find.byType(ListView), const Offset(0, 400));
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.text('새 글 1개'), findsOneWidget);
+    await tester.tap(find.text('새 글 1개'));
+    await tester.pumpAndSettle();
+    expect(find.text('짧은 피드에 추가한 글'), findsOneWidget);
+    expect(find.text('게시글 0 본문'), findsOneWidget);
+  });
+
+  testWidgets('빈 피드를 당기면 새로 추가된 글이 표시된다', (tester) async {
+    // given
+    final repository = _repository(count: 0);
+    await tester.pumpWidget(_app(repository));
+    await tester.pumpAndSettle();
+    expect(find.text('아직 게시글이 없습니다.'), findsOneWidget);
+    await repository.addPost('빈 피드에서 가져온 글');
+
+    // when
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, 400));
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.text('빈 피드에서 가져온 글'), findsOneWidget);
+    expect(find.text('아직 게시글이 없습니다.'), findsNothing);
+  });
+
+  testWidgets('새로고침이 실패하면 기존 글과 안내가 보이고 다시 당기면 갱신된다', (tester) async {
+    // given
+    final original = _repository();
+    var reads = 0;
+    final repository = _ReadOverrideRepository(original, () async {
+      reads++;
+      if (reads == 2) throw StateError('테스트용 새로고침 실패');
+      return original.getPosts();
+    });
+    await tester.pumpWidget(_app(repository));
+    await tester.pumpAndSettle();
+    await original.addPost('재시도 후 가져온 글');
+
+    // when
+    await tester.drag(find.byType(ListView), const Offset(0, 400));
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.text('게시글 0 본문'), findsOneWidget);
+    expect(find.text('새로고침하지 못했습니다. 다시 시도해 주세요.'), findsOneWidget);
+    expect(find.text('재시도 후 가져온 글'), findsNothing);
+    expect(find.text('게시글을 불러오지 못했습니다.'), findsNothing);
+    await tester.drag(find.byType(ListView), const Offset(0, 400));
+    await tester.pumpAndSettle();
+    expect(reads, 3);
+    await tester.tap(find.text('새 글 1개'));
+    await tester.pumpAndSettle();
+    expect(find.text('재시도 후 가져온 글'), findsOneWidget);
+  });
+
+  testWidgets('첫 조회가 실패해도 화면을 당기면 다시 조회한다', (tester) async {
+    // given
+    final original = _repository();
+    var reads = 0;
+    final repository = _ReadOverrideRepository(original, () async {
+      reads++;
+      if (reads == 1) throw StateError('테스트용 첫 조회 실패');
+      return original.getPosts();
+    });
+    await tester.pumpWidget(_app(repository));
+    await tester.pumpAndSettle();
+    expect(find.text('게시글을 불러오지 못했습니다.'), findsOneWidget);
+
+    // when
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, 400));
+    await tester.pumpAndSettle();
+
+    // then
+    expect(reads, 2);
+    expect(find.text('게시글 0 본문'), findsOneWidget);
+    expect(find.text('게시글을 불러오지 못했습니다.'), findsNothing);
+  });
+
+  testWidgets('새로고침 중 화면이 닫혀도 늦은 응답이 오류를 만들지 않는다', (tester) async {
+    // given
+    final original = _repository();
+    final pending = Completer<List<Post>>();
+    var reads = 0;
+    final repository = _ReadOverrideRepository(original, () {
+      reads++;
+      return reads == 1 ? original.getPosts() : pending.future;
+    });
+    await tester.pumpWidget(_app(repository));
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(ListView), const Offset(0, 400));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    expect(reads, 2);
+
+    // when
+    await tester.pumpWidget(const SizedBox());
+    pending.completeError(StateError('화면 종료 뒤 도착한 조회 실패'));
+    await tester.pumpAndSettle();
+
+    // then
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('새 글 알림은 읽던 위치를 유지하고 누르면 새 글과 구분선이 보인다', (tester) async {
+    // given
+    final original = _repository();
+    final pending = Completer<List<Post>>();
+    var reads = 0;
+    final repository = _ReadOverrideRepository(original, () {
+      reads++;
+      return reads == 1 ? original.getPosts() : pending.future;
+    });
+    await tester.pumpWidget(_app(repository));
+    await tester.pumpAndSettle();
+    await original.addPost('알림으로 가져온 글');
+    await tester.drag(find.byType(ListView), const Offset(0, 400));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    await tester.drag(find.byType(ListView), const Offset(0, -600));
+    await tester.pump(const Duration(seconds: 1));
+    final scroll = tester.state<ScrollableState>(find.byType(Scrollable));
+    final previousOffset = scroll.position.pixels;
+    expect(previousOffset, greaterThan(0));
+
+    // when
+    pending.complete(await original.getPosts());
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.text('새 글 1개'), findsOneWidget);
+    expect(find.text('알림으로 가져온 글'), findsNothing);
+    expect(scroll.position.pixels, previousOffset);
+    await tester.tap(find.text('새 글 1개'));
+    await tester.pumpAndSettle();
+    expect(scroll.position.pixels, 0);
+    expect(find.text('알림으로 가져온 글'), findsOneWidget);
+    expect(find.text('새 글 1개'), findsNothing);
+    expect(find.text('여기까지 새 글 · 이전에 보던 글'), findsOneWidget);
+    final card = tester.widget<PostCard>(find.byType(PostCard).first);
+    expect(card.highlighted, isTrue);
+  });
+
+  testWidgets('같은 새 글을 다시 조회해도 알림 개수가 중복되지 않는다', (tester) async {
+    // given
+    final repository = _repository();
+    await tester.pumpWidget(_app(repository));
+    await tester.pumpAndSettle();
+    await repository.addPost('새 글 하나');
+    await repository.addPost('새 글 둘');
+
+    // when
+    for (var i = 0; i < 2; i++) {
+      await tester.drag(find.byType(ListView), const Offset(0, 400));
+      await tester.pumpAndSettle();
+    }
+
+    // then
+    expect(find.text('새 글 2개'), findsOneWidget);
+    expect(find.text('새 글 하나'), findsNothing);
+    await tester.tap(find.text('새 글 2개'));
+    await tester.pumpAndSettle();
+    final cards = tester.widgetList<PostCard>(find.byType(PostCard)).toList();
+    expect(cards.take(2).map((card) => card.post.body), ['새 글 둘', '새 글 하나']);
+    expect(cards.take(2).every((card) => card.highlighted), isTrue);
+    await tester.drag(find.byType(ListView), const Offset(0, 400));
+    await tester.pumpAndSettle();
+    expect(find.text('새 글 2개'), findsNothing);
+    expect(find.text('여기까지 새 글 · 이전에 보던 글'), findsNothing);
+  });
+
+  testWidgets('글 게시 후 먼저 끝난 조회를 늦은 새로고침 응답이 덮어쓰지 않는다', (tester) async {
+    // given
+    final original = _repository();
+    final pending = Completer<List<Post>>();
+    final oldPosts = await original.getPosts();
+    var reads = 0;
+    final repository = _ReadOverrideRepository(original, () {
+      reads++;
+      return reads == 2 ? pending.future : original.getPosts();
+    });
+    await tester.pumpWidget(_app(repository));
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(ListView), const Offset(0, 400));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    await tester.tap(find.byTooltip('글쓰기'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '늦은 응답보다 최신 글');
+    await tester.pump();
+    await tester.tap(find.text('게시'));
+    await tester.pump(const Duration(seconds: 1));
+    expect(reads, 3);
+    final saved = (await original.getPosts()).singleWhere(
+      (post) => post.body == '늦은 응답보다 최신 글',
+    );
+    expect(find.byKey(ValueKey('body-${saved.id}')), findsOneWidget);
+
+    // when
+    pending.complete(oldPosts);
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.text('늦은 응답보다 최신 글'), findsOneWidget);
+    expect(find.text('새 글 1개'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('조회 중 화면이 닫혀도 늦은 응답이 오류를 만들지 않는다', (tester) async {
     // given
     final pending = Completer<List<Post>>();
@@ -318,8 +572,8 @@ class _ReadOverrideRepository implements PostRepository {
   Future<List<Post>> getPosts() => read();
 
   @override
-  Future<PostPage> getPostPage({PostCursor? after}) =>
-      original.getPostPage(after: after);
+  Future<PostPage> getPostPage({PostCursor? after}) async =>
+      PostPage.fromOrderedPosts(await read(), after: after);
 
   @override
   Future<Post?> getPostById(String id) => original.getPostById(id);
