@@ -176,3 +176,9 @@ Git·제출 ZIP에는 `.env`, `app/android/app/google-services.json`, `app/lib/f
 시험 데이터: `app/assets/dummy/post/posts.json`(게시글 50개), `app/assets/dummy/comment/comments.json`(댓글 83개)
 
 네트워크: 첫 익명 인증·프로필 생성에는 온라인 연결이 필요합니다. 기존 익명 계정과 확정된 프로필 캐시가 있으면 오프라인에서도 재진입할 수 있습니다. 피드·글쓰기·상세는 앱 안의 JSON과 메모리 저장소로 동작합니다.
+
+## 주제 추천 모델과 데이터 출처
+
+팀에서 제공한 주제 분류 모델과 특성 사전은 각각 `app/assets/ml/best.tflite`와 `app/assets/ml/features.json`에 있다. 앱은 사전으로 본문을 8,192칸 벡터로 변환하고 기기에서 8개 주제의 점수를 계산한다. [모델 도입 기록](https://github.com/flutter-minifeed/mini-feed/issues/26) · [전처리·추천 규칙](https://github.com/flutter-minifeed/mini-feed/pull/61)
+
+팀의 배포 범위는 모델과 사전이다. AI Hub 원본 학습 데이터는 저장소·앱·제출물에 넣지 않는다. 원본 데이터셋의 정식 명칭과 개별 이용 조건은 팀 기술 보고서 및 원출처와 대조할 항목으로 남아 있다. [팀 기술 보고서 3장](https://app.notion.com/p/4068d812628a8074a861e5f0f965dd96) · [출처 검증 기준](https://github.com/flutter-minifeed/mini-feed/issues/29)
