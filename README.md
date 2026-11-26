@@ -67,7 +67,14 @@ adb -s <기기_ID> reverse --remove tcp:9099
 - 오프라인인 동안 피드와 상세는 10초마다 서버 연결을 다시 확인합니다. 안내의 ‘다시 시도’를 누르면 바로 확인합니다. 연결되면 ‘다시 연결됐어요. 최신 글을 불러왔어요.’를 띄우고, 새 글은 알림 칩으로만 알려 읽던 위치를 바꾸지 않습니다.
 - 상세는 저장된 본문과 글의 댓글 수만 보여주고, 댓글 목록 대신 조회 불가 안내를 표시하며 입력칸을 ‘연결되면 댓글을 쓸 수 있어요’로 막습니다. 연결되면 댓글을 자동으로 다시 불러옵니다.
 
-실기기에서는 피드와 상세를 한 번씩 연 뒤 비행기 모드를 켜고 같은 화면을 다시 엽니다. 다른 기기에서 글을 하나 올리고 비행기 모드를 끄면, 10초 안에 다시 연결 안내와 새 글 알림이 뜨는지 확인합니다.
+USB 실기기 검사는 #13과 같이 로컬 데모 에뮬레이터에 연결하고, 앱의 Firestore 연결만 끊었다 다시 잇습니다. 비행기 모드는 `adb reverse` 포트 연결을 끊지 않기 때문입니다. 실제 앱처럼 기기 저장소 캐시를 켜고 시작 전에 비웁니다. 에뮬레이터·데이터 준비와 `adb reverse`는 위 #13 절차와 같고, 실행 대상과 캡처 폴더만 바꿉니다.
+
+```powershell
+$env:MINIFEED_TEST_ARTIFACTS=Join-Path $env:TEMP 'minifeed-issue15-captures'
+flutter drive --no-pub --driver test_driver/feed_integration.dart --target integration_test/offline_device_test.dart -d <기기_ID>
+```
+
+캡처는 `01_feed_offline`, `02_feed_reconnected`, `03_detail_offline`, `04_detail_reconnected` 4장입니다. 팀 서버에서 비행기 모드로 확인할 때는 #18·#20 규칙이 배포된 뒤에 진행합니다. 배포 전에는 피드가 내 좋아요 문서를 읽지 못해 조회에 실패합니다.
 
 ## 더미 데이터 구조
 
