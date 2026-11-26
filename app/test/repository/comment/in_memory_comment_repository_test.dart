@@ -124,6 +124,33 @@ void main() {
     final comments = await repository.getComments('p1');
     expect(comments.map((comment) => comment.body).toList(), ['b', '새 댓글']);
   });
+
+  test('다른 게시글에 같은 요청 ID로 등록하면 각 게시글에 따로 저장된다', () async {
+    // given
+    final repository = InMemoryCommentRepository.fromJsonString(_oneComment);
+    await repository.addComment(
+      'p1',
+      '첫 글 댓글',
+      author: _me,
+      requestId: 'request-1',
+    );
+
+    // when
+    final added = await repository.addComment(
+      'p2',
+      '둘째 글 댓글',
+      author: _me,
+      requestId: 'request-1',
+    );
+
+    // then
+    expect(added?.comment.postId, 'p2');
+    expect(added?.commentCount, 1);
+    final first = await repository.getComments('p1');
+    final second = await repository.getComments('p2');
+    expect(first.map((comment) => comment.body), ['b', '첫 글 댓글']);
+    expect(second.map((comment) => comment.body), ['둘째 글 댓글']);
+  });
 }
 
 const _oneComment = '''[

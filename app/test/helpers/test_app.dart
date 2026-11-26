@@ -80,7 +80,9 @@ class FakeCommentRepository implements CommentRepository {
     required String requestId,
   }) async {
     // 실제 저장소와 같은 계약: 같은 요청 ID는 한 번만 저장하고 기존 댓글을 돌려준다.
-    final saved = comments.where((c) => c.id == requestId).firstOrNull;
+    final saved = comments
+        .where((c) => c.postId == postId && c.id == requestId)
+        .firstOrNull;
     final comment = saved != null
         ? checkSameComment(saved, author: author, body: body)
         : Comment(
