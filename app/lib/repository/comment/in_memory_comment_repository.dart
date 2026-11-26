@@ -52,7 +52,10 @@ class InMemoryCommentRepository implements CommentRepository {
     required Author author,
     required String requestId,
   }) async {
-    final saved = _comments.where((c) => c.id == requestId).firstOrNull;
+    // Firestore처럼 요청 ID는 게시글마다 따로 본다(posts/{postId}/comments/{requestId}).
+    final saved = _comments
+        .where((c) => c.postId == postId && c.id == requestId)
+        .firstOrNull;
     final comment = saved != null
         ? checkSameComment(saved, author: author, body: body)
         : Comment(
