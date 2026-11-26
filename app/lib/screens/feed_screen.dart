@@ -115,7 +115,8 @@ class _FeedScreenState extends State<FeedScreen> {
         }
       });
       if (offline) _scheduleOfflineRetry();
-      if (recovered) {
+      // 상세가 위에 열려 있으면 띄우지 않는다. 스낵바는 앱 전체가 같이 써서 상세 위에 뜬다(#15).
+      if (recovered && (ModalRoute.isCurrentOf(context) ?? true)) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Row(
@@ -290,6 +291,8 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   void _openDetail(Post post, {bool focusComment = false}) {
+    // 피드의 재연결 안내가 상세로 넘어가 상세 오프라인 안내와 겹치지 않게 닫는다(#15).
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         settings: RouteSettings(name: '/posts/${post.id}'),

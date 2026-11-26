@@ -196,6 +196,49 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('재연결 안내가 떠 있을 때 상세로 들어가면 안내를 닫는다', (tester) async {
+    // given: 오프라인이었다가 연결돼 피드에 재연결 안내가 떠 있다
+    final posts = _OfflinePostRepository()
+      ..posts.add(_post('p1', '읽어 둔 글', now));
+    await _pumpFeed(tester, posts);
+    posts.goOffline();
+    await _refresh(tester);
+    posts.goOnline();
+    await tester.pump(offlineRetryInterval);
+    await tester.pumpAndSettle();
+    expect(find.text(_reconnected), findsOneWidget);
+
+    // when
+    await tester.tap(find.text('읽어 둔 글'));
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.byType(DetailScreen), findsOneWidget);
+    expect(find.text(_reconnected), findsNothing);
+  });
+
+  testWidgets('상세를 연 동안 피드가 다시 연결돼도 상세 위에 피드 안내를 띄우지 않는다', (tester) async {
+    // given: 피드가 오프라인인 채로 상세를 연다
+    final posts = _OfflinePostRepository()
+      ..posts.add(_post('p1', '읽어 둔 글', now));
+    await _pumpFeed(tester, posts);
+    posts.goOffline();
+    await _refresh(tester);
+    await tester.tap(find.text('읽어 둔 글'));
+    await tester.pumpAndSettle();
+    final before = posts.pageRequests;
+
+    // when: 피드의 재확인 시간이 지나 연결이 돌아온 것을 피드가 알아챈다
+    posts.goOnline();
+    await tester.pump(offlineRetryInterval);
+    await tester.pumpAndSettle();
+
+    // then: 피드는 뒤에서 다시 읽었지만 상세 위에 안내를 띄우지 않는다
+    expect(posts.pageRequests, greaterThan(before));
+    expect(find.byType(DetailScreen), findsOneWidget);
+    expect(find.text(_reconnected), findsNothing);
+  });
+
   testWidgets('오프라인 상세는 저장된 글과 댓글 조회 불가 안내를 보여주고 댓글 입력을 막는다', (tester) async {
     // when
     final comments = await _openDetail(tester, offline: true);

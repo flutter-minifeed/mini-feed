@@ -98,6 +98,7 @@ void main() {
     expect(find.text(_detailOffline), findsOneWidget);
     expect(find.text('게시글 45'), findsOneWidget);
     expect(find.text(_commentsOffline), findsOneWidget);
+    expect(find.text(_reconnected), findsNothing); // 피드 안내가 상세에 남지 않는다
     expect(find.text('먼저 쓴 댓글'), findsNothing);
     expect(tester.widget<TextField>(find.byType(TextField)).enabled, isFalse);
     await binding.takeScreenshot('03_detail_offline');
