@@ -160,12 +160,13 @@ Future<_Client> _openClient(String name, {bool persistent = false}) async {
   await auth.signOut();
   final firestore = FirebaseFirestore.instanceFor(app: app);
   firestore.settings = Settings(persistenceEnabled: persistent);
-  if (persistent) await firestore.clearPersistence();
   firestore.useFirestoreEmulator(
     '127.0.0.1',
     8080,
     automaticHostMapping: false,
   );
+  // Android는 첫 네이티브 호출 때의 설정으로 인스턴스를 만들므로 에뮬레이터 주소를 먼저 넣는다.
+  if (persistent) await firestore.clearPersistence();
   final profile = await FirebaseAuthService(
     auth: auth,
     firestore: firestore,
