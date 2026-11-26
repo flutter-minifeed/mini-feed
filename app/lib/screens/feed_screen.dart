@@ -21,6 +21,8 @@ class _FeedScreenState extends State<FeedScreen> {
   final _scrollController = ScrollController();
   PostRepository? _repository;
   List<Post> _posts = const [];
+  // 게시 결과로 먼저 표시했지만 아직 페이지 조회로 확인하지 않은 글.
+  final _unpagedPostIds = <String>{};
   PostPage? _pendingPage;
   PostCursor? _nextCursor;
   int _newPostCount = 0;
@@ -46,6 +48,7 @@ class _FeedScreenState extends State<FeedScreen> {
     if (repository != _repository) {
       _repository = repository;
       _posts = const [];
+      _unpagedPostIds.clear();
       _nextCursor = null;
       _pendingPage = null;
       _newPostCount = 0;
@@ -132,10 +135,13 @@ class _FeedScreenState extends State<FeedScreen> {
   // 연결점이 없으면 새 커서부터 읽어 중간 글을 건너뛰지 않는다.
   void _applyFirstPage(PostPage page, {bool keepTail = false}) {
     final ids = page.posts.map((post) => post.id).toSet();
-    final overlaps = _posts.any((post) => ids.contains(post.id));
+    final pagedPosts = _posts.where(
+      (post) => !_unpagedPostIds.contains(post.id),
+    );
+    final overlaps = pagedPosts.any((post) => ids.contains(post.id));
     final last = page.posts.lastOrNull;
     final tail = keepTail && overlaps && last != null && page.nextCursor != null
-        ? _posts
+        ? pagedPosts
               .where(
                 (post) =>
                     !ids.contains(post.id) &&
@@ -144,6 +150,7 @@ class _FeedScreenState extends State<FeedScreen> {
               .toList()
         : <Post>[];
     _posts = [...page.posts, ...tail];
+    _unpagedPostIds.clear();
     if (tail.isEmpty) _nextCursor = page.nextCursor;
   }
 
@@ -193,6 +200,7 @@ class _FeedScreenState extends State<FeedScreen> {
       _pendingPage = null;
       _highlightedPostCount = _countHighlightedPosts();
       _newPostCount = 0;
+      _refreshing = false;
       _loadingMore = false;
       _moreFailed = false;
     });
@@ -234,6 +242,7 @@ class _FeedScreenState extends State<FeedScreen> {
     }
 
     setState(() {
+      _unpagedPostIds.add(post.id);
       _posts = [post, ..._posts.where((item) => item.id != post.id)];
       _pendingPage = null;
       _newPostCount = 0;

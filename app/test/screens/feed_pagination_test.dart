@@ -227,6 +227,67 @@ void main() {
     expect(find.text('게시글 0'), findsOneWidget);
   });
 
+  testWidgets('기존 목록과 겹치지 않는 첫 페이지는 게시 후에도 중간 글을 건너뛰지 않는다', (tester) async {
+    // given: 기존 세 글은 한 페이지여서 다음 커서가 없다.
+    final repository = _repository(3);
+    await tester.pumpWidget(_app(repository));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('글쓰기'));
+    await tester.pumpAndSettle();
+    for (var i = 0; i < 23; i++) {
+      await repository.addPost('다른 기기에서 쓴 글 $i');
+    }
+
+    // when
+    await tester.enterText(find.byType(TextField), '내가 방금 쓴 글');
+    await tester.pump();
+    await tester.tap(find.text('게시'));
+    await tester.pumpAndSettle();
+    expect(find.text('내가 방금 쓴 글'), findsOneWidget);
+    await _scrollToOldest(tester);
+
+    // then: 게시 뒤 서버에서 읽은 모든 페이지가 실제 저장 순서와 일치한다.
+    final expected = (await repository.getPosts()).map((post) => post.id);
+    expect(
+      repository.batches.skip(1).expand((page) => page),
+      orderedEquals(expected),
+    );
+  });
+
+  testWidgets('새로고침 도중 새 글 알림을 눌러도 다음 페이지를 읽는다', (tester) async {
+    // given: 알림을 띄운 뒤 두 번째 새로고침의 응답만 지연한다.
+    final repository = _repository(45);
+    final oldPage = await repository.original.getPostPage();
+    await tester.pumpWidget(_app(repository));
+    await tester.pumpAndSettle();
+    await repository.addPost('알림으로 적용한 새 글');
+    await _refresh(tester);
+    final pending = Completer<PostPage>();
+    repository.readPage = (after) => after == null
+        ? pending.future
+        : repository.original.getPostPage(after: after);
+    final refresh = tester
+        .widget<RefreshIndicator>(find.byType(RefreshIndicator))
+        .onRefresh();
+    await tester.pump();
+
+    // when
+    await tester.tap(find.text('새 글 1개'));
+    await tester.pump();
+    pending.complete(oldPage);
+    await refresh;
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.text('알림으로 적용한 새 글'), findsOneWidget);
+    final controller = _controller(tester);
+    controller.jumpTo(controller.position.maxScrollExtent);
+    await tester.pumpAndSettle();
+    expect(repository.requests.whereType<PostCursor>(), isNotEmpty);
+    await _scrollToOldest(tester);
+    expect(find.text('게시글 0'), findsOneWidget);
+  });
+
   testWidgets('상세에 다시 들어가면 같은 ID의 글을 새로 조회한다', (tester) async {
     // given
     final repository = _repository(1);
