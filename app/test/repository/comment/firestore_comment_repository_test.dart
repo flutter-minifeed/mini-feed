@@ -78,6 +78,22 @@ void main() {
     verifyNever(() => post.get(any()));
   });
 
+  test('부모 글을 확인하는 사이 연결이 끊기면 댓글 조회를 오프라인으로 알린다', () async {
+    // given: 댓글 조회가 부모 글 가드에 막히고, 부모 글을 다시 읽을 때 연결이 끊긴다
+    when(() => ordered.get(_server)).thenThrow(
+      FirebaseException(plugin: 'cloud_firestore', code: 'permission-denied'),
+    );
+    when(() => post.get(_server)).thenThrow(
+      FirebaseException(plugin: 'cloud_firestore', code: 'unavailable'),
+    );
+
+    // when, then
+    await expectLater(
+      repository.getComments('test-post'),
+      throwsA(isA<OfflineException>()),
+    );
+  });
+
   test('Firestore가 마감 시간 오류를 보내면 댓글 저장 시한 초과로 전달한다', () async {
     // given
     when(() => firestore.runTransaction<_SaveResult?>(any())).thenAnswer(
