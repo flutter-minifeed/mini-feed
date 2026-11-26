@@ -196,6 +196,40 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('다음 페이지를 읽다 연결이 끊기면 캐시 글을 붙이지 않고 오프라인 안내 후 연결되면 이어 읽는다', (tester) async {
+    // given: 첫 페이지 20개를 읽은 상태
+    final posts = _OfflinePostRepository();
+    for (var i = 0; i < 25; i++) {
+      final createdAt = now.subtract(Duration(minutes: i + 1));
+      posts.posts.add(_post('p$i', '글 $i', createdAt));
+    }
+    await _pumpFeed(tester, posts);
+    posts.goOffline();
+
+    // when: 끝까지 내려 다음 페이지를 요청한다
+    await tester.drag(find.byType(ListView), const Offset(0, -5000));
+    await tester.pumpAndSettle();
+
+    // then: 끝난 목록처럼 보이지 않고, 오프라인 안내와 다시 불러오기를 보여준다
+    expect(find.text(_feedOffline), findsOneWidget);
+    expect(find.text('다시 불러오기'), findsOneWidget);
+    expect(find.text('글 20'), findsNothing);
+
+    // when: 연결이 돌아온다
+    posts.goOnline();
+    await tester.pump(offlineRetryInterval);
+    await tester.pumpAndSettle();
+    // 조금 올렸다가 다시 끝까지 내려 다음 페이지를 다시 요청한다
+    await tester.drag(find.byType(ListView), const Offset(0, 300));
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(ListView), const Offset(0, -5000));
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.text(_feedOffline), findsNothing);
+    expect(find.text('글 20', skipOffstage: false), findsOneWidget);
+  });
+
   testWidgets('재연결 안내가 떠 있을 때 상세로 들어가면 안내를 닫는다', (tester) async {
     // given: 오프라인이었다가 연결돼 피드에 재연결 안내가 떠 있다
     final posts = _OfflinePostRepository()
@@ -270,6 +304,7 @@ void main() {
     expect(find.text('저장된 적 없는 댓글'), findsOneWidget);
     expect(tester.widget<TextField>(find.byType(TextField)).enabled, isTrue);
   });
+
 }
 
 Future<_OfflineCommentRepository> _openDetail(

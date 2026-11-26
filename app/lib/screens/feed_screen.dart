@@ -205,6 +205,17 @@ class _FeedScreenState extends State<FeedScreen> {
     try {
       final page = await repository.getPostPage(after: cursor);
       if (!mounted || requestId != _requestId) return;
+      if (page.fromCache) {
+        // 캐시로 만든 다음 페이지는 읽은 적 없는 중간 글이 빠질 수 있어 붙이지 않는다(#15).
+        // 커서는 그대로 두고, 첫 페이지처럼 오프라인 안내와 재확인으로 복구를 기다린다.
+        setState(() {
+          _loadingMore = false;
+          _moreFailed = true;
+          _offline = true;
+        });
+        _scheduleOfflineRetry();
+        return;
+      }
       final ids = _posts.map((post) => post.id).toSet();
       setState(() {
         _posts = [..._posts, ...page.posts.where((post) => ids.add(post.id))];
