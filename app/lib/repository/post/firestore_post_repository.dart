@@ -86,12 +86,19 @@ class FirestorePostRepository implements PostRepository {
   // likedByMe는 공용 게시글 필드가 아니라 내 좋아요 문서가 있는지로 정한다(#18).
   // 규칙상 다른 사용자의 좋아요 문서는 읽을 수 없어서 글마다 내 문서만 확인한다.
   // 글을 캐시에서 읽었으면 좋아요도 서버에 다시 묻지 않고 캐시에서 읽는다.
+  // 글을 읽은 뒤 좋아요를 읽기 전에 연결이 끊겨도 읽은 글을 버리지 않고 캐시로 대신한다.
   Future<bool> _isLikedByMe(
     DocumentReference<Map<String, dynamic>> post, {
     required bool fromCache,
   }) async {
     final like = post.collection('likes').doc(currentUser.id);
-    if (!fromCache) return (await like.get(_server)).exists;
+    if (!fromCache) {
+      try {
+        return (await like.get(_server)).exists;
+      } on FirebaseException catch (error) {
+        if (error.code != 'unavailable') rethrow;
+      }
+    }
     try {
       return (await like.get(_cache)).exists;
     } on FirebaseException catch (error) {

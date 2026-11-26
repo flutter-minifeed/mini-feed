@@ -38,10 +38,22 @@ FirebaseException _firebaseError(String code) =>
 _Snapshot _cachedSnapshot(
   DocumentReference<Map<String, dynamic>> reference, {
   Map<String, dynamic>? data,
+}) => _snapshot(reference, data: data, fromCache: true);
+
+// 서버에서 읽은 문서 한 건.
+_Snapshot _serverSnapshot(
+  DocumentReference<Map<String, dynamic>> reference, {
+  Map<String, dynamic>? data,
+}) => _snapshot(reference, data: data, fromCache: false);
+
+_Snapshot _snapshot(
+  DocumentReference<Map<String, dynamic>> reference, {
+  required Map<String, dynamic>? data,
+  required bool fromCache,
 }) {
   final snapshot = _Snapshot();
   final metadata = _Metadata();
-  when(() => metadata.isFromCache).thenReturn(true);
+  when(() => metadata.isFromCache).thenReturn(fromCache);
   when(() => snapshot.metadata).thenReturn(metadata);
   when(() => snapshot.exists).thenReturn(data != null);
   when(() => snapshot.data()).thenReturn(data);
@@ -150,6 +162,23 @@ void main() {
 
       // then
       expect(result?.likedByMe, isFalse);
+    });
+
+    test('글을 서버에서 읽은 뒤 좋아요를 읽기 전에 연결이 끊기면 좋아요는 캐시에서 읽는다', () async {
+      // given
+      when(
+        () => post.get(_server),
+      ).thenAnswer((_) async => _serverSnapshot(post, data: cachedPost));
+      when(() => like.get(_server)).thenThrow(_firebaseError('unavailable'));
+      when(
+        () => like.get(_cache),
+      ).thenAnswer((_) async => _cachedSnapshot(like, data: const {}));
+
+      // when
+      final result = await repository.getPostById('test-post');
+
+      // then
+      expect((result?.body, result?.likedByMe), ('캐시된 글', true));
     });
 
     test('서버와 캐시 모두에서 글을 읽지 못하면 없는 글이 아니라 오프라인으로 알린다', () async {
