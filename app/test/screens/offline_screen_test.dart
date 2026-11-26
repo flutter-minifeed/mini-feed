@@ -241,6 +241,33 @@ void main() {
     expect(find.text('글 20', skipOffstage: false), findsOneWidget);
   });
 
+  testWidgets('다음 페이지가 오프라인이었다가 다시 불러오기로 서버에서 받으면 안내를 닫고 재확인을 멈춘다', (tester) async {
+    // given: 다음 페이지를 읽다 연결이 끊겨 오프라인 안내가 떠 있다
+    final posts = _OfflinePostRepository();
+    for (var i = 0; i < 25; i++) {
+      final createdAt = now.subtract(Duration(minutes: i + 1));
+      posts.posts.add(_post('p$i', '글 $i', createdAt));
+    }
+    await _pumpFeed(tester, posts);
+    posts.goOffline();
+    await tester.drag(find.byType(ListView), const Offset(0, -5000));
+    await tester.pumpAndSettle();
+    expect(find.text(_feedOffline), findsOneWidget);
+
+    // when: 재확인 전에 연결이 돌아와 다시 불러오기를 누른다
+    posts.goOnline();
+    await tester.tap(find.text('다시 불러오기'));
+    await tester.pumpAndSettle();
+    final requests = posts.pageRequests;
+    await tester.pump(offlineRetryInterval);
+    await tester.pumpAndSettle();
+
+    // then: 안내가 사라지고, 예약돼 있던 첫 페이지 재조회는 보내지 않는다
+    expect(find.text(_feedOffline), findsNothing);
+    expect(find.text('글 20', skipOffstage: false), findsOneWidget);
+    expect(posts.pageRequests, requests);
+  });
+
   testWidgets('재연결 안내가 떠 있을 때 상세로 들어가면 안내를 닫는다', (tester) async {
     // given: 오프라인이었다가 연결돼 피드에 재연결 안내가 떠 있다
     final posts = _OfflinePostRepository()

@@ -217,11 +217,14 @@ class _FeedScreenState extends State<FeedScreen> {
         return;
       }
       final ids = _posts.map((post) => post.id).toSet();
+      // 서버에서 다음 페이지를 받았으면 연결된 것이므로 오프라인 안내와 재확인을 멈춘다(#15).
+      _offlineRetry?.cancel();
       setState(() {
         _posts = [..._posts, ...page.posts.where((post) => ids.add(post.id))];
         _highlightedPostCount = _countHighlightedPosts();
         _nextCursor = page.nextCursor;
         _loadingMore = false;
+        _offline = false;
       });
     } catch (_) {
       if (!mounted || requestId != _requestId) return;
