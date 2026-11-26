@@ -44,6 +44,17 @@ class _OfflinePostRepository extends FakePostRepository {
   }
 }
 
+/// 기기 캐시에 없는 글을 오프라인에서 열 때처럼 글 조회부터 실패하는 저장소.
+class _UncachedPostRepository extends FakePostRepository {
+  bool offline = true;
+
+  @override
+  Future<Post?> getPostById(String id) async {
+    if (offline) throw const OfflineException();
+    return super.getPostById(id);
+  }
+}
+
 class _OfflineCommentRepository extends FakeCommentRepository {
   bool offline = false;
 
@@ -305,6 +316,32 @@ void main() {
     expect(tester.widget<TextField>(find.byType(TextField)).enabled, isTrue);
   });
 
+  testWidgets('캐시에도 없는 글을 오프라인에서 열면 오프라인 안내 후 연결되면 자동으로 불러온다', (tester) async {
+    // given
+    final posts = _UncachedPostRepository()
+      ..posts.add(_post('post-1', '캐시에 없던 글', now));
+    await tester.pumpWidget(
+      RepositoryScope(
+        postRepository: posts,
+        commentRepository: FakeCommentRepository(),
+        child: const MaterialApp(home: DetailScreen(postId: 'post-1')),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.text('오프라인이라 게시글을 불러올 수 없어요. 연결되면 자동으로 다시 불러와요.'),
+      findsOneWidget,
+    );
+
+    // when
+    posts.offline = false;
+    await tester.pump(offlineRetryInterval);
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.text('캐시에 없던 글'), findsOneWidget);
+    expect(tester.widget<TextField>(find.byType(TextField)).enabled, isTrue);
+  });
 }
 
 Future<_OfflineCommentRepository> _openDetail(

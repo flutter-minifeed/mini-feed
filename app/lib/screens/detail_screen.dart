@@ -66,7 +66,14 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   Future<_DetailData?> _load(RepositoryScope repositories) async {
-    final post = await repositories.postRepository.getPostById(widget.postId);
+    final Post? post;
+    try {
+      post = await repositories.postRepository.getPostById(widget.postId);
+    } on OfflineException {
+      // 캐시에도 없는 글이면 보여줄 본문이 없다. 안내를 띄우고 연결되면 다시 읽는다.
+      _scheduleOfflineRetry();
+      rethrow;
+    }
     if (post == null) return null;
     try {
       final comments = await repositories.commentRepository.getComments(
@@ -74,14 +81,17 @@ class _DetailScreenState extends State<DetailScreen> {
       );
       return (post: post, comments: comments);
     } on OfflineException {
-      // 연결되면 댓글을 자동으로 다시 불러온다는 안내(M14)대로 일정 시간 뒤 다시 읽는다.
-      // 읽는 사이 화면이 닫혔으면 타이머를 남기지 않는다.
-      if (mounted) {
-        _offlineRetry?.cancel();
-        _offlineRetry = Timer(offlineRetryInterval, _reload);
-      }
+      _scheduleOfflineRetry();
       return (post: post, comments: null);
     }
+  }
+
+  // 연결되면 자동으로 다시 불러온다는 안내(M14)대로 일정 시간 뒤 다시 읽는다.
+  // 읽는 사이 화면이 닫혔으면 타이머를 남기지 않는다.
+  void _scheduleOfflineRetry() {
+    if (!mounted) return;
+    _offlineRetry?.cancel();
+    _offlineRetry = Timer(offlineRetryInterval, _reload);
   }
 
   // 이전 결과를 화면에 둔 채로 글·댓글을 다시 읽는다.
@@ -118,6 +128,11 @@ class _DetailScreenState extends State<DetailScreen> {
           if (snapshot.connectionState != ConnectionState.done &&
               !snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.error is OfflineException) {
+            return const _Message(
+              '오프라인이라 게시글을 불러올 수 없어요. 연결되면 자동으로 다시 불러와요.',
+            );
           }
           if (snapshot.hasError) {
             return const _Message('게시글을 불러오지 못했어요.');
@@ -220,10 +235,15 @@ class _Message extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.bodyMedium
-            ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
       ),
     );
   }
