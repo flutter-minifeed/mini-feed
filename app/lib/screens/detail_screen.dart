@@ -1,14 +1,19 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../models/comment.dart';
 import '../models/post.dart';
+import '../repository/offline_exception.dart';
 import '../repository/repository_scope.dart';
 import '../widgets/comment_input.dart';
 import '../widgets/comment_tile.dart';
+import '../widgets/offline_banner.dart';
 import '../widgets/post_card.dart';
 
 // 상세 화면이 한 번에 불러오는 글과 댓글 목록.
-typedef _DetailData = ({Post post, List<Comment> comments});
+// 오프라인이면 저장된 글만 보여주고 댓글은 null로 둔다(#15).
+typedef _DetailData = ({Post post, List<Comment>? comments});
 
 /// 게시글 상세 화면 (#9).
 ///
@@ -33,7 +38,9 @@ class _DetailScreenState extends State<DetailScreen> {
   final _commentFocus = FocusNode();
 
   // 글·댓글을 불러오는 작업. 화면을 다시 그려도 새로 부르지 않게 한 번만 만든다.
+  // 오프라인에서 다시 불러올 때만 새 작업으로 바꾼다.
   Future<_DetailData?>? _data;
+  Timer? _offlineRetry;
 
   @override
   void initState() {
@@ -52,6 +59,7 @@ class _DetailScreenState extends State<DetailScreen> {
 
   @override
   void dispose() {
+    _offlineRetry?.cancel();
     _commentController.dispose();
     _commentFocus.dispose();
     super.dispose();
@@ -60,8 +68,27 @@ class _DetailScreenState extends State<DetailScreen> {
   Future<_DetailData?> _load(RepositoryScope repositories) async {
     final post = await repositories.postRepository.getPostById(widget.postId);
     if (post == null) return null;
-    final comments = await repositories.commentRepository.getComments(post.id);
-    return (post: post, comments: comments);
+    try {
+      final comments = await repositories.commentRepository.getComments(
+        post.id,
+      );
+      return (post: post, comments: comments);
+    } on OfflineException {
+      // 연결되면 댓글을 자동으로 다시 불러온다는 안내(M14)대로 일정 시간 뒤 다시 읽는다.
+      // 읽는 사이 화면이 닫혔으면 타이머를 남기지 않는다.
+      if (mounted) {
+        _offlineRetry?.cancel();
+        _offlineRetry = Timer(offlineRetryInterval, _reload);
+      }
+      return (post: post, comments: null);
+    }
+  }
+
+  // 이전 결과를 화면에 둔 채로 글·댓글을 다시 읽는다.
+  void _reload() {
+    if (!mounted) return;
+    _offlineRetry?.cancel();
+    setState(() => _data = _load(RepositoryScope.of(context)));
   }
 
   // 상세 안의 댓글 버튼. 입력창을 직접 누른 것과 같게 처리한다(#49 글쓰기와 같은 방식).
@@ -84,7 +111,9 @@ class _DetailScreenState extends State<DetailScreen> {
       body: FutureBuilder<_DetailData?>(
         future: _data,
         builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
+          // 다시 불러오는 동안에는 이전 결과를 그대로 보여준다.
+          if (snapshot.connectionState != ConnectionState.done &&
+              !snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
@@ -96,8 +125,14 @@ class _DetailScreenState extends State<DetailScreen> {
           }
           // 글과 댓글의 상대 시간을 같은 시각 기준으로 센다.
           final now = DateTime.now();
+          final comments = data.comments;
           return Column(
             children: [
+              if (comments == null)
+                OfflineBanner(
+                  message: '오프라인이에요. 저장된 글만 보여주고 있어요.',
+                  onRetry: _reload,
+                ),
               Expanded(
                 child: ListView(
                   children: [
@@ -109,16 +144,20 @@ class _DetailScreenState extends State<DetailScreen> {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                       child: Text(
-                        '댓글 ${data.comments.length}',
+                        // 오프라인이면 저장된 글의 댓글 수를 보여준다.
+                        '댓글 ${comments?.length ?? data.post.commentCount}',
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                     ),
-                    for (final comment in data.comments)
-                      CommentTile(
-                        key: ValueKey(comment.id),
-                        comment: comment,
-                        now: now,
-                      ),
+                    if (comments == null)
+                      const _OfflineComments()
+                    else
+                      for (final comment in comments)
+                        CommentTile(
+                          key: ValueKey(comment.id),
+                          comment: comment,
+                          now: now,
+                        ),
                   ],
                 ),
               ),
@@ -130,11 +169,40 @@ class _DetailScreenState extends State<DetailScreen> {
                   controller: _commentController,
                   focusNode: _commentFocus,
                   onSend: _sendComment,
+                  enabled: comments != null,
                 ),
               ),
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+// 오프라인이라 댓글 대신 보여주는 안내(M14).
+class _OfflineComments extends StatelessWidget {
+  const _OfflineComments();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 12,
+        children: [
+          Icon(Icons.wifi_off, size: 20, color: colors.onSurfaceVariant),
+          Expanded(
+            child: Text(
+              '오프라인이라 댓글을 불러올 수 없어요. 연결되면 자동으로 다시 불러와요.',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: colors.onSurfaceVariant),
+            ),
+          ),
+        ],
       ),
     );
   }
