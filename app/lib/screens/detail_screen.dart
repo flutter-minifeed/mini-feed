@@ -88,7 +88,10 @@ class _DetailScreenState extends State<DetailScreen> {
   void _reload() {
     if (!mounted) return;
     _offlineRetry?.cancel();
-    setState(() => _data = _load(RepositoryScope.of(context)));
+    // 화살표 함수로 쓰면 대입한 Future가 반환돼 setState가 거부한다.
+    setState(() {
+      _data = _load(RepositoryScope.of(context));
+    });
   }
 
   // 상세 안의 댓글 버튼. 입력창을 직접 누른 것과 같게 처리한다(#49 글쓰기와 같은 방식).
