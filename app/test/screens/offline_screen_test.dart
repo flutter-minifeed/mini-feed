@@ -332,6 +332,7 @@ void main() {
       find.text('오프라인이라 게시글을 불러올 수 없어요. 연결되면 자동으로 다시 불러와요.'),
       findsOneWidget,
     );
+    expect(find.text('다시 시도'), findsOneWidget);
 
     // when
     posts.offline = false;

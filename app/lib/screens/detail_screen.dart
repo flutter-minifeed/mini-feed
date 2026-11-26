@@ -130,8 +130,10 @@ class _DetailScreenState extends State<DetailScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.error is OfflineException) {
-            return const _Message(
+            // 자동 재확인을 기다리지 않고 바로 확인할 수 있게 다시 시도를 둔다(배너와 같은 방식).
+            return _Message(
               '오프라인이라 게시글을 불러올 수 없어요. 연결되면 자동으로 다시 불러와요.',
+              onRetry: _reload,
             );
           }
           if (snapshot.hasError) {
@@ -228,21 +230,32 @@ class _OfflineComments extends StatelessWidget {
 
 // 글을 불러오지 못했거나 없을 때 가운데에 띄우는 안내 문구.
 class _Message extends StatelessWidget {
-  const _Message(this.text);
+  const _Message(this.text, {this.onRetry});
 
   final String text;
 
+  /// 있으면 안내 아래에 다시 시도 버튼을 둔다.
+  final VoidCallback? onRetry;
+
   @override
   Widget build(BuildContext context) {
+    final retry = onRetry;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              text,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            if (retry != null)
+              TextButton(onPressed: retry, child: const Text('다시 시도')),
+          ],
         ),
       ),
     );
