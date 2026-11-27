@@ -79,7 +79,9 @@ class _FeedScreenState extends State<FeedScreen> {
 
     try {
       final page = await repository.getPostPage();
-      final posts = page.posts;
+      final posts = page.posts
+          .where((post) => !_removedIds.contains(post.id))
+          .toList();
       if (!mounted || requestId != _requestId) return;
 
       final previousFirst = _posts.firstOrNull;
@@ -153,7 +155,10 @@ class _FeedScreenState extends State<FeedScreen> {
               )
               .toList()
         : <Post>[];
-    _posts = [...page.posts, ...tail];
+    _posts = [
+      ...page.posts.where((post) => !_removedIds.contains(post.id)),
+      ...tail,
+    ];
     _unpagedPostIds.clear();
     if (tail.isEmpty) _nextCursor = page.nextCursor;
   }
@@ -180,7 +185,12 @@ class _FeedScreenState extends State<FeedScreen> {
       if (!mounted || requestId != _requestId) return;
       final ids = _posts.map((post) => post.id).toSet();
       setState(() {
-        _posts = [..._posts, ...page.posts.where((post) => ids.add(post.id))];
+        _posts = [
+          ..._posts,
+          ...page.posts.where(
+            (post) => !_removedIds.contains(post.id) && ids.add(post.id),
+          ),
+        ];
         _highlightedPostCount = _countHighlightedPosts();
         _nextCursor = page.nextCursor;
         _loadingMore = false;
@@ -223,7 +233,10 @@ class _FeedScreenState extends State<FeedScreen> {
   String get _newPostsLabel {
     final page = _pendingPage!;
     // 한 페이지가 모두 새 글이면 전체 개수를 단정하지 않는다.
-    return page.nextCursor != null && _newPostCount == page.posts.length
+    final visibleCount = page.posts
+        .where((post) => !_removedIds.contains(post.id))
+        .length;
+    return page.nextCursor != null && _newPostCount == visibleCount
         ? '새 글 $_newPostCount개 이상'
         : '새 글 $_newPostCount개';
   }
@@ -282,6 +295,8 @@ class _FeedScreenState extends State<FeedScreen> {
     setState(() {
       _removedIds.add(id);
       _posts = _posts.where((post) => post.id != id).toList();
+      _unpagedPostIds.remove(id);
+      _highlightedPostCount = _countHighlightedPosts();
     });
   }
 
@@ -374,7 +389,7 @@ class _FeedScreenState extends State<FeedScreen> {
     if (_loading && _posts.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (_failed || _posts.isEmpty) {
+    if (_failed || (_posts.isEmpty && _nextCursor == null)) {
       return CustomScrollView(
         controller: _scrollController,
         physics: const AlwaysScrollableScrollPhysics(),

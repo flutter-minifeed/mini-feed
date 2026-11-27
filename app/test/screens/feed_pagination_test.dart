@@ -14,6 +14,104 @@ import 'package:minifeed/repository/post/post_repository.dart';
 import 'package:minifeed/repository/repository_scope.dart';
 
 void main() {
+  testWidgets('읽어 둔 페이지의 모든 글을 삭제해도 다음 페이지를 불러올 수 있다', (tester) async {
+    // given
+    final repository = _repository(21);
+    await tester.pumpWidget(_app(repository));
+    await tester.pumpAndSettle();
+
+    // when
+    for (var index = 0; index < PostPage.pageSize; index++) {
+      await _deleteFirstVisiblePost(tester);
+    }
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.text('아직 게시글이 없습니다.'), findsNothing);
+    await tester.tap(find.text('더 불러오기'));
+    await tester.pumpAndSettle();
+    expect(find.text('게시글 0'), findsOneWidget);
+    expect(repository.requests.whereType<PostCursor>(), hasLength(1));
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final refresh in [true, false]) {
+    final operation = refresh ? '새로고침' : '다음 페이지 조회';
+    testWidgets('$operation 응답 전에 삭제한 글은 늦은 응답에도 돌아오지 않는다', (tester) async {
+      // given
+      final repository = _repository(45);
+      final first = await repository.original.getPostPage();
+      final response = refresh
+          ? first
+          : await repository.original.getPostPage(after: first.nextCursor);
+      await tester.pumpWidget(_app(repository));
+      await tester.pumpAndSettle();
+      final pending = Completer<PostPage>();
+      repository.readPage = (_) => pending.future;
+      Future<void>? refreshing;
+      if (refresh) {
+        refreshing = tester
+            .widget<RefreshIndicator>(find.byType(RefreshIndicator))
+            .onRefresh();
+      } else {
+        final controller = _controller(tester);
+        controller.jumpTo(controller.position.maxScrollExtent);
+        await tester.pump();
+        controller.jumpTo(0);
+      }
+      await tester.pump();
+
+      // when
+      await _deleteFirstVisiblePost(tester);
+      pending.complete(response);
+      await refreshing;
+      await tester.pumpAndSettle();
+
+      // then
+      expect(find.byKey(const ValueKey('body-post-44')), findsNothing);
+      expect(await repository.original.getPostById('post-44'), isNull);
+      expect(
+        tester
+            .widget<ListView>(find.byType(ListView))
+            .childrenDelegate
+            .estimatedChildCount,
+        refresh ? 20 : 40,
+      );
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('새 글 알림 대기 중 삭제한 글은 알림을 적용해도 돌아오지 않는다', (tester) async {
+    // given
+    final repository = _repository(45);
+    await tester.pumpWidget(_app(repository));
+    await tester.pumpAndSettle();
+    final newPost = await repository.addPost('새로운 글');
+    await _refresh(tester);
+    expect(find.text('새 글 1개'), findsOneWidget);
+
+    // when
+    await _deleteFirstVisiblePost(tester);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('새 글 1개'));
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.byKey(const ValueKey('body-post-44')), findsNothing);
+    expect(find.byKey(ValueKey(newPost.id)), findsOneWidget);
+    expect(
+      tester.widget<PostCard>(find.byKey(ValueKey(newPost.id))).highlighted,
+      isTrue,
+    );
+    expect(find.text('여기까지 새 글 · 이전에 보던 글'), findsOneWidget);
+    await _deleteFirstVisiblePost(tester);
+    await tester.pumpAndSettle();
+    expect(find.text('여기까지 새 글 · 이전에 보던 글'), findsNothing);
+    await _scrollToOldest(tester);
+    expect(find.text('게시글 0'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('45개 글은 20·20·5개로 빠짐과 중복 없이 표시된다', (tester) async {
     // given
     final repository = _repository(45);
@@ -311,6 +409,18 @@ void main() {
 
 const _author = Author(id: 'user-test', nickName: '테스트 펭귄', colorIndex: 0);
 
+Future<void> _deleteFirstVisiblePost(WidgetTester tester) async {
+  await tester.tap(find.byTooltip('더보기').hitTestable().first);
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 350));
+  await tester.tap(find.text('내 글 삭제'));
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 350));
+  await tester.tap(find.text('삭제'));
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 350));
+}
+
 _PageRepository _repository(int count) {
   final rows = List.generate(
     count,
@@ -383,6 +493,8 @@ class _PageRepository implements PostRepository {
   Author get currentUser => original.currentUser;
   @override
   Future<List<Post>> getPosts() => original.getPosts();
+  @override
+  Future<bool> deletePost(String id) => original.deletePost(id);
   @override
   Future<Post> addPost(String body, {String? requestId}) =>
       original.addPost(body, requestId: requestId);
