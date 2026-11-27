@@ -3,6 +3,11 @@ import 'package:flutter/foundation.dart';
 import '../../models/author.dart';
 import '../../models/post.dart';
 
+/// 본문과 태그를 포함한 게시글이 저장소의 문서 크기 한도를 넘었다.
+class PostTooLargeException implements Exception {
+  const PostTooLargeException();
+}
+
 /// 게시글 저장소 인터페이스. 화면은 구현이 아니라 이 타입에만 의존한다.
 ///
 /// MP1은 메모리 구현, MP2는 Firestore 구현으로 바꿔 끼운다.

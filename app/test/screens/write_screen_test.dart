@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minifeed/screens/write_screen.dart';
+import 'package:minifeed/repository/post/post_repository.dart';
 import 'package:minifeed/viewmodels/write_view_model.dart';
 
 import '../helpers/fake_write_view_model.dart';
@@ -38,8 +39,10 @@ Future<FakePostRepository> pumpWriteScreen(
 }
 
 void main() {
-  testWidgets('추천 선택과 직접 입력 후 저장이 실패해도 같은 태그로 재시도한다', (tester) async {
+  testWidgets('추천과 직접 입력한 칩이 줄바꿈되고 실패 후 같은 여섯 태그로 재시도한다', (tester) async {
     // given
+    await tester.binding.setSurfaceSize(const Size(360, 800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     final repository = await pumpWriteScreen(
       tester,
       recommendedTags: ['운동·건강', '여행'],
@@ -54,9 +57,19 @@ void main() {
     expect(find.text('#운동·건강'), findsNothing);
     await tester.tap(find.text('운동·건강'));
     await tester.pump();
-    await tester.enterText(find.widgetWithText(TextField, '#태그 입력'), ' #Run ');
-    await tester.testTextInput.receiveAction(TextInputAction.done);
-    await tester.pump();
+    const names = ['운동·건강', 'Run', '제주여행', '친구', '휴식', '주말달리기'];
+    for (final name in names.skip(1)) {
+      await tester.enterText(
+        find.widgetWithText(TextField, '#태그 입력'),
+        ' #$name ',
+      );
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pump();
+    }
+    expect(
+      tester.getCenter(find.text('#주말달리기')).dy,
+      greaterThan(tester.getCenter(find.text('#운동·건강')).dy),
+    );
     final gate = Completer<void>();
     repository.blockAddUntil = gate;
 
@@ -66,14 +79,38 @@ void main() {
     await tester.pumpAndSettle();
 
     // then
+    expect(find.text('올리지 못했어요. 입력한 글은 그대로 있어요.'), findsOneWidget);
     expect(find.text('#Run'), findsOneWidget);
     expect(find.text('#운동·건강'), findsOneWidget);
     expect(find.text('달리기'), findsOneWidget);
     repository.blockAddUntil = null;
     await tester.tap(find.text('다시 시도'));
     await tester.pumpAndSettle();
-    expect(repository.posts.single.tags, ['운동·건강', 'Run']);
+    expect(repository.posts.single.tags, names);
     expect(repository.requestIds.toSet(), hasLength(1));
+  });
+
+  testWidgets('문서 용량을 초과하면 입력을 보존하고 태그를 줄여 게시할 수 있다', (tester) async {
+    final repository = await pumpWriteScreen(tester, recommendedTags: ['여행']);
+    await tester.enterText(find.byKey(const ValueKey('post-body')), '달리기');
+    await tester.tap(find.text('여행'));
+    await tester.pump();
+    final gate = Completer<void>();
+    repository.blockAddUntil = gate;
+    await tester.tap(_postButton);
+    gate.completeError(const PostTooLargeException());
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('저장 용량을 넘었어요'), findsOneWidget);
+    expect(find.text('#여행'), findsOneWidget);
+    expect(find.text('달리기'), findsOneWidget);
+    await tester.tap(find.byTooltip('여행 제거'));
+    await tester.pump();
+    repository.blockAddUntil = null;
+    await tester.tap(_postButton);
+    await tester.pumpAndSettle();
+    expect(repository.posts.single.body, '달리기');
+    expect(repository.posts.single.tags, isEmpty);
   });
 
   testWidgets('추천을 제거하고 직접 입력 태그만 남겨도 닫기 전에 확인한다', (tester) async {

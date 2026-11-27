@@ -9,7 +9,7 @@ import '../repository/post/post_repository.dart';
 
 const _saveTimeout = Duration(seconds: 10);
 
-enum WriteStatus { idle, saving, succeeded, failed, timedOut }
+enum WriteStatus { idle, saving, succeeded, failed, timedOut, tooLarge }
 
 abstract interface class WriteViewModel implements Listenable {
   Author get author;
@@ -71,10 +71,11 @@ class WriteViewModelImpl extends ChangeNotifier implements WriteViewModel {
     ).then(
       (post) => _finish(attempt, WriteStatus.succeeded, post),
       onError: (Object error, StackTrace stack) {
-        _finish(
-          attempt,
-          error is TimeoutException ? WriteStatus.timedOut : WriteStatus.failed,
-        );
+        _finish(attempt, switch (error) {
+          TimeoutException() => WriteStatus.timedOut,
+          PostTooLargeException() => WriteStatus.tooLarge,
+          _ => WriteStatus.failed,
+        });
       },
     );
     return result.future;

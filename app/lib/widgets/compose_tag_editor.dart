@@ -31,12 +31,25 @@ class ComposeTagEditor extends StatelessWidget {
         Text('게시할 태그', style: theme.textTheme.labelMedium),
         Wrap(
           spacing: 6,
+          runSpacing: 6,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             for (final tag in tags)
               InputChip(
                 label: Text('#${tag.name}'),
-                deleteIcon: const Icon(Icons.close, size: 16),
+                labelStyle: theme.textTheme.bodySmall?.copyWith(
+                  fontSize: 13,
+                  color: theme.colorScheme.onPrimaryContainer,
+                ),
+                backgroundColor: theme.colorScheme.primaryContainer,
+                shape: const StadiumBorder(),
+                side: BorderSide.none,
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                deleteIcon: const Icon(Icons.close, size: 14),
+                deleteIconBoxConstraints: const BoxConstraints.tightFor(
+                  width: 24,
+                ),
                 deleteButtonTooltipMessage: '${tag.name} 제거',
                 onDeleted: enabled ? () => onRemove(tag) : null,
                 visualDensity: VisualDensity.compact,

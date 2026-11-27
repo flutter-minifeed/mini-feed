@@ -97,21 +97,17 @@ service cloud.firestore {
       return data.keys().hasAll(fields) && data.keys().hasOnly(fields);
     }
 
-    function validTag(tag) {
-      return tag is string && (tag.matches('[가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z0-9_]{1,20}')
-        || tag in ['운동·건강', '연애·가족', '일·알바']);
+    function validTagNames(tags) {
+      let name = '([가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z0-9_]{1,20}|운동·건강|연애·가족|일·알바)';
+      let names = tags.join(',');
+      // 쉼표를 포함한 원소나 문자열이 아닌 값이 정상 이름으로 해석되지 않게 한다.
+      return names.split(',') == tags
+        && names.matches(name + '(,' + name + ')*')
+        && names.lower().split(',').toSet().size() == tags.size();
     }
 
     function validPostTags(tags) {
-      return tags is list && tags.size() <= 5
-        && (tags.size() == 0 || (
-          validTag(tags[0])
-          && (tags.size() < 2 || validTag(tags[1]))
-          && (tags.size() < 3 || validTag(tags[2]))
-          && (tags.size() < 4 || validTag(tags[3]))
-          && (tags.size() < 5 || validTag(tags[4]))
-          && tags.join(',').lower().split(',').toSet().size() == tags.size()
-        ));
+      return tags is list && (tags.size() == 0 || validTagNames(tags));
     }
 
     function validNewPost(data) {

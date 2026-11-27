@@ -164,7 +164,7 @@ for (const [name, change] of [
 for (const [name, tags, allowed] of [
   ['빈 태그', [], true],
   ['직접 입력과 고정 주제 5개', ['제주', '운동·건강', 'Trip_2', '일·알바', '연애·가족'], true],
-  ['6개', ['가', '나', '다', '라', '마', '바'], false],
+  ['구분 문자가 포함된 이름', ['가,나', '가'], false],
   ['배열이 아닌 값', '여행', false],
   ['문자열이 아닌 항목', ['여행', 1], false],
   ['대소문자 중복', ['Flutter', 'flutter'], false],
@@ -398,5 +398,35 @@ for (const [name, body, expected] of [
 
     // then
     await (expected ? assertSucceeds : assertFails)(request);
+  });
+}
+
+const selectedTags = ['제주여행', '여행', '게임', '주말', '친구', '휴식'];
+
+for (const count of [0, 1, 5, 6, 40]) {
+  test('태그 ' + count + '개를 저장하고 같은 순서로 다시 읽는다', async () => {
+    const tags = count <= selectedTags.length
+      ? selectedTags.slice(0, count)
+      : Array.from({ length: count }, (_, index) => '태그_' + index);
+    await assertSucceeds(setDoc(postRef(authenticated()), post({ tags })));
+
+    const snapshot = await assertSucceeds(getDoc(postRef(authenticated(reader))));
+    assert.deepEqual(snapshot.data().tags, tags);
+  });
+}
+
+for (const [reason, lastTag] of [
+  ['빈 문자열', ''],
+  ['21자', '가'.repeat(21)],
+  ['허용하지 않은 문자', 'a!'],
+  ['내부 공백', '두 단어'],
+  ['쉼표', '둘,셋'],
+  ['숫자 타입', 65],
+  ['null', null],
+  ['대소문자만 다른 중복', 'tAG'],
+]) {
+  test('목록 끝에 ' + reason + ' 태그가 있으면 생성을 거부한다', async () => {
+    const tags = ['Tag', ...selectedTags, lastTag];
+    await assertFails(setDoc(postRef(authenticated()), post({ tags })));
   });
 }

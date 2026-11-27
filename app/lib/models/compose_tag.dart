@@ -29,7 +29,6 @@ class ComposeTags {
     if (_tags.any((tag) => tag.name.toLowerCase() == name.toLowerCase())) {
       return '이미 추가한 태그예요.';
     }
-    if (_tags.length >= 5) return '태그는 5개까지 추가할 수 있어요.';
     _tags.add(ComposeTag(name, source));
     return null;
   }

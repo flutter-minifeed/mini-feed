@@ -19,7 +19,7 @@ void main() {
     expect(selection.names, ['Jeju', '사진_2', '운동·건강']);
   });
 
-  test('형식이 틀리거나 여섯 번째인 태그는 목록에 들어가지 않는다', () {
+  test('여섯 번째 태그도 추가하고 형식과 대소문자 중복은 계속 검사한다', () {
     // given
     final selection = ComposeTags();
 
@@ -32,7 +32,12 @@ void main() {
     }
 
     // then
-    expect(selection.add('바', TagSource.recommended), isNotNull);
-    expect(selection.names, hasLength(5));
+    expect(selection.add('여행', TagSource.recommended), isNull);
+    expect(selection.add('Trip_7', TagSource.manual), isNull);
+    expect(selection.add('tRIP_7', TagSource.manual), isNotNull);
+    expect(selection.add('여행!', TagSource.manual), isNotNull);
+    selection.remove(selection.tags.last);
+    expect(selection.add('Trip_7', TagSource.manual), isNull);
+    expect(selection.names, ['가' * 20, '나', '다', '라', '마', '여행', 'Trip_7']);
   });
 }

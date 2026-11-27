@@ -94,11 +94,12 @@ void main() {
   });
 
   test('게시글 생성은 규칙의 필드만 서버에 저장하고 피드 첫 글을 반환한다', () async {
+    const tags = ['제주', '운동·건강', '친구', '달리기', '주말', 'Run_6'];
     // when
     final post = await posts.addPost(
       '새로 쓴 글\n둘째 줄',
       requestId: 'new-post',
-      tags: const ['제주', '운동·건강'],
+      tags: tags,
     );
 
     // then
@@ -109,14 +110,14 @@ void main() {
       'nickName': author.nickName,
       'colorIndex': author.colorIndex,
       'body': post.body,
-      'tags': ['제주', '운동·건강'],
+      'tags': tags,
       'createdAt': isA<Timestamp>(),
       'likeCount': 0,
       'commentCount': 0,
     });
     expect((data['createdAt'] as Timestamp).toDate(), post.createdAt);
     expect(post.likedByMe, isFalse);
-    expect((await posts.getPosts()).first.tags, ['제주', '운동·건강']);
+    expect((await posts.getPosts()).first.tags, tags);
     expect((await posts.getPostById(post.id))!.tags, post.tags);
     await expectLater(
       posts.addPost(post.body, requestId: post.id, tags: ['다른태그']),

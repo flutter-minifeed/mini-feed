@@ -134,9 +134,11 @@ class _WriteScreenState extends State<WriteScreen> {
       return;
     }
 
-    final message = viewModel.status == WriteStatus.timedOut
-        ? '응답이 늦어요. 입력한 글은 그대로 있고, 요청한 글은 나중에 게시될 수 있어요.'
-        : '올리지 못했어요. 입력한 글은 그대로 있어요.';
+    final message = switch (viewModel.status) {
+      WriteStatus.timedOut => '응답이 늦어요. 입력한 글은 그대로 있고, 요청한 글은 나중에 게시될 수 있어요.',
+      WriteStatus.tooLarge => '게시글이 저장 용량을 넘었어요. 입력은 그대로 있으니 본문이나 태그를 줄여 주세요.',
+      _ => '올리지 못했어요. 입력한 글은 그대로 있어요.',
+    };
     _messengerKey.currentState?.showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
