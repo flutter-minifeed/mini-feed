@@ -144,6 +144,9 @@ class _FeedScreenState extends State<FeedScreen> {
         _loading = false;
         _refreshing = false;
         if (!isRefresh) _failed = true;
+        // 오프라인이면 저장소가 오류 대신 캐시 페이지를 돌려준다. 오류가 났다는 건 오프라인이
+        // 아니라 다른 실패라서, 오프라인 안내를 끄고 일반 새로고침 실패로 알린다(#15).
+        _offline = false;
       });
       if (isRefresh) {
         ScaffoldMessenger.of(context).showSnackBar(

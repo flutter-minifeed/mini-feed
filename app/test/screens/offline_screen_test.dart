@@ -25,6 +25,9 @@ class _OfflinePostRepository extends FakePostRepository {
   List<Post>? _cache;
   int pageRequests = 0;
 
+  /// 있으면 캐시 대신 이 오류로 조회가 실패한다(권한 거부 같은 오프라인이 아닌 실패).
+  Object? error;
+
   bool get offline => _cache != null;
 
   /// [nothingRead]면 한 번도 읽지 않은 첫 실행처럼 빈 캐시로 끊는다.
@@ -36,6 +39,8 @@ class _OfflinePostRepository extends FakePostRepository {
   @override
   Future<PostPage> getPostPage({PostCursor? after}) async {
     pageRequests++;
+    final error = this.error;
+    if (error != null) throw error;
     final cache = _cache;
     if (cache == null) return super.getPostPage(after: after);
     final ordered = [...cache]..sort(comparePostsNewestFirst);
@@ -145,6 +150,32 @@ void main() {
     expect(find.text(_reconnected), findsOneWidget);
     expect(find.text('새 글 1개'), findsOneWidget);
     expect(_feedOffset(tester), offset);
+  });
+
+  testWidgets('오프라인 재확인이 오프라인이 아닌 오류로 실패하면 오프라인 안내를 끄고 새로고침 실패를 알린다', (tester) async {
+    // given: 피드가 오프라인 안내를 띄우고 재확인을 기다린다
+    final posts = _OfflinePostRepository()
+      ..posts.add(_post('p1', '읽어 둔 글', now));
+    await _pumpFeed(tester, posts);
+    posts.goOffline();
+    await _refresh(tester);
+    expect(find.text(_feedOffline), findsOneWidget);
+
+    // when: 재확인 때 서버가 권한 오류처럼 다른 이유로 실패한다
+    posts.error = StateError('permission-denied');
+    await tester.pump(offlineRetryInterval);
+    await tester.pumpAndSettle();
+    final requests = posts.pageRequests;
+
+    // then: 오프라인이라고 계속 말하지 않고 새로고침 실패를 알린다. 목록은 유지한다
+    expect(find.text(_feedOffline), findsNothing);
+    expect(find.text('새로고침하지 못했습니다. 다시 시도해 주세요.'), findsOneWidget);
+    expect(find.text('읽어 둔 글'), findsOneWidget);
+
+    // then: 오프라인이 아니므로 재확인을 반복하지 않는다
+    await tester.pump(offlineRetryInterval);
+    await tester.pumpAndSettle();
+    expect(posts.pageRequests, requests);
   });
 
   testWidgets('오프라인 안내의 다시 시도를 누르면 기다리지 않고 바로 다시 조회한다', (tester) async {
