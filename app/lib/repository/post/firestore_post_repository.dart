@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../models/author.dart';
 import '../../models/post.dart';
+import '../offline_exception.dart';
 import 'post_repository.dart';
 
 class FirestorePostRepository implements PostRepository {
@@ -13,6 +14,7 @@ class FirestorePostRepository implements PostRepository {
   });
 
   static const _server = GetOptions(source: Source.server);
+  static const _cache = GetOptions(source: Source.cache);
 
   final FirebaseFirestore _firestore;
 
@@ -41,14 +43,36 @@ class FirestorePostRepository implements PostRepository {
         after.postId,
       ]);
     }
-    final snapshot = await query.limit(PostPage.pageSize).get(_server);
-    return PostPage(snapshot.docs.map(_toPost).toList());
+    final snapshot = await _serverOrCache(query.limit(PostPage.pageSize).get);
+    return PostPage(
+      snapshot.docs.map(_toPost).toList(),
+      fromCache: snapshot.metadata.isFromCache,
+    );
   }
 
   @override
   Future<Post?> getPostById(String id) async {
-    final snapshot = await _posts.doc(id).get(_server);
+    final snapshot = await _serverOrCache(_posts.doc(id).get);
     return snapshot.exists ? _toPost(snapshot) : null;
+  }
+
+  // 서버에 연결할 수 없을 때만 기기 캐시에서 다시 읽는다(#15).
+  // 권한 거부 같은 다른 오류는 캐시 값으로 가리지 않고 그대로 전달한다.
+  // 캐시에도 없는 문서면 OfflineException으로 알린다.
+  static Future<T> _serverOrCache<T>(
+    Future<T> Function(GetOptions options) read,
+  ) async {
+    try {
+      return await read(_server);
+    } on FirebaseException catch (error) {
+      if (error.code != 'unavailable') rethrow;
+    }
+    try {
+      return await read(_cache);
+    } on FirebaseException catch (error) {
+      if (error.code != 'unavailable') rethrow;
+      throw const OfflineException();
+    }
   }
 
   @override
