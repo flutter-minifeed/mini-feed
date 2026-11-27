@@ -18,7 +18,8 @@ abstract interface class CommentRepository {
   ///
   /// [requestId]를 그 게시글의 댓글 ID로 쓴다. 같은 게시글에서 같은 ID·작성자·본문이면 기존 댓글을 돌려주고 개수를 다시 올리지 않는다.
   /// 같은 ID의 작성자나 본문이 다르면 [ArgumentError]로 거부한다.
-  /// 서버가 시한 안에 답하지 않으면 `TimeoutException`을 던진다.
+  /// 서버가 시한 안에 답하지 않으면 `TimeoutException`을,
+  /// 서버에 연결할 수 없으면 `OfflineException`을 던진다(#15 계약).
   /// 이 경우와 다른 저장 오류에서도 댓글이 이미 저장됐을 수 있으니,
   /// 같은 본문을 다시 보낼 때는 같은 [requestId]를 넘긴다.
   Future<AddedComment?> addComment(

@@ -9,6 +9,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:minifeed/models/author.dart';
 import 'package:minifeed/repository/comment/firestore_comment_repository.dart';
+import 'package:minifeed/repository/offline_exception.dart';
 
 class _Firestore extends Mock implements FirebaseFirestore {}
 
@@ -61,6 +62,19 @@ void main() {
 
     // when, then
     await expectLater(addComment(), throwsA(isA<TimeoutException>()));
+  });
+
+  test('서버에 연결할 수 없으면 댓글 저장 실패를 오프라인으로 알린다', () async {
+    // given
+    when(() => firestore.runTransaction<_SaveResult?>(any())).thenAnswer(
+      (_) async => throw FirebaseException(
+        plugin: 'cloud_firestore',
+        code: 'unavailable',
+      ),
+    );
+
+    // when, then
+    await expectLater(addComment(), throwsA(isA<OfflineException>()));
   });
 
   test('Firestore 댓글 저장 권한 오류는 시한 초과로 바뀌지 않는다', () async {

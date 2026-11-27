@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../models/author.dart';
 import '../../models/comment.dart';
+import '../offline_exception.dart';
 import 'comment_repository.dart';
 
 class FirestoreCommentRepository implements CommentRepository {
@@ -83,6 +84,9 @@ class FirestoreCommentRepository implements CommentRepository {
       if (error.code == 'deadline-exceeded') {
         throw TimeoutException(error.message);
       }
+      // 저장은 서버 연결이 필요하다. #15의 오프라인 계약대로 바꿔 댓글 전송(#20 화면)이
+      // Firestore 코드를 몰라도 연결 실패를 구분하게 한다.
+      if (error.code == 'unavailable') throw const OfflineException();
       rethrow;
     }
   }
