@@ -1,3 +1,6 @@
+// Firebase SDK의 sealed 타입은 테스트 대역에서만 사용한다.
+// ignore_for_file: subtype_of_sealed_class
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
