@@ -231,6 +231,9 @@ class _FeedScreenState extends State<FeedScreen> {
       return;
     }
     final requestId = _requestId;
+    // 예약된 오프라인 재확인이 이 요청 도중 첫 페이지를 다시 읽으면 요청 번호가 바뀌어
+    // 받은 다음 페이지를 버리게 된다. 이 요청이 연결 상태를 대신 확인하므로 예약을 멈춘다(#15).
+    _offlineRetry?.cancel();
     setState(() => _loadingMore = true);
     try {
       final page = await repository.getPostPage(after: cursor);
@@ -264,6 +267,8 @@ class _FeedScreenState extends State<FeedScreen> {
         _loadingMore = false;
         _moreFailed = true;
       });
+      // 위에서 멈춘 재확인을 오프라인인 동안에는 다시 이어 간다.
+      if (_offline) _scheduleOfflineRetry();
     }
   }
 

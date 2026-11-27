@@ -30,6 +30,9 @@ class _OfflinePostRepository extends FakePostRepository {
   /// 있으면 캐시 대신 이 오류로 조회가 실패한다(권한 거부 같은 오프라인이 아닌 실패).
   Object? error;
 
+  /// 있으면 다음 페이지 응답을 이 시점까지 늦춘다.
+  Completer<void>? nextPageGate;
+
   bool get offline => _cache != null;
 
   /// [nothingRead]면 한 번도 읽지 않은 첫 실행처럼 빈 캐시로 끊는다.
@@ -51,6 +54,7 @@ class _OfflinePostRepository extends FakePostRepository {
     pageRequests++;
     final error = this.error;
     if (error != null) throw error;
+    if (after != null) await nextPageGate?.future;
     final cache = _cache;
     if (cache == null) return super.getPostPage(after: after);
     final ordered = [...cache]..sort(comparePostsNewestFirst);
@@ -471,6 +475,34 @@ void main() {
     await tester.pump(offlineRetryInterval);
     await tester.pumpAndSettle();
     expect(posts.pageRequests, requests);
+  });
+
+  testWidgets('다음 페이지 다시 불러오기가 예약된 재확인과 겹쳐도 받은 글을 화면에 붙인다', (tester) async {
+    // given: 다음 페이지를 읽다 연결이 끊겨 재확인이 예약돼 있다
+    final posts = _OfflinePostRepository();
+    for (var i = 0; i < 25; i++) {
+      final createdAt = now.subtract(Duration(minutes: i + 1));
+      posts.posts.add(_post('p$i', '글 $i', createdAt));
+    }
+    await _pumpFeed(tester, posts);
+    posts.goOffline();
+    await tester.drag(find.byType(ListView), const Offset(0, -5000));
+    await tester.pumpAndSettle();
+    expect(find.text('다시 불러오기'), findsOneWidget);
+
+    // when: 재확인 직전에 연결이 돌아와 다시 불러오기를 누르고, 응답이 재확인 시각을 넘겨 온다
+    final slow = Completer<void>();
+    posts
+      ..goOnline()
+      ..nextPageGate = slow;
+    await tester.pump(const Duration(seconds: 8));
+    await tester.tap(find.text('다시 불러오기'));
+    await tester.pump(const Duration(seconds: 4));
+    slow.complete();
+    await tester.pumpAndSettle();
+
+    // then: 받은 다음 페이지가 붙는다
+    expect(find.text('글 20', skipOffstage: false), findsOneWidget);
   });
 
   testWidgets('재연결 안내가 떠 있을 때 상세로 들어가면 안내를 닫는다', (tester) async {
