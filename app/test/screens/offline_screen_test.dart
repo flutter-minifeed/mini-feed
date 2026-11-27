@@ -72,10 +72,17 @@ class _UncachedPostRepository extends FakePostRepository {
 
 class _OfflineCommentRepository extends FakeCommentRepository {
   bool offline = false;
+  int requests = 0;
+
+  /// 있으면 응답을 이 시점까지 늦춘다. 연결 상태는 요청한 순간 값으로 정한다.
+  Completer<void>? gate;
 
   @override
   Future<List<Comment>> getComments(String postId) async {
-    if (offline) throw const OfflineException();
+    requests++;
+    final wasOffline = offline;
+    await gate?.future;
+    if (wasOffline) throw const OfflineException();
     return super.getComments(postId);
   }
 }
@@ -571,6 +578,33 @@ void main() {
     final field = tester.widget<TextField>(find.byType(TextField));
     expect(field.enabled, isFalse);
     expect(field.controller!.text, '바로 쓴 초안');
+  });
+
+  testWidgets('다시 시도를 겹쳐 누르면 늦게 끝난 이전 읽기가 최신 결과를 덮어쓰지 않는다', (tester) async {
+    // given: 오프라인 상세에서 다시 시도를 눌렀는데 응답이 늦는다
+    final comments = await _openDetail(tester, offline: true);
+    final slow = Completer<void>();
+    comments.gate = slow;
+    await tester.tap(find.text('다시 시도'));
+    await tester.pump();
+
+    // when: 연결이 돌아와 다시 시도를 한 번 더 누르고, 그 뒤에 처음 읽기가 오프라인으로 끝난다
+    comments
+      ..offline = false
+      ..gate = null;
+    await tester.tap(find.text('다시 시도'));
+    await tester.pumpAndSettle();
+    slow.complete();
+    await tester.pumpAndSettle();
+    final requests = comments.requests;
+    await tester.pump(offlineRetryInterval);
+    await tester.pumpAndSettle();
+
+    // then: 최신 결과대로 댓글과 입력이 열려 있고, 이전 읽기 때문에 다시 읽지 않는다
+    expect(find.text(_detailOffline), findsNothing);
+    expect(find.text('저장된 적 없는 댓글'), findsOneWidget);
+    expect(tester.widget<TextField>(find.byType(TextField)).enabled, isTrue);
+    expect(comments.requests, requests);
   });
 
   testWidgets('캐시에도 없는 글을 오프라인에서 열면 오프라인 안내 후 연결되면 자동으로 불러온다', (tester) async {

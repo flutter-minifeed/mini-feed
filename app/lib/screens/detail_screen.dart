@@ -42,6 +42,9 @@ class _DetailScreenState extends State<DetailScreen> {
   Future<_DetailData?>? _data;
   Timer? _offlineRetry;
 
+  // 다시 읽기가 겹치면 마지막으로 시작한 읽기의 결과만 상태에 반영한다.
+  int _loadGeneration = 0;
+
   // 온라인으로 연 상세에서 댓글을 쓰는 사이 연결이 끊겨도 입력을 막아야 한다(#15).
   // 상세는 연결이 끊긴 것을 따로 알 수 없어서, 댓글을 입력하면 다시 읽어 확인한다.
   // 마지막 확인 뒤 재확인 간격이 지나기 전에는 다시 읽지 않고, 그 사이 입력이 있었으면
@@ -76,7 +79,9 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   Future<_DetailData?> _load(RepositoryScope repositories) async {
-    bool isLatest() => mounted;
+    final generation = ++_loadGeneration;
+    // 늦게 끝난 이전 읽기가 최신 결과의 상태나 재확인 예약을 덮어쓰지 않게 한다.
+    bool isLatest() => mounted && generation == _loadGeneration;
 
     final Post? post;
     try {
