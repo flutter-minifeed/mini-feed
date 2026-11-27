@@ -33,8 +33,9 @@ class _OfflinePostRepository extends FakePostRepository {
   bool get offline => _cache != null;
 
   /// [nothingRead]면 한 번도 읽지 않은 첫 실행처럼 빈 캐시로 끊는다.
-  void goOffline({bool nothingRead = false}) =>
-      _cache = nothingRead ? const [] : [...posts];
+  /// [cached]가 있으면 그 글만 기기 캐시에 남은 것처럼 끊는다.
+  void goOffline({bool nothingRead = false, List<Post>? cached}) =>
+      _cache = nothingRead ? const [] : [...(cached ?? posts)];
 
   void goOnline() => _cache = null;
 
@@ -224,6 +225,40 @@ void main() {
     await tester.pump(offlineRetryInterval);
     await tester.pumpAndSettle();
     expect(posts.pageRequests, requests);
+  });
+
+  testWidgets('오프라인에서 새로고침했을 때 캐시에 일부만 남아 있어도 읽던 글은 화면에 남는다', (tester) async {
+    // given: 글 두 개를 읽은 뒤 연결이 끊기고, 기기 캐시에는 한 개만 남았다
+    final posts = _OfflinePostRepository()
+      ..posts.add(_post('p1', '첫 번째 글', now))
+      ..posts.add(_post('p2', '두 번째 글', now.subtract(const Duration(minutes: 1))));
+    await _pumpFeed(tester, posts);
+    posts.goOffline(cached: [posts.posts.first]);
+
+    // when
+    await _refresh(tester);
+
+    // then
+    expect(find.text(_feedOffline), findsOneWidget);
+    expect(find.text('첫 번째 글'), findsOneWidget);
+    expect(find.text('두 번째 글'), findsOneWidget);
+  });
+
+  testWidgets('오프라인이 아닌 오류로 첫 조회가 실패했다가 새로고침에 성공하면 재연결 안내를 띄우지 않는다', (tester) async {
+    // given: 연결은 그대로인데 첫 조회만 권한 오류로 실패한다
+    final posts = _OfflinePostRepository()
+      ..posts.add(_post('p1', '읽을 글', now))
+      ..error = StateError('permission-denied');
+    await _pumpFeed(tester, posts);
+    expect(find.text('게시글을 불러오지 못했습니다.'), findsOneWidget);
+
+    // when: 조회가 가능해진 뒤 당겨서 새로고침한다
+    posts.error = null;
+    await _refresh(tester);
+
+    // then: 글은 보여주되 연결 복구 안내는 띄우지 않는다
+    expect(find.text('읽을 글'), findsOneWidget);
+    expect(find.text(_reconnected), findsNothing);
   });
 
   testWidgets('오프라인 안내의 다시 시도를 누르면 기다리지 않고 바로 다시 조회한다', (tester) async {

@@ -100,7 +100,12 @@ class _FeedScreenState extends State<FeedScreen> {
       final offline = page.fromCache;
       // 처음부터 캐시가 비어 있으면 보여줄 글이 없으니 불러오지 못한 것으로 안내한다.
       final nothingCached = offline && posts.isEmpty && _posts.isEmpty;
-      final recovered = !offline && (_offline || (isRefresh && _failed));
+      // 재연결 안내는 실제로 오프라인이었다가 서버에 다시 닿았을 때만 띄운다.
+      // 권한 오류 같은 다른 실패 뒤 새로고침에 성공한 것은 연결 복구가 아니다(#15).
+      final recovered = !offline && _offline;
+      // 오프라인 새로고침의 캐시 페이지는 읽던 글보다 적을 수 있다(캐시에서 지워졌거나
+      // 한 번도 저장되지 않은 글). 이미 보이던 목록을 줄이지 않도록 그대로 둔다(#15).
+      final keepList = offline && isRefresh && _posts.isNotEmpty;
       setState(() {
         _loading = false;
         _refreshing = false;
@@ -108,7 +113,7 @@ class _FeedScreenState extends State<FeedScreen> {
         _offline = offline;
         _pendingPage = showChip ? page : null;
         _newPostCount = showChip ? newPostCount : 0;
-        if (!showChip) {
+        if (!showChip && !keepList) {
           _applyFirstPage(page, keepTail: isRefresh);
           _highlightedPostCount = 0;
           _highlightBoundary = null;
