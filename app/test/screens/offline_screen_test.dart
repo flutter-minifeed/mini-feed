@@ -241,7 +241,7 @@ void main() {
     expect(find.text('글 20', skipOffstage: false), findsOneWidget);
   });
 
-  testWidgets('다음 페이지가 오프라인이었다가 다시 불러오기로 서버에서 받으면 안내를 닫고 재확인을 멈춘다', (tester) async {
+  testWidgets('다음 페이지가 오프라인이었다가 다시 불러오기로 서버에서 받으면 바로 첫 페이지를 확인해 새 글과 재연결을 알린다', (tester) async {
     // given: 다음 페이지를 읽다 연결이 끊겨 오프라인 안내가 떠 있다
     final posts = _OfflinePostRepository();
     for (var i = 0; i < 25; i++) {
@@ -254,17 +254,22 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text(_feedOffline), findsOneWidget);
 
-    // when: 재확인 전에 연결이 돌아와 다시 불러오기를 누른다
+    // when: 오프라인 동안 새 글이 올라왔고, 재확인 전에 연결이 돌아와 다시 불러오기를 누른다
+    posts.posts.add(_post('new', '새로 올라온 글', now));
     posts.goOnline();
     await tester.tap(find.text('다시 불러오기'));
     await tester.pumpAndSettle();
     final requests = posts.pageRequests;
+
+    // then: 다음 페이지를 붙이고, 바로 첫 페이지를 다시 읽어 새 글 칩과 재연결 안내를 보여준다
+    expect(find.text('글 20', skipOffstage: false), findsOneWidget);
+    expect(find.text(_feedOffline), findsNothing);
+    expect(find.text(_reconnected), findsOneWidget);
+    expect(find.text('새 글 1개'), findsOneWidget);
+
+    // then: 예약돼 있던 10초 재확인은 다시 보내지 않는다
     await tester.pump(offlineRetryInterval);
     await tester.pumpAndSettle();
-
-    // then: 안내가 사라지고, 예약돼 있던 첫 페이지 재조회는 보내지 않는다
-    expect(find.text(_feedOffline), findsNothing);
-    expect(find.text('글 20', skipOffstage: false), findsOneWidget);
     expect(posts.pageRequests, requests);
   });
 

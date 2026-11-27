@@ -217,15 +217,17 @@ class _FeedScreenState extends State<FeedScreen> {
         return;
       }
       final ids = _posts.map((post) => post.id).toSet();
-      // 서버에서 다음 페이지를 받았으면 연결된 것이므로 오프라인 안내와 재확인을 멈춘다(#15).
-      _offlineRetry?.cancel();
+      final wasOffline = _offline;
       setState(() {
         _posts = [..._posts, ...page.posts.where((post) => ids.add(post.id))];
         _highlightedPostCount = _countHighlightedPosts();
         _nextCursor = page.nextCursor;
         _loadingMore = false;
-        _offline = false;
       });
+      // 오프라인이던 피드가 서버에서 다음 페이지를 받았으면 연결된 것이다.
+      // 10초 재확인을 기다리지 않고 바로 첫 페이지를 다시 읽어, 오프라인 동안 올라온
+      // 새 글 칩과 재연결 안내를 보여주고 오프라인 안내를 끈다(#15).
+      if (wasOffline) _loadPosts(isRefresh: true);
     } catch (_) {
       if (!mounted || requestId != _requestId) return;
       setState(() {
