@@ -157,7 +157,9 @@ firebase deploy --only firestore:rules --project <팀_프로젝트_ID>
 
 프로필 규칙은 본인 프로필의 생성·단건 조회만 허용하며, 프로필 변경·삭제·전체 목록 조회를 차단합니다. `users/{uid}`에 `nickName`(문자열), `colorIndex`(0~7 정수), `createdAt`(서버 시각)을 저장합니다. 닉네임은 UID의 UTF-8 FNV-1a 32비트 해시로 고정된 30개 수식어와 30개 동물 이름 중에서 선택하고, 색은 해시를 8로 나눈 나머지로 결정합니다. 닉네임 중복을 허용하며 사용자 식별은 UID로 합니다.
 
-게시글 규칙(#16)은 인증된 사용자의 목록·상세 조회와 정상 형식의 자기 글 생성을 허용합니다. 작성자는 본인 UID와 프로필의 닉네임·색상으로 기록하며, 최초 작성 시각은 서버 시각이고 두 초기 카운터는 0입니다. 빈 본문과 300개를 초과하는 Unicode 글자 묶음은 거부합니다. 가족 이모지처럼 여러 문자로 조합된 글자도 Flutter와 같은 Unicode 16 기준으로 셉니다. 인증된 사용자는 기존 게시글의 댓글을 조회할 수 있습니다. 게시글 수정·삭제와 댓글을 포함한 하위 경로 쓰기는 거부합니다.
+게시글 규칙(#16)은 인증된 사용자의 목록·상세 조회와 정상 형식의 자기 글 생성을 허용합니다. 작성자는 본인 UID와 프로필의 닉네임·색상으로 기록하며, 최초 작성 시각은 서버 시각이고 두 초기 카운터는 0입니다. 빈 본문과 300개를 초과하는 Unicode 글자 묶음은 거부합니다. 가족 이모지처럼 여러 문자로 조합된 글자도 Flutter와 같은 Unicode 16 기준으로 셉니다. 인증된 사용자는 기존 게시글의 댓글을 조회할 수 있습니다. 아래 좋아요 개수 변경을 빼면 게시글 수정·삭제와 댓글을 포함한 하위 경로 쓰기는 거부합니다.
+
+좋아요 규칙(#18)은 `posts/{postId}/likes/{uid}`에 본인 UID 문서 하나만 허용합니다. 문서는 서버 생성 시각만 담고, 게시글 `likeCount` ±1과 같은 작업으로만 만들고 지웁니다. 문서 없이 개수만 바꾸거나, 이미 누른 좋아요로 다시 올리거나, 개수 외 필드를 함께 바꾸는 요청은 거부합니다. 좋아요 문서는 본인 것만 단건으로 읽을 수 있고, 목록 조회는 누구도 할 수 없습니다. 그래서 다른 사용자에게는 개수만 보이고 누가 눌렀는지는 보이지 않습니다.
 
 분석과 위젯 테스트는 `app/`에서 `flutter analyze`, `flutter test`로 실행합니다. 실제 설정 없이도 이 검사는 가능합니다. Android APK 빌드는 로컬 설정을 준비한 뒤 실행합니다.
 
@@ -165,9 +167,9 @@ firebase deploy --only firestore:rules --project <팀_프로젝트_ID>
 flutter build apk --debug --dart-define-from-file=../.env
 ```
 
-Firestore 접근 규칙 테스트는 **Node.js 24.12.0 이상**·Firebase CLI·Java 21 이상을 준비한 뒤 `tests/firestore/`에서 `npm ci`, `npm test`로 실행합니다. 잠금 파일의 Firebase 패키지가 Node.js 24.12.0 이상을 요구합니다. GitHub Actions의 `Firestore rules` 작업도 Node.js 24.22.3 / Firebase CLI 15.36.0 / Java 25로 같은 명령을 실행합니다. `demo-minifeed-auth` 프로젝트의 로컬 에뮬레이터에서 프로필·게시글 테스트를 순차 실행하며 실제 팀 서버에 쓰지 않습니다.
+Firestore 접근 규칙 테스트는 **Node.js 24.12.0 이상**·Firebase CLI·Java 21 이상을 준비한 뒤 `tests/firestore/`에서 `npm ci`, `npm test`로 실행합니다. 잠금 파일의 Firebase 패키지가 Node.js 24.12.0 이상을 요구합니다. GitHub Actions의 `Firestore rules` 작업도 Node.js 24.22.3 / Firebase CLI 15.36.0 / Java 25로 같은 명령을 실행합니다. `demo-minifeed-auth` 프로젝트의 로컬 에뮬레이터에서 프로필·게시글·좋아요 테스트를 순차 실행하며 실제 팀 서버에 쓰지 않습니다.
 
-Firestore 저장소 통합 검사는 Chrome과 `app/`의 잠금 파일 의존성을 준비한 뒤 `tests/firestore/`에서 `npm run test:repositories`로 실행합니다. `demo-minifeed-repositories`용 Auth·Firestore 에뮬레이터가 #16 규칙으로 동작하는 동안 Flutter SDK에서 페이지 조회, 게시, 재시도, 댓글 읽기를 검사합니다.
+Firestore 저장소 통합 검사는 Chrome과 `app/`의 잠금 파일 의존성을 준비한 뒤 `tests/firestore/`에서 `npm run test:repositories`로 실행합니다. `demo-minifeed-repositories`용 Auth·Firestore 에뮬레이터가 #16 규칙으로 동작하는 동안 Flutter SDK에서 페이지 조회, 게시, 재시도, 댓글 읽기, 좋아요 설정·취소와 동시 요청을 검사합니다.
 
 게시·댓글 테스트와 페이지 조회 테스트는 각 테스트 파일이 시작되기 전에 에뮬레이터 데이터를 다시 준비합니다. Windows에서는 Flutter 3.47.5 웹 러너의 CanvasKit URL 경로를 임시 러너에서 보정합니다. 사용 중인 Flutter는 PATH에 등록하고, 실행 전에 앱의 의존성을 설치해 주세요.
 

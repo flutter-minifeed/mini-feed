@@ -107,15 +107,51 @@ service cloud.firestore {
         && matchesAuthorProfile(data);
     }
 
+    function postPath(postId) {
+      return /databases/$(database)/documents/posts/$(postId);
+    }
+
+    // #18 좋아요 문서 ID는 누른 사람의 UID라서 같은 사람은 한 문서만 가진다.
+    function myLikePath(postId) {
+      return /databases/$(database)/documents/posts/$(postId)/likes/$(request.auth.uid);
+    }
+
+    // likeCount만 1 바뀌고, 같은 작업에서 내 좋아요 문서가 생기거나 지워져야 한다.
+    // 문서 없이 개수만 바꾸거나 이미 있는 좋아요로 다시 올리는 요청은 여기서 막힌다.
+    function isLikeToggle(postId) {
+      let before = resource.data.likeCount;
+      let after = request.resource.data.likeCount;
+      let like = myLikePath(postId);
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount'])
+        && after is int
+        && ((after == before + 1 && !exists(like) && existsAfter(like))
+          || (after == before - 1 && exists(like) && !existsAfter(like)));
+    }
+
     match /posts/{postId} {
       allow get, list: if request.auth != null;
       allow create: if request.auth != null && validNewPost(request.resource.data);
-      allow update, delete: if false;
+      allow update: if request.auth != null && isLikeToggle(postId);
+      allow delete: if false;
 
       match /comments/{commentId} {
         allow get, list: if request.auth != null
           && exists(/databases/$(database)/documents/posts/$(postId));
         allow write: if false;
+      }
+
+      // #18 누가 눌렀는지는 본인 문서만 읽는다. 목록 조회는 막는다.
+      // 문서는 게시글 likeCount ±1과 같은 작업으로만 만들고 지운다. 덮어쓰기(update)는 없다.
+      match /likes/{uid} {
+        allow get: if request.auth != null && request.auth.uid == uid;
+        allow create: if request.auth != null
+          && request.auth.uid == uid
+          && hasExactly(request.resource.data, ['createdAt'])
+          && request.resource.data.createdAt == request.time
+          && getAfter(postPath(postId)).data.likeCount == get(postPath(postId)).data.likeCount + 1;
+        allow delete: if request.auth != null
+          && request.auth.uid == uid
+          && getAfter(postPath(postId)).data.likeCount == get(postPath(postId)).data.likeCount - 1;
       }
     }
 
