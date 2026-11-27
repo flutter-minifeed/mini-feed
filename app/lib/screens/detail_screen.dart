@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../models/comment.dart';
@@ -5,6 +7,7 @@ import '../models/post.dart';
 import '../repository/repository_scope.dart';
 import '../widgets/comment_input.dart';
 import '../widgets/comment_tile.dart';
+import '../widgets/post_actions.dart';
 import '../widgets/post_card.dart';
 
 // 상세 화면이 한 번에 불러오는 글과 댓글 목록.
@@ -19,10 +22,12 @@ class DetailScreen extends StatefulWidget {
     super.key,
     required this.postId,
     this.focusComment = false,
+    this.onRemoved,
   });
 
   final String postId;
   final bool focusComment;
+  final VoidCallback? onRemoved;
 
   @override
   State<DetailScreen> createState() => _DetailScreenState();
@@ -34,6 +39,7 @@ class _DetailScreenState extends State<DetailScreen> {
 
   // 글·댓글을 불러오는 작업. 화면을 다시 그려도 새로 부르지 않게 한 번만 만든다.
   Future<_DetailData?>? _data;
+  bool _actionPending = false;
 
   @override
   void initState() {
@@ -58,10 +64,21 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   Future<_DetailData?> _load(RepositoryScope repositories) async {
+    // 댓글을 읽는 동안 삭제된 글의 본문을 다시 표시하지 않도록 글을 마지막에 확인한다.
+    final comments = await repositories.commentRepository.getComments(
+      widget.postId,
+    );
     final post = await repositories.postRepository.getPostById(widget.postId);
-    if (post == null) return null;
-    final comments = await repositories.commentRepository.getComments(post.id);
-    return (post: post, comments: comments);
+    if (post != null) {
+      return (post: post, comments: comments);
+    }
+    if (mounted &&
+        widget.onRemoved != null &&
+        ModalRoute.of(context)?.isCurrent == true) {
+      // 글 조회는 끝났으므로 안내창을 기다리는 동안 로딩을 계속 표시하지 않는다.
+      unawaited(_noticeAndLeave());
+    }
+    return null;
   }
 
   // 상세 안의 댓글 버튼. 입력창을 직접 누른 것과 같게 처리한다(#49 글쓰기와 같은 방식).
@@ -73,8 +90,53 @@ class _DetailScreenState extends State<DetailScreen> {
         ?.requestKeyboard();
   }
 
-  void _sendComment(String body) {
-    // TODO(#20): MP3에서 commentRepository로 등록하고, 성공하면 입력을 지운다.
+  void _leaveDeletedPost() {
+    if (!mounted || ModalRoute.of(context)?.isCurrent != true) return;
+    widget.onRemoved?.call();
+    Navigator.of(context).pop();
+  }
+
+  Future<void> _noticeAndLeave() async {
+    await showDeletedPostNotice(context);
+    _leaveDeletedPost();
+  }
+
+  Future<void> _openMenu(Post post) async {
+    if (_actionPending) return;
+    _actionPending = true;
+    final repository = RepositoryScope.of(context).postRepository;
+    try {
+      final removed = await handlePostMenu(
+        context,
+        own: post.author.id == repository.currentUser.id,
+        deletePost: () => repository.deletePost(post.id),
+      );
+      if (removed) _leaveDeletedPost();
+    } finally {
+      _actionPending = false;
+    }
+  }
+
+  Future<void> _checkBeforeInteraction() async {
+    if (_actionPending) return;
+    _actionPending = true;
+    try {
+      final post = await RepositoryScope.of(context).postRepository
+          .getPostById(widget.postId);
+      if (!mounted || ModalRoute.of(context)?.isCurrent != true) return;
+      if (post == null) {
+        await _noticeAndLeave();
+        return;
+      }
+      // 좋아요 토글과 댓글 등록은 각각 담당 이슈에서 이 확인 뒤에 연결한다.
+    } catch (_) {
+      if (!mounted || ModalRoute.of(context)?.isCurrent != true) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('글을 확인하지 못했어요. 다시 시도해 주세요.')),
+      );
+    } finally {
+      _actionPending = false;
+    }
   }
 
   @override
@@ -104,6 +166,8 @@ class _DetailScreenState extends State<DetailScreen> {
                     PostCard(
                       post: data.post,
                       now: now,
+                      onMore: () => _openMenu(data.post),
+                      onLike: _checkBeforeInteraction,
                       onComments: _focusCommentInput,
                     ),
                     Padding(
@@ -129,7 +193,7 @@ class _DetailScreenState extends State<DetailScreen> {
                 child: CommentInput(
                   controller: _commentController,
                   focusNode: _commentFocus,
-                  onSend: _sendComment,
+                  onSend: (_) => _checkBeforeInteraction(),
                 ),
               ),
             ],

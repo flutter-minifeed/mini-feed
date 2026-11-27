@@ -64,9 +64,22 @@ class InMemoryPostRepository implements PostRepository {
   @override
   Future<Post?> getPostById(String id) async => _findPost(id);
 
+  final _deletedIds = <String>{};
+
+  @override
+  Future<bool> deletePost(String id) async {
+    final post = _findPost(id);
+    if (post == null) return false;
+    if (post.author.id != currentUser.id) throw StateError('본인 글만 삭제할 수 있어요.');
+    _posts.remove(post);
+    _deletedIds.add(id);
+    return true;
+  }
+
   @override
   Future<Post> addPost(String body, {String? requestId}) async {
     final id = requestId ?? _nextPostId();
+    if (_deletedIds.contains(id)) throw StateError('삭제한 글 ID는 다시 쓸 수 없어요.');
     final saved = _findPost(id);
     if (saved != null) {
       return checkSameRequest(saved, author: currentUser, body: body);
@@ -93,7 +106,7 @@ class InMemoryPostRepository implements PostRepository {
 
   String _nextPostId() {
     var id = 'post-local-${++_localCount}';
-    while (_findPost(id) != null) {
+    while (_findPost(id) != null || _deletedIds.contains(id)) {
       id = 'post-local-${++_localCount}';
     }
     return id;

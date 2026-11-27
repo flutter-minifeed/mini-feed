@@ -18,6 +18,9 @@ abstract interface class PostRepository {
   /// id가 같은 게시글을 돌려준다. 없는 id면 null을 돌려준다.
   Future<Post?> getPostById(String id);
 
+  /// 본인 글을 삭제하면 true, 이미 없으면 false. 권한·서버 오류는 호출자에 전달한다.
+  Future<bool> deletePost(String id);
+
   /// 현재 사용자의 검증된 본문을 저장한다. 두 초기 카운터는 0이다.
   /// [requestId]가 있으면 게시글 ID로 쓰고, 없으면 호출마다 새 ID를 만든다.
   /// 같은 ID·작성자·본문이면 기존 글과 최초 작성 시각을 돌려준다.

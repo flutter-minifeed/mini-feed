@@ -13,6 +13,8 @@ class PostCard extends StatelessWidget {
     required this.post,
     required this.now,
     this.onOpen,
+    required this.onMore,
+    this.onLike,
     required this.onComments,
     this.highlighted = false,
   });
@@ -23,6 +25,8 @@ class PostCard extends StatelessWidget {
 
   /// 본문을 눌렀을 때 할 일. null이면 본문을 눌러도 반응하지 않는다.
   final VoidCallback? onOpen;
+  final VoidCallback onMore;
+  final VoidCallback? onLike;
   final VoidCallback onComments;
 
   @override
@@ -50,14 +54,11 @@ class PostCard extends StatelessWidget {
                     subtitle: relativeTime(post.createdAt, now: now),
                   ),
                 ),
-                SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: Icon(
-                    Icons.more_horiz,
-                    color: colors.onSurfaceVariant,
-                    semanticLabel: '더보기',
-                  ),
+                IconButton(
+                  tooltip: '더보기',
+                  onPressed: onMore,
+                  icon: const Icon(Icons.more_horiz),
+                  color: colors.onSurfaceVariant,
                 ),
               ],
             ),
@@ -76,33 +77,39 @@ class PostCard extends StatelessWidget {
                 children: [
                   Semantics(
                     label: '좋아요 ${post.likeCount}개',
+                    button: onLike != null,
+                    onTap: onLike,
                     child: ExcludeSemantics(
-                      child: Container(
-                        height: 32,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        decoration: ShapeDecoration(
-                          color: post.likedByMe
-                              ? colors.surfaceContainerHigh
-                              : colors.surface,
-                          shape: StadiumBorder(
-                            side: BorderSide(color: colors.outlineVariant),
-                          ),
-                        ),
-                        child: Row(
-                          spacing: 6,
-                          children: [
-                            Icon(
-                              Icons.favorite_border,
-                              size: 20,
-                              color: colors.onSurfaceVariant,
+                      child: InkWell(
+                        customBorder: const StadiumBorder(),
+                        onTap: onLike,
+                        child: Container(
+                          height: 32,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: ShapeDecoration(
+                            color: post.likedByMe
+                                ? colors.surfaceContainerHigh
+                                : colors.surface,
+                            shape: StadiumBorder(
+                              side: BorderSide(color: colors.outlineVariant),
                             ),
-                            Text(
-                              '${post.likeCount}',
-                              style: text.labelMedium?.copyWith(
+                          ),
+                          child: Row(
+                            spacing: 6,
+                            children: [
+                              Icon(
+                                Icons.favorite_border,
+                                size: 20,
                                 color: colors.onSurfaceVariant,
                               ),
-                            ),
-                          ],
+                              Text(
+                                '${post.likeCount}',
+                                style: text.labelMedium?.copyWith(
+                                  color: colors.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

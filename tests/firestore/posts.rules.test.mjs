@@ -197,7 +197,7 @@ for (const [name, uid] of [['작성자', writer], ['다른 사용자', reader]])
     await assertFails(request);
   });
 
-  test(name + '는 게시글을 삭제할 수 없다', async () => {
+  test(name + '는 삭제 기록 없이 게시글만 삭제할 수 없다', async () => {
     // given
     await seedPost();
     const ref = postRef(authenticated(uid));

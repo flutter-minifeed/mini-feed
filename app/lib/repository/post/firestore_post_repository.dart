@@ -52,6 +52,25 @@ class FirestorePostRepository implements PostRepository {
   }
 
   @override
+  Future<bool> deletePost(String id) async {
+    final post = _posts.doc(id);
+    final marker = _firestore.collection('deletedPosts').doc(id);
+    try {
+      return await _firestore.runTransaction((transaction) async {
+        if (!(await transaction.get(post)).exists) return false;
+        transaction.delete(post);
+        transaction.set(marker, {'deletedAt': FieldValue.serverTimestamp()});
+        return true;
+      }, timeout: const Duration(seconds: 10));
+    } on FirebaseException catch (error) {
+      if (error.code != 'permission-denied') rethrow;
+      // 먼저 끝난 삭제로 작성자 문서가 사라지면 두 번째 커밋은 규칙에서 거부될 수 있다.
+      if (!(await post.get(_server)).exists) return false;
+      rethrow;
+    }
+  }
+
+  @override
   Future<Post> addPost(String body, {String? requestId}) async {
     final ref = _posts.doc(requestId);
     try {

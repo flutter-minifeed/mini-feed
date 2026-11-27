@@ -28,6 +28,14 @@ class FakePostRepository implements PostRepository {
   final Author currentUser;
 
   @override
+  Future<bool> deletePost(String id) async {
+    final post = await getPostById(id);
+    if (post == null) return false;
+    if (post.author.id != currentUser.id) throw StateError('본인 글만 삭제할 수 있어요.');
+    return posts.remove(post);
+  }
+
+  @override
   Future<List<Post>> getPosts() async => List.unmodifiable(posts);
 
   @override

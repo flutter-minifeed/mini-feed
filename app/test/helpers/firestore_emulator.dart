@@ -36,9 +36,15 @@ openFirestoreEmulatorClient(String name) async {
     ),
   );
   final auth = FirebaseAuth.instanceFor(app: app);
-  await auth.useAuthEmulator(_host, 9099);
+  await auth.useAuthEmulator(
+    _host,
+    const int.fromEnvironment('AUTH_EMULATOR_PORT', defaultValue: 9099),
+  );
   final firestore = FirebaseFirestore.instanceFor(app: app);
-  firestore.useFirestoreEmulator(_host, 8080);
+  firestore.useFirestoreEmulator(
+    _host,
+    const int.fromEnvironment('FIRESTORE_EMULATOR_PORT', defaultValue: 8080),
+  );
   return (auth: auth, firestore: firestore);
 }
 
