@@ -14,7 +14,7 @@ import 'viewmodels/write_view_model.dart';
 //앱 실행
 // 저장소는 여기서 한 번만 만들고 RepositoryScope로 모든 화면에 공유한다.
 Future<void> main() async {
-  // runApp 전에 asset을 읽으려면 Flutter 엔진을 먼저 준비해야 한다.
+  // Firebase·플랫폼 플러그인을 사용하기 전에 Flutter 엔진을 준비한다.
   WidgetsFlutterBinding.ensureInitialized();
 
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
