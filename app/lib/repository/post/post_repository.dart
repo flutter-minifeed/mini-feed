@@ -13,12 +13,12 @@ abstract interface class PostRepository {
 
   /// [after]가 없으면 첫 페이지, 있으면 커서의 다음 글부터 최대 20개를 반환한다.
   /// 작성 시각 내림차순이며 시각이 같으면 문서 ID 내림차순으로 정렬한다.
-  /// 서버에 연결할 수 없으면 기기 캐시에 남은 글로 같은 순서의 페이지를 만들고
+  /// 서버에 연결할 수 없거나 제때 답하지 않으면 기기 캐시에 남은 글로 같은 순서의 페이지를 만들고
   /// [PostPage.fromCache]를 true로 둔다. 캐시가 비어 있으면 빈 페이지다(#15).
   Future<PostPage> getPostPage({PostCursor? after});
 
   /// id가 같은 게시글을 돌려준다. 없는 id면 null을 돌려준다.
-  /// 서버에 연결할 수 없으면 캐시에 남은 글을 돌려준다.
+  /// 서버에 연결할 수 없거나 제때 답하지 않으면 캐시에 남은 글을 돌려준다.
   /// 캐시에도 없으면 없는 글과 구분하도록 null 대신 `OfflineException`을 던진다(#15).
   Future<Post?> getPostById(String id);
 

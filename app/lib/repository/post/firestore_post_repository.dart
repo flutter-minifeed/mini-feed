@@ -56,7 +56,8 @@ class FirestorePostRepository implements PostRepository {
     return snapshot.exists ? _toPost(snapshot) : null;
   }
 
-  // 서버에 연결할 수 없을 때만 기기 캐시에서 다시 읽는다(#15).
+  // 서버에 연결할 수 없거나 제때 답하지 않을 때만 기기 캐시에서 다시 읽는다(#15).
+  // 복구를 확인하는 조회가 시간 초과로 끝나도 오프라인 상태와 재확인이 이어지게 한다.
   // 권한 거부 같은 다른 오류는 캐시 값으로 가리지 않고 그대로 전달한다.
   // 캐시에도 없는 문서면 OfflineException으로 알린다.
   static Future<T> _serverOrCache<T>(
@@ -65,7 +66,7 @@ class FirestorePostRepository implements PostRepository {
     try {
       return await read(_server);
     } on FirebaseException catch (error) {
-      if (error.code != 'unavailable') rethrow;
+      if (!_isServerUnreachable(error)) rethrow;
     }
     try {
       return await read(_cache);
@@ -113,6 +114,10 @@ class FirestorePostRepository implements PostRepository {
     }
   }
 }
+
+// 연결이 없거나 서버가 시한 안에 답하지 않으면 서버에 닿지 못한 것으로 본다(#15).
+bool _isServerUnreachable(FirebaseException error) =>
+    error.code == 'unavailable' || error.code == 'deadline-exceeded';
 
 Post _toPost(DocumentSnapshot<Map<String, dynamic>> snapshot) {
   final data = snapshot.data();

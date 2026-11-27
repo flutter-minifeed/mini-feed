@@ -61,6 +61,19 @@ void main() {
     verifyNever(() => post.get(any()));
   });
 
+  test('서버가 시한 안에 답하지 않으면 댓글 조회를 오프라인으로 알린다', () async {
+    // given
+    when(() => ordered.get(_server)).thenThrow(
+      FirebaseException(plugin: 'cloud_firestore', code: 'deadline-exceeded'),
+    );
+
+    // when, then
+    await expectLater(
+      repository.getComments('test-post'),
+      throwsA(isA<OfflineException>()),
+    );
+  });
+
   test('부모 글을 확인하는 사이 연결이 끊기면 댓글 조회를 오프라인으로 알린다', () async {
     // given: 댓글 조회가 부모 글 가드에 막히고, 부모 글을 다시 읽을 때 연결이 끊긴다
     when(() => ordered.get(_server)).thenThrow(

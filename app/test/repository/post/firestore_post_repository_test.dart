@@ -167,6 +167,22 @@ void main() {
       expect(result?.body, '캐시된 글');
     });
 
+    test('서버가 시한 안에 답하지 않으면 캐시에 남은 글 상세를 돌려준다', () async {
+      // given
+      when(
+        () => post.get(_server),
+      ).thenThrow(_firebaseError('deadline-exceeded'));
+      when(
+        () => post.get(_cache),
+      ).thenAnswer((_) async => _cachedSnapshot(cachedPost));
+
+      // when
+      final result = await repository.getPostById('test-post');
+
+      // then
+      expect(result?.body, '캐시된 글');
+    });
+
     test('서버와 캐시 모두에서 글을 읽지 못하면 없는 글이 아니라 오프라인으로 알린다', () async {
       // given
       when(() => post.get(_server)).thenThrow(_firebaseError('unavailable'));
