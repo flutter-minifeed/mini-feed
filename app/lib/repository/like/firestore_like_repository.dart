@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../offline_exception.dart';
 import 'like_repository.dart';
 
 /// `posts/{postId}/likes/{uid}` 문서 하나가 좋아요 하나다.
@@ -14,18 +13,7 @@ class FirestoreLikeRepository implements LikeRepository {
   final String _userId;
 
   @override
-  Future<LikeState?> setLike(String postId, {required bool liked}) async {
-    try {
-      return await _setLike(postId, liked: liked);
-    } on FirebaseException catch (error) {
-      // 트랜잭션은 서버 연결이 필요하다. #15의 오프라인 계약대로 바꿔, 오프라인 좋아요
-      // 전송(#19)이 Firestore 코드를 몰라도 실패 이유를 구분하게 한다.
-      if (error.code == 'unavailable') throw const OfflineException();
-      rethrow;
-    }
-  }
-
-  Future<LikeState?> _setLike(String postId, {required bool liked}) {
+  Future<LikeState?> setLike(String postId, {required bool liked}) {
     final post = _firestore.collection('posts').doc(postId);
     final like = post.collection('likes').doc(_userId);
 
