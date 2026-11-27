@@ -42,12 +42,19 @@ class _DetailScreenState extends State<DetailScreen> {
   Future<_DetailData?>? _data;
   Timer? _offlineRetry;
 
+  // 온라인으로 연 상세에서 댓글을 쓰는 사이 연결이 끊겨도 입력을 막아야 한다(#15).
+  // 상세는 연결이 끊긴 것을 따로 알 수 없어서, 댓글을 입력하면 다시 읽어 확인한다.
+  // 마지막 확인 뒤 재확인 간격이 지나기 전에는 다시 읽지 않는다.
+  bool _commentsLoaded = false;
+  Timer? _draftCheckCooldown;
+
   @override
   void initState() {
     super.initState();
     // 입력창은 글을 다 불러온 뒤에 화면에 붙는다. 아직 붙지 않은 FocusNode에
     // 포커스를 요청하면 Flutter가 기억해 뒀다가, 붙는 순간 포커스를 주고 키보드를 연다.
     if (widget.focusComment) _commentFocus.requestFocus();
+    _commentController.addListener(_checkConnectionWhileWriting);
   }
 
   @override
@@ -60,6 +67,7 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   void dispose() {
     _offlineRetry?.cancel();
+    _draftCheckCooldown?.cancel();
     _commentController.dispose();
     _commentFocus.dispose();
     super.dispose();
@@ -71,6 +79,7 @@ class _DetailScreenState extends State<DetailScreen> {
       post = await repositories.postRepository.getPostById(widget.postId);
     } on OfflineException {
       // 캐시에도 없는 글이면 보여줄 본문이 없다. 안내를 띄우고 연결되면 다시 읽는다.
+      _markCommentsLoaded(false);
       _scheduleOfflineRetry();
       rethrow;
     }
@@ -79,11 +88,28 @@ class _DetailScreenState extends State<DetailScreen> {
       final comments = await repositories.commentRepository.getComments(
         post.id,
       );
+      _markCommentsLoaded(true);
       return (post: post, comments: comments);
     } on OfflineException {
+      _markCommentsLoaded(false);
       _scheduleOfflineRetry();
       return (post: post, comments: null);
     }
+  }
+
+  void _markCommentsLoaded(bool loaded) {
+    _commentsLoaded = loaded;
+    _draftCheckCooldown?.cancel();
+    if (loaded && mounted) {
+      _draftCheckCooldown = Timer(offlineRetryInterval, () {});
+    }
+  }
+
+  // 작성 중인 초안은 컨트롤러에 남아서, 오프라인으로 바뀌어 입력을 막아도 지워지지 않는다.
+  void _checkConnectionWhileWriting() {
+    if (!_commentsLoaded || (_draftCheckCooldown?.isActive ?? false)) return;
+    _markCommentsLoaded(true);
+    _reload();
   }
 
   // 연결되면 자동으로 다시 불러온다는 안내(M14)대로 일정 시간 뒤 다시 읽는다.
