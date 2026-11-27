@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 /// 상세 화면 맨 아래 댓글 입력줄. Figma CommentInput과 이름을 맞춘다(R10).
 ///
 /// 입력이 비었거나 공백뿐이면(D4), 또는 200자를 넘으면 전송 버튼을 끈다.
+/// 오프라인이면 [enabled]를 false로 받아 입력칸과 전송 버튼을 모두 끈다(#15).
 /// 입력 내용과 포커스는 상세 화면이 가진다. 댓글 아이콘으로 열 때 포커스를 주고,
 /// 등록이 끝난 뒤 입력을 지우는 것도 상세 화면이 정하기 때문이다.
 class CommentInput extends StatelessWidget {
@@ -11,6 +12,7 @@ class CommentInput extends StatelessWidget {
     required this.controller,
     required this.focusNode,
     required this.onSend,
+    this.enabled = true,
   });
 
   /// 댓글 최대 글자 수. Figma 안내 문구의 "(200자)"와 같다.
@@ -21,6 +23,9 @@ class CommentInput extends StatelessWidget {
 
   /// 전송 버튼을 누르면 앞뒤 공백을 지운 댓글 내용을 넘긴다.
   final ValueChanged<String> onSend;
+
+  /// false면 입력과 전송을 막고 연결되면 쓸 수 있다고 안내한다.
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +45,7 @@ class CommentInput extends StatelessWidget {
             child: TextField(
               controller: controller,
               focusNode: focusNode,
+              enabled: enabled,
               maxLength: maxLength,
               // Figma에 글자 수 표시가 없어서 카운터를 숨긴다.
               buildCounter: (
@@ -50,7 +56,7 @@ class CommentInput extends StatelessWidget {
               }) => null,
               style: textTheme.bodyMedium,
               decoration: InputDecoration(
-                hintText: '댓글 달기… ($maxLength자)',
+                hintText: enabled ? '댓글 달기… ($maxLength자)' : '연결되면 댓글을 쓸 수 있어요',
                 hintStyle: textTheme.bodyMedium?.copyWith(
                   color: colors.onSurfaceVariant,
                 ),
@@ -78,7 +84,9 @@ class CommentInput extends StatelessWidget {
               // iOS·웹은 한글 조합이 끝날 때까지 maxLength를 넘는 입력을 허용하므로
               // 보낼 내용의 글자 수를 다시 확인한다.
               final canSend =
-                  body.isNotEmpty && body.characters.length <= maxLength;
+                  enabled &&
+                  body.isNotEmpty &&
+                  body.characters.length <= maxLength;
               return IconButton(
                 icon: const Icon(Icons.send),
                 color: colors.primary,
