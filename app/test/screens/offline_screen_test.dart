@@ -536,17 +536,15 @@ void main() {
     expect(tester.widget<TextField>(find.byType(TextField)).enabled, isTrue);
   });
 
-  testWidgets('상세를 열어 둔 채 연결이 끊기면 댓글을 입력할 때 확인해 입력을 막고 쓰던 초안은 남긴다', (tester) async {
-    // given: 온라인으로 상세를 열고 댓글 초안을 쓴다
+  testWidgets('상세를 열어 둔 채 연결이 끊긴 뒤 댓글을 입력하면 바로 확인해 입력을 막고 쓰던 초안은 남긴다', (tester) async {
+    // given: 온라인으로 상세를 열어 두고 시간이 지났다
     final comments = await _openDetail(tester, offline: false);
-    await tester.enterText(find.byType(TextField), '쓰던 초안');
-    await tester.pump();
+    await tester.pump(offlineRetryInterval);
     expect(find.text(_detailOffline), findsNothing);
 
-    // when: 화면을 그대로 둔 채 연결이 끊기고, 시간이 지나 초안을 이어 쓴다
+    // when: 화면을 그대로 둔 채 연결이 끊기고, 댓글 초안을 쓴다
     comments.offline = true;
-    await tester.pump(offlineRetryInterval);
-    await tester.enterText(find.byType(TextField), '쓰던 초안 이어서');
+    await tester.enterText(find.byType(TextField), '쓰던 초안');
     await tester.pumpAndSettle();
 
     // then: 오프라인 안내와 댓글 조회 불가를 보여주고 입력을 막되 초안은 그대로다
@@ -554,7 +552,25 @@ void main() {
     expect(find.text(_commentsOffline), findsOneWidget);
     final field = tester.widget<TextField>(find.byType(TextField));
     expect(field.enabled, isFalse);
-    expect(field.controller!.text, '쓰던 초안 이어서');
+    expect(field.controller!.text, '쓰던 초안');
+  });
+
+  testWidgets('상세를 연 직후 초안을 쓰고 연결이 끊기면 더 입력하지 않아도 확인 간격이 끝날 때 입력을 막는다', (tester) async {
+    // given: 온라인으로 상세를 열자마자 초안을 쓴다
+    final comments = await _openDetail(tester, offline: false);
+    await tester.enterText(find.byType(TextField), '바로 쓴 초안');
+    await tester.pump();
+
+    // when: 연결이 끊기고, 더 입력하지 않은 채 확인 간격이 지난다
+    comments.offline = true;
+    await tester.pump(offlineRetryInterval);
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.text(_detailOffline), findsOneWidget);
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.enabled, isFalse);
+    expect(field.controller!.text, '바로 쓴 초안');
   });
 
   testWidgets('캐시에도 없는 글을 오프라인에서 열면 오프라인 안내 후 연결되면 자동으로 불러온다', (tester) async {

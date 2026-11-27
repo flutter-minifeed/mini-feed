@@ -44,8 +44,10 @@ class _DetailScreenState extends State<DetailScreen> {
 
   // 온라인으로 연 상세에서 댓글을 쓰는 사이 연결이 끊겨도 입력을 막아야 한다(#15).
   // 상세는 연결이 끊긴 것을 따로 알 수 없어서, 댓글을 입력하면 다시 읽어 확인한다.
-  // 마지막 확인 뒤 재확인 간격이 지나기 전에는 다시 읽지 않는다.
+  // 마지막 확인 뒤 재확인 간격이 지나기 전에는 다시 읽지 않고, 그 사이 입력이 있었으면
+  // 간격이 끝날 때 한 번 확인한다.
   bool _commentsLoaded = false;
+  bool _draftChangedDuringCooldown = false;
   Timer? _draftCheckCooldown;
 
   @override
@@ -74,13 +76,17 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   Future<_DetailData?> _load(RepositoryScope repositories) async {
+    bool isLatest() => mounted;
+
     final Post? post;
     try {
       post = await repositories.postRepository.getPostById(widget.postId);
     } on OfflineException {
       // 캐시에도 없는 글이면 보여줄 본문이 없다. 안내를 띄우고 연결되면 다시 읽는다.
-      _markCommentsLoaded(false);
-      _scheduleOfflineRetry();
+      if (isLatest()) {
+        _markCommentsLoaded(false);
+        _scheduleOfflineRetry();
+      }
       rethrow;
     }
     if (post == null) return null;
@@ -88,26 +94,35 @@ class _DetailScreenState extends State<DetailScreen> {
       final comments = await repositories.commentRepository.getComments(
         post.id,
       );
-      _markCommentsLoaded(true);
+      if (isLatest()) _markCommentsLoaded(true);
       return (post: post, comments: comments);
     } on OfflineException {
-      _markCommentsLoaded(false);
-      _scheduleOfflineRetry();
+      if (isLatest()) {
+        _markCommentsLoaded(false);
+        _scheduleOfflineRetry();
+      }
       return (post: post, comments: null);
     }
   }
 
   void _markCommentsLoaded(bool loaded) {
     _commentsLoaded = loaded;
+    _draftChangedDuringCooldown = false;
     _draftCheckCooldown?.cancel();
-    if (loaded && mounted) {
-      _draftCheckCooldown = Timer(offlineRetryInterval, () {});
+    if (loaded) {
+      _draftCheckCooldown = Timer(offlineRetryInterval, () {
+        if (_draftChangedDuringCooldown) _checkConnectionWhileWriting();
+      });
     }
   }
 
   // 작성 중인 초안은 컨트롤러에 남아서, 오프라인으로 바뀌어 입력을 막아도 지워지지 않는다.
   void _checkConnectionWhileWriting() {
-    if (!_commentsLoaded || (_draftCheckCooldown?.isActive ?? false)) return;
+    if (!_commentsLoaded) return;
+    if (_draftCheckCooldown?.isActive ?? false) {
+      _draftChangedDuringCooldown = true;
+      return;
+    }
     _markCommentsLoaded(true);
     _reload();
   }
