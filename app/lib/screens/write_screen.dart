@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:minifeed/ai/live_topic_analysis.dart';
+import 'package:minifeed/ai/topic_analyzer.dart';
 import 'package:minifeed/models/compose_tag.dart';
 import 'package:minifeed/widgets/compose_tag_editor.dart';
 import 'package:minifeed/viewmodels/write_view_model.dart';
@@ -10,11 +12,11 @@ class WriteScreen extends StatefulWidget {
   const WriteScreen({
     super.key,
     required this.viewModel,
-    this.recommendedTags = const [],
+    this.loadAnalyzer = TopicAnalyzer.load,
   });
 
   final WriteViewModel viewModel;
-  final List<String> recommendedTags;
+  final Future<TopicAnalyzer> Function() loadAnalyzer;
 
   @override
   State<WriteScreen> createState() => _WriteScreenState();
@@ -261,31 +263,16 @@ class _WriteScreenState extends State<WriteScreen> {
                       }),
                     ),
                   ),
-                  if (widget.recommendedTags.isNotEmpty)
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: colors.surfaceContainerLow,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        spacing: 8,
-                        children: [
-                          Text('이런 주제의 글 같아요', style: text.titleSmall),
-                          RecommendedTagChips(
-                            candidates: widget.recommendedTags,
-                            selected: _selection.names,
-                            onSelected: _isSaving
-                                ? null
-                                : (name) =>
-                                      _addTag(name, TagSource.recommended),
-                          ),
-                          Text('선택한 태그만 게시글에 추가돼요', style: text.bodySmall),
-                        ],
-                      ),
-                    ),
+                  LiveTopicAnalysis(
+                    input: _body,
+                    keyboardVisible:
+                        MediaQuery.viewInsetsOf(context).bottom > 0,
+                    loadAnalyzer: widget.loadAnalyzer,
+                    selected: _selection.names,
+                    onSelected: _isSaving
+                        ? null
+                        : (name) => _addTag(name, TagSource.recommended),
+                  ),
                 ],
               ),
             ),
