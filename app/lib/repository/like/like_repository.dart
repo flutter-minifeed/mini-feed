@@ -11,7 +11,7 @@ abstract interface class LikeRepository {
   /// 게시글이 없으면 null을 돌려준다.
   ///
   /// 한 게시글의 요청은 앞 요청이 끝난 뒤 보낸다. 동시에 보내면 나중에 저장된 요청이 최종 상태가 된다.
-  /// 서버에 연결할 수 없으면 `OfflineException`을 던진다(#15 계약, #19에서 사용). 다른 저장 실패는 오류를 그대로 전달한다.
+  /// 저장에 실패하면 오류를 그대로 전달한다.
   Future<LikeState?> setLike(String postId, {required bool liked});
 }
 
