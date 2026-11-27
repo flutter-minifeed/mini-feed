@@ -38,6 +38,9 @@ class _FeedScreenState extends State<FeedScreen> {
   bool _moreFailed = false;
   // #15 서버에 닿지 못해 기기 캐시의 글을 보여주는 중이면 true다.
   bool _offline = false;
+  // 오프라인으로 시작해 지금 목록이 기기 캐시에서만 온 상태인지 나타낸다(#15).
+  // 캐시는 일부 글만 남아 있을 수 있어서, 서버 페이지가 오면 이어 붙이지 않고 바꾼다.
+  bool _listFromCache = false;
   Timer? _offlineRetry;
   int _requestId = 0;
 
@@ -61,6 +64,7 @@ class _FeedScreenState extends State<FeedScreen> {
       _highlightedPostCount = 0;
       _highlightBoundary = null;
       _offline = false;
+      _listFromCache = false;
       _loadPosts();
     }
   }
@@ -95,7 +99,11 @@ class _FeedScreenState extends State<FeedScreen> {
                 )
                 .length;
       final showChip =
-          isRefresh && !revealNewPost && _posts.isNotEmpty && newPostCount > 0;
+          isRefresh &&
+          !revealNewPost &&
+          _posts.isNotEmpty &&
+          !_listFromCache &&
+          newPostCount > 0;
       final showTop = revealNewPost && newPostCount > 0;
       final offline = page.fromCache;
       // 처음부터 캐시가 비어 있으면 보여줄 글이 없으니 불러오지 못한 것으로 안내한다.
@@ -114,7 +122,10 @@ class _FeedScreenState extends State<FeedScreen> {
         _pendingPage = showChip ? page : null;
         _newPostCount = showChip ? newPostCount : 0;
         if (!showChip && !keepList) {
-          _applyFirstPage(page, keepTail: isRefresh);
+          // 캐시에서만 온 목록은 중간 글이 빠졌을 수 있어 뒷부분을 잇지 않는다.
+          // 다음 페이지는 서버가 확인한 마지막 글부터 읽는다.
+          _applyFirstPage(page, keepTail: isRefresh && !_listFromCache);
+          _listFromCache = offline;
           _highlightedPostCount = 0;
           _highlightBoundary = null;
         }

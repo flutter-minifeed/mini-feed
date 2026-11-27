@@ -348,6 +348,35 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('일부 글만 캐시된 채 오프라인으로 시작했다가 연결되면 중간 글을 건너뛰지 않고 서버가 확인한 마지막 글부터 이어 읽는다', (tester) async {
+    // given: 서버에는 글 0~44가 있고, 기기 캐시에는 0번과 35번만 남아 있다
+    final posts = _OfflinePostRepository();
+    for (var i = 0; i < 45; i++) {
+      final createdAt = now.subtract(Duration(minutes: i + 1));
+      posts.posts.add(_post('p$i', '글 $i', createdAt));
+    }
+    posts.goOffline(cached: [posts.posts[0], posts.posts[35]]);
+    await _pumpFeed(tester, posts);
+    expect(find.text('글 35'), findsOneWidget);
+
+    // when: 연결이 돌아온다
+    posts.goOnline();
+    await tester.pump(offlineRetryInterval);
+    await tester.pumpAndSettle();
+
+    // then: 서버 첫 페이지로 바꾸고, 캐시에만 있던 35번을 19번 뒤에 잇지 않는다
+    expect(find.text(_feedOffline), findsNothing);
+    expect(find.text(_reconnected), findsOneWidget);
+    expect(find.text('글 35', skipOffstage: false), findsNothing);
+
+    // when: 끝까지 내린다
+    await tester.drag(find.byType(ListView), const Offset(0, -5000));
+    await tester.pumpAndSettle();
+
+    // then: 19번 다음은 서버의 20번부터 이어진다
+    expect(find.text('글 20', skipOffstage: false), findsOneWidget);
+  });
+
   testWidgets('피드를 닫으면 오프라인 재조회를 멈춘다', (tester) async {
     // given
     final posts = _OfflinePostRepository()
