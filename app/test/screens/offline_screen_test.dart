@@ -39,6 +39,13 @@ class _OfflinePostRepository extends FakePostRepository {
 
   void goOnline() => _cache = null;
 
+  // 실제 저장소처럼 서버 연결이 없으면 게시가 실패한다.
+  @override
+  Future<Post> addPost(String body, {String? requestId}) async {
+    if (offline) throw StateError('unavailable');
+    return super.addPost(body, requestId: requestId);
+  }
+
   @override
   Future<PostPage> getPostPage({PostCursor? after}) async {
     pageRequests++;
@@ -301,6 +308,44 @@ void main() {
     // then
     expect(find.text('서버에 있던 글'), findsOneWidget);
     expect(find.text(_reconnected), findsOneWidget);
+  });
+
+  testWidgets('캐시가 남은 상태로 오프라인에서 앱을 다시 시작하면 강제 종료 없이 캐시 글과 오프라인 안내를 보여준다', (tester) async {
+    // given: 전에 읽은 글이 기기 캐시에 남아 있고, 연결이 없는 상태로 앱을 다시 시작한다
+    final posts = _OfflinePostRepository()
+      ..posts.add(_post('p1', '전에 읽은 글', now));
+    posts.goOffline();
+
+    // when
+    await _pumpFeed(tester, posts);
+
+    // then
+    expect(find.text('전에 읽은 글'), findsOneWidget);
+    expect(find.text(_feedOffline), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('오프라인에서 글을 쓰다 게시가 실패해도 강제 종료 없이 본문이 남는다', (tester) async {
+    // given: 피드를 읽다가 연결이 끊겼다
+    final posts = _OfflinePostRepository()
+      ..posts.add(_post('p1', '읽던 글', now));
+    await _pumpFeed(tester, posts);
+    posts.goOffline();
+    await _refresh(tester);
+
+    // when: 글쓰기를 열어 게시한다
+    await tester.tap(find.byTooltip('글쓰기'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '연결 없이 쓴 글');
+    await tester.pump();
+    await tester.tap(find.text('게시'));
+    await tester.pumpAndSettle();
+
+    // then
+    expect(find.text('올리지 못했어요. 입력한 글은 그대로 있어요.'), findsOneWidget);
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.controller!.text, '연결 없이 쓴 글');
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('피드를 닫으면 오프라인 재조회를 멈춘다', (tester) async {
