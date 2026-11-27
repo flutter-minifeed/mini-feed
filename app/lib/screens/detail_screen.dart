@@ -45,6 +45,10 @@ class _DetailScreenState extends State<DetailScreen> {
   // 다시 읽기가 겹치면 마지막으로 시작한 읽기의 결과만 상태에 반영한다.
   int _loadGeneration = 0;
 
+  // 마지막으로 화면에 보여준 결과. 입력 중 연결 확인 같은 다시 읽기가 오프라인이 아닌
+  // 오류로 실패하면, 쓰던 화면을 오류 안내로 바꾸지 않고 이 결과를 그대로 둔다.
+  _DetailData? _shown;
+
   // 온라인으로 연 상세에서 댓글을 쓰는 사이 연결이 끊겨도 입력을 막아야 한다(#15).
   // 상세는 연결이 끊긴 것을 따로 알 수 없어서, 댓글을 입력하면 다시 읽어 확인한다.
   // 마지막 확인 뒤 재확인 간격이 지나기 전에는 다시 읽지 않고, 그 사이 입력이 있었으면
@@ -82,7 +86,30 @@ class _DetailScreenState extends State<DetailScreen> {
     final generation = ++_loadGeneration;
     // 늦게 끝난 이전 읽기가 최신 결과의 상태나 재확인 예약을 덮어쓰지 않게 한다.
     bool isLatest() => mounted && generation == _loadGeneration;
+    final shown = _shown;
+    try {
+      final result = await _read(repositories, isLatest);
+      if (isLatest()) _shown = result;
+      return result;
+    } on OfflineException {
+      rethrow;
+    } catch (_) {
+      if (shown == null) rethrow;
+      // 오류가 이어져도 입력할 때마다 다시 읽지 않도록 확인 간격을 다시 걸고,
+      // 오프라인 화면이었다면 자동 재확인도 이어 간다.
+      if (isLatest()) {
+        final online = shown.comments != null;
+        _markCommentsLoaded(online);
+        if (!online) _scheduleOfflineRetry();
+      }
+      return shown;
+    }
+  }
 
+  Future<_DetailData?> _read(
+    RepositoryScope repositories,
+    bool Function() isLatest,
+  ) async {
     final Post? post;
     try {
       post = await repositories.postRepository.getPostById(widget.postId);

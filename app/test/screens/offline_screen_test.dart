@@ -74,6 +74,9 @@ class _OfflineCommentRepository extends FakeCommentRepository {
   bool offline = false;
   int requests = 0;
 
+  /// 있으면 오프라인이 아닌 이 오류로 조회가 실패한다.
+  Object? error;
+
   /// 있으면 응답을 이 시점까지 늦춘다. 연결 상태는 요청한 순간 값으로 정한다.
   Completer<void>? gate;
 
@@ -81,7 +84,9 @@ class _OfflineCommentRepository extends FakeCommentRepository {
   Future<List<Comment>> getComments(String postId) async {
     requests++;
     final wasOffline = offline;
+    final error = this.error;
     await gate?.future;
+    if (error != null) throw error;
     if (wasOffline) throw const OfflineException();
     return super.getComments(postId);
   }
@@ -578,6 +583,28 @@ void main() {
     final field = tester.widget<TextField>(find.byType(TextField));
     expect(field.enabled, isFalse);
     expect(field.controller!.text, '바로 쓴 초안');
+  });
+
+  testWidgets('댓글을 쓰는 중 연결 확인이 오프라인이 아닌 오류로 실패해도 보던 글과 초안을 그대로 둔다', (tester) async {
+    // given: 온라인으로 상세를 열어 두고 시간이 지났다
+    final comments = await _openDetail(tester, offline: false);
+    await tester.pump(offlineRetryInterval);
+
+    // when: 초안을 쓰는데 연결 확인이 권한 오류처럼 다른 이유로 실패한다
+    comments.error = StateError('permission-denied');
+    await tester.enterText(find.byType(TextField), '쓰던 초안');
+    await tester.pumpAndSettle();
+    final requests = comments.requests;
+    await tester.enterText(find.byType(TextField), '쓰던 초안 이어서');
+    await tester.pumpAndSettle();
+
+    // then: 오류 화면으로 바꾸지 않고 본문·댓글·초안을 유지하며, 입력마다 다시 읽지 않는다
+    expect(find.text('게시글을 불러오지 못했어요.'), findsNothing);
+    expect(find.text('저장된 적 없는 댓글'), findsOneWidget);
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.enabled, isTrue);
+    expect(field.controller!.text, '쓰던 초안 이어서');
+    expect(comments.requests, requests);
   });
 
   testWidgets('다시 시도를 겹쳐 누르면 늦게 끝난 이전 읽기가 최신 결과를 덮어쓰지 않는다', (tester) async {
