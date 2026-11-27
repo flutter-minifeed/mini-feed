@@ -138,14 +138,25 @@ class _FeedScreenState extends State<FeedScreen> {
           }
         });
       }
-    } catch (_) {
+    } catch (error) {
       if (!mounted || requestId != _requestId) return;
+      // 복구를 확인하는 도중 한 번 시간 초과가 나도 연결이 불안정한 것뿐이라,
+      // 오프라인 안내를 유지하고 재확인을 이어 간다. 그래야 연결이 돌아왔을 때
+      // 직접 당기지 않아도 새 글 칩과 재연결 안내가 뜬다(#15).
+      if (_offline && error is TimeoutException) {
+        setState(() {
+          _loading = false;
+          _refreshing = false;
+        });
+        _scheduleOfflineRetry();
+        return;
+      }
       setState(() {
         _loading = false;
         _refreshing = false;
         if (!isRefresh) _failed = true;
-        // 오프라인이면 저장소가 오류 대신 캐시 페이지를 돌려준다. 오류가 났다는 건 오프라인이
-        // 아니라 다른 실패라서, 오프라인 안내를 끄고 일반 새로고침 실패로 알린다(#15).
+        // 오프라인이면 저장소가 오류 대신 캐시 페이지를 돌려준다. 시간 초과가 아닌 오류는
+        // 권한 거부처럼 오프라인이 아닌 실패라서, 오프라인 안내를 끄고 새로고침 실패로 알린다.
         _offline = false;
       });
       if (isRefresh) {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -150,6 +152,52 @@ void main() {
     expect(find.text(_reconnected), findsOneWidget);
     expect(find.text('새 글 1개'), findsOneWidget);
     expect(_feedOffset(tester), offset);
+  });
+
+  testWidgets('읽다가 연결이 끊긴 사이 새 글이 올라오고 복구 중 첫 확인이 시간 초과여도, 읽던 글을 유지한 채 직접 당기지 않고 새 글 알림을 받아 볼 수 있다', (tester) async {
+    // given: 피드를 아래로 내리며 읽다가 다음 페이지를 읽는 순간 연결이 끊긴다
+    final posts = _OfflinePostRepository();
+    for (var i = 0; i < 25; i++) {
+      final createdAt = now.subtract(Duration(minutes: i + 1));
+      posts.posts.add(_post('p$i', '글 $i', createdAt));
+    }
+    await _pumpFeed(tester, posts);
+    posts.goOffline();
+    await tester.drag(find.byType(ListView), const Offset(0, -5000));
+    await tester.pumpAndSettle();
+    expect(find.text(_feedOffline), findsOneWidget);
+    expect(find.text('글 19'), findsOneWidget);
+
+    // when: 그사이 다른 사람이 새 글을 올리고, 연결이 돌아왔지만 복구 중 첫 확인은 시간 초과로 실패한다
+    posts.posts.add(_post('new', '다른 사람이 올린 글', now));
+    posts.goOnline();
+    posts.error = TimeoutException('복구 중 첫 확인 시간 초과');
+    await tester.pump(offlineRetryInterval);
+    await tester.pumpAndSettle();
+
+    // then: 오프라인 안내와 읽던 글을 그대로 두고, 새로고침 실패로 끊지 않는다
+    expect(find.text(_feedOffline), findsOneWidget);
+    expect(find.text('새로고침하지 못했습니다. 다시 시도해 주세요.'), findsNothing);
+    expect(find.text('글 19'), findsOneWidget);
+
+    // when: 다음 확인은 성공한다
+    posts.error = null;
+    await tester.pump(offlineRetryInterval);
+    await tester.pumpAndSettle();
+
+    // then: 직접 당기지 않아도 재연결 안내와 새 글 칩이 뜨고, 읽던 글은 그대로다
+    expect(find.text(_feedOffline), findsNothing);
+    expect(find.text(_reconnected), findsOneWidget);
+    expect(find.text('새 글 1개'), findsOneWidget);
+    expect(find.text('글 19'), findsOneWidget);
+
+    // when: 새 글 칩을 누른다
+    await tester.tap(find.text('새 글 1개'));
+    await tester.pumpAndSettle();
+
+    // then: 맨 위로 올라가 새 글을 볼 수 있다
+    expect(find.text('다른 사람이 올린 글'), findsOneWidget);
+    expect(_feedOffset(tester), 0);
   });
 
   testWidgets('오프라인 재확인이 오프라인이 아닌 오류로 실패하면 오프라인 안내를 끄고 새로고침 실패를 알린다', (tester) async {
