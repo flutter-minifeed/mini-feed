@@ -13,9 +13,13 @@ abstract interface class PostRepository {
 
   /// [after]가 없으면 첫 페이지, 있으면 커서의 다음 글부터 최대 20개를 반환한다.
   /// 작성 시각 내림차순이며 시각이 같으면 문서 ID 내림차순으로 정렬한다.
+  /// 서버에 연결할 수 없거나 제때 답하지 않으면 기기 캐시에 남은 글로 같은 순서의 페이지를 만들고
+  /// [PostPage.fromCache]를 true로 둔다. 캐시가 비어 있으면 빈 페이지다(#15).
   Future<PostPage> getPostPage({PostCursor? after});
 
   /// id가 같은 게시글을 돌려준다. 없는 id면 null을 돌려준다.
+  /// 서버에 연결할 수 없거나 제때 답하지 않으면 캐시에 남은 글을 돌려준다.
+  /// 캐시에도 없으면 없는 글과 구분하도록 null 대신 `OfflineException`을 던진다(#15).
   Future<Post?> getPostById(String id);
 
   /// 현재 사용자의 검증된 본문을 저장한다. 두 초기 카운터는 0이다.
@@ -32,7 +36,7 @@ abstract interface class PostRepository {
 typedef PostCursor = ({DateTime createdAt, String postId});
 
 class PostPage {
-  PostPage(List<Post> posts)
+  PostPage(List<Post> posts, {this.fromCache = false})
     : posts = List.unmodifiable(posts),
       nextCursor = posts.length == pageSize
           ? (createdAt: posts.last.createdAt, postId: posts.last.id)
@@ -51,6 +55,10 @@ class PostPage {
 
   /// 가득 찬 페이지는 커서가 있다. 정확히 20의 배수면 다음 빈 페이지에서 끝난다.
   final PostCursor? nextCursor;
+
+  /// 서버에 연결하지 못해 기기 캐시에서 읽은 페이지면 true다.
+  /// 화면은 이 값으로 오프라인 상태를 표시한다.
+  final bool fromCache;
 }
 
 /// 게시 시각과 문서 ID가 모두 내림차순인 조회 순서.
