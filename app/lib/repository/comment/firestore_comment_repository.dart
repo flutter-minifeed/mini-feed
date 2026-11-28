@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../models/author.dart';
 import '../../models/comment.dart';
+import '../offline_exception.dart';
 import 'comment_repository.dart';
 
 class FirestoreCommentRepository implements CommentRepository {
@@ -23,15 +24,28 @@ class FirestoreCommentRepository implements CommentRepository {
         result.docs.map((comment) => _toComment(comment, postId)),
       );
     } on FirebaseException catch (error) {
+      // #15 연결이 없거나 서버가 제때 답하지 않으면 캐시에 남은 예전 댓글 대신 조회 불가를 알린다.
+      if (_isServerUnreachable(error)) throw const OfflineException();
       if (error.code != 'permission-denied') rethrow;
       // #16 가드가 원본 글이 없는 하위 경로의 조회를 차단한다.
       // 부모도 읽지 못하거나 실제로 존재하면 실패를 그대로 전달한다.
-      final parent = await post.get(_server);
+      final DocumentSnapshot<Map<String, dynamic>> parent;
+      try {
+        parent = await post.get(_server);
+      } on FirebaseException catch (parentError) {
+        // 부모 글을 확인하는 사이 연결이 끊겨도 같은 오프라인 계약으로 알린다(#15).
+        if (_isServerUnreachable(parentError)) throw const OfflineException();
+        rethrow;
+      }
       if (!parent.exists) return const [];
       rethrow;
     }
   }
 }
+
+// 연결이 없거나 서버가 시한 안에 답하지 않으면 서버에 닿지 못한 것으로 본다(#15).
+bool _isServerUnreachable(FirebaseException error) =>
+    error.code == 'unavailable' || error.code == 'deadline-exceeded';
 
 Comment _toComment(
   QueryDocumentSnapshot<Map<String, dynamic>> snapshot,

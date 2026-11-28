@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../models/post.dart';
 import '../repository/post/post_repository.dart';
 import '../repository/repository_scope.dart';
 import '../viewmodels/write_view_model.dart';
+import '../widgets/offline_banner.dart';
 import '../widgets/post_card.dart';
 import 'detail_screen.dart';
 import 'write_screen.dart';
@@ -33,6 +36,12 @@ class _FeedScreenState extends State<FeedScreen> {
   bool _refreshing = false;
   bool _loadingMore = false;
   bool _moreFailed = false;
+  // #15 서버에 닿지 못해 기기 캐시의 글을 보여주는 중이면 true다.
+  bool _offline = false;
+  // 오프라인으로 시작해 지금 목록이 기기 캐시에서만 온 상태인지 나타낸다(#15).
+  // 캐시는 일부 글만 남아 있을 수 있어서, 서버 페이지가 오면 이어 붙이지 않고 바꾼다.
+  bool _listFromCache = false;
+  Timer? _offlineRetry;
   int _requestId = 0;
 
   @override
@@ -54,6 +63,8 @@ class _FeedScreenState extends State<FeedScreen> {
       _newPostCount = 0;
       _highlightedPostCount = 0;
       _highlightBoundary = null;
+      _offline = false;
+      _listFromCache = false;
       _loadPosts();
     }
   }
@@ -64,6 +75,7 @@ class _FeedScreenState extends State<FeedScreen> {
   }) async {
     final requestId = ++_requestId;
     final repository = _repository!;
+    _offlineRetry?.cancel();
     setState(() {
       // 새로고침 동안 기존 목록과 스크롤 위치를 유지한다.
       _loading = !isRefresh;
@@ -87,25 +99,51 @@ class _FeedScreenState extends State<FeedScreen> {
                 )
                 .length;
       final showChip =
-          isRefresh && !revealNewPost && _posts.isNotEmpty && newPostCount > 0;
+          isRefresh &&
+          !revealNewPost &&
+          _posts.isNotEmpty &&
+          !_listFromCache &&
+          newPostCount > 0;
       final showTop = revealNewPost && newPostCount > 0;
-      final recovered = isRefresh && _failed;
+      final offline = page.fromCache;
+      // 처음부터 캐시가 비어 있으면 보여줄 글이 없으니 불러오지 못한 것으로 안내한다.
+      final nothingCached = offline && posts.isEmpty && _posts.isEmpty;
+      // 재연결 안내는 실제로 오프라인이었다가 서버에 다시 닿았을 때만 띄운다.
+      // 권한 오류 같은 다른 실패 뒤 새로고침에 성공한 것은 연결 복구가 아니다(#15).
+      final recovered = !offline && _offline;
+      // 오프라인 새로고침의 캐시 페이지는 읽던 글보다 적을 수 있다(캐시에서 지워졌거나
+      // 한 번도 저장되지 않은 글). 이미 보이던 목록을 줄이지 않도록 그대로 둔다(#15).
+      final keepList = offline && isRefresh && _posts.isNotEmpty;
       setState(() {
         _loading = false;
         _refreshing = false;
-        _failed = false;
+        _failed = nothingCached;
+        _offline = offline;
         _pendingPage = showChip ? page : null;
         _newPostCount = showChip ? newPostCount : 0;
-        if (!showChip) {
-          _applyFirstPage(page, keepTail: isRefresh);
+        if (!showChip && !keepList) {
+          // 캐시에서만 온 목록은 중간 글이 빠졌을 수 있어 뒷부분을 잇지 않는다.
+          // 다음 페이지는 서버가 확인한 마지막 글부터 읽는다.
+          _applyFirstPage(page, keepTail: isRefresh && !_listFromCache);
+          _listFromCache = offline;
           _highlightedPostCount = 0;
           _highlightBoundary = null;
         }
       });
-      if (recovered) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('다시 연결됐어요. 최신 글을 불러왔어요.')));
+      if (offline) _scheduleOfflineRetry();
+      // 상세가 위에 열려 있으면 띄우지 않는다. 스낵바는 앱 전체가 같이 써서 상세 위에 뜬다(#15).
+      if (recovered && (ModalRoute.isCurrentOf(context) ?? true)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              spacing: 12,
+              children: [
+                Icon(Icons.wifi, size: 20),
+                Expanded(child: Text('다시 연결됐어요. 최신 글을 불러왔어요.')),
+              ],
+            ),
+          ),
+        );
       }
       if (showTop) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -116,12 +154,26 @@ class _FeedScreenState extends State<FeedScreen> {
           }
         });
       }
-    } catch (_) {
+    } catch (error) {
       if (!mounted || requestId != _requestId) return;
+      // 복구를 확인하는 도중 한 번 시간 초과가 나도 연결이 불안정한 것뿐이라,
+      // 오프라인 안내를 유지하고 재확인을 이어 간다. 그래야 연결이 돌아왔을 때
+      // 직접 당기지 않아도 새 글 칩과 재연결 안내가 뜬다(#15).
+      if (_offline && error is TimeoutException) {
+        setState(() {
+          _loading = false;
+          _refreshing = false;
+        });
+        _scheduleOfflineRetry();
+        return;
+      }
       setState(() {
         _loading = false;
         _refreshing = false;
         if (!isRefresh) _failed = true;
+        // 오프라인이면 저장소가 오류 대신 캐시 페이지를 돌려준다. 시간 초과가 아닌 오류는
+        // 권한 거부처럼 오프라인이 아닌 실패라서, 오프라인 안내를 끄고 새로고침 실패로 알린다.
+        _offline = false;
       });
       if (isRefresh) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -129,6 +181,15 @@ class _FeedScreenState extends State<FeedScreen> {
         );
       }
     }
+  }
+
+  // 오프라인이면 같은 새로고침을 일정 시간 뒤 다시 보내 서버 연결 복구를 확인한다(#15).
+  // 새로고침은 읽던 목록과 위치를 유지하고, 새 글은 칩으로만 알린다.
+  void _scheduleOfflineRetry() {
+    _offlineRetry?.cancel();
+    _offlineRetry = Timer(offlineRetryInterval, () {
+      if (mounted) _loadPosts(isRefresh: true);
+    });
   }
 
   // 새 첫 페이지와 겹치는 기존 뒷부분은 유지한다.
@@ -170,23 +231,44 @@ class _FeedScreenState extends State<FeedScreen> {
       return;
     }
     final requestId = _requestId;
+    // 예약된 오프라인 재확인이 이 요청 도중 첫 페이지를 다시 읽으면 요청 번호가 바뀌어
+    // 받은 다음 페이지를 버리게 된다. 이 요청이 연결 상태를 대신 확인하므로 예약을 멈춘다(#15).
+    _offlineRetry?.cancel();
     setState(() => _loadingMore = true);
     try {
       final page = await repository.getPostPage(after: cursor);
       if (!mounted || requestId != _requestId) return;
+      if (page.fromCache) {
+        // 캐시로 만든 다음 페이지는 읽은 적 없는 중간 글이 빠질 수 있어 붙이지 않는다(#15).
+        // 커서는 그대로 두고, 첫 페이지처럼 오프라인 안내와 재확인으로 복구를 기다린다.
+        setState(() {
+          _loadingMore = false;
+          _moreFailed = true;
+          _offline = true;
+        });
+        _scheduleOfflineRetry();
+        return;
+      }
       final ids = _posts.map((post) => post.id).toSet();
+      final wasOffline = _offline;
       setState(() {
         _posts = [..._posts, ...page.posts.where((post) => ids.add(post.id))];
         _highlightedPostCount = _countHighlightedPosts();
         _nextCursor = page.nextCursor;
         _loadingMore = false;
       });
+      // 오프라인이던 피드가 서버에서 다음 페이지를 받았으면 연결된 것이다.
+      // 10초 재확인을 기다리지 않고 바로 첫 페이지를 다시 읽어, 오프라인 동안 올라온
+      // 새 글 칩과 재연결 안내를 보여주고 오프라인 안내를 끈다(#15).
+      if (wasOffline) _loadPosts(isRefresh: true);
     } catch (_) {
       if (!mounted || requestId != _requestId) return;
       setState(() {
         _loadingMore = false;
         _moreFailed = true;
       });
+      // 위에서 멈춘 재확인을 오프라인인 동안에는 다시 이어 간다.
+      if (_offline) _scheduleOfflineRetry();
     }
   }
 
@@ -260,6 +342,8 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   void _openDetail(Post post, {bool focusComment = false}) {
+    // 피드의 재연결 안내가 상세로 넘어가 상세 오프라인 안내와 겹치지 않게 닫는다(#15).
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         settings: RouteSettings(name: '/posts/${post.id}'),
@@ -271,6 +355,7 @@ class _FeedScreenState extends State<FeedScreen> {
 
   @override
   void dispose() {
+    _offlineRetry?.cancel();
     _scrollController.dispose();
     super.dispose();
   }
@@ -290,39 +375,51 @@ class _FeedScreenState extends State<FeedScreen> {
         ),
         body: SafeArea(
           top: false,
-          child: Stack(
+          child: Column(
             children: [
-              _buildBody(DateTime.now()),
-              if (_pendingPage != null)
-                Positioned(
-                  top: 12,
-                  left: 16,
-                  right: 16,
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: FilledButton(
-                      onPressed: _showNewPosts,
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size(0, 36),
-                        padding: const EdgeInsets.fromLTRB(14, 8, 16, 8),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        elevation: 3,
-                        shadowColor: theme.colorScheme.scrim.withValues(
-                          alpha: 0.25,
-                        ),
-                        textStyle: theme.textTheme.labelLarge,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        spacing: 6,
-                        children: [
-                          const Icon(Icons.arrow_upward, size: 18),
-                          Text(_newPostsLabel),
-                        ],
-                      ),
-                    ),
-                  ),
+              // 불러오지 못함 안내와 겹치지 않게, 캐시 글을 보여줄 때만 띄운다.
+              if (_offline && !_failed)
+                OfflineBanner(
+                  message: '오프라인이에요. 이전에 불러온 글을 보여주고 있어요.',
+                  onRetry: () => _loadPosts(isRefresh: true),
                 ),
+              Expanded(
+                child: Stack(
+                  children: [
+                    _buildBody(DateTime.now()),
+                    if (_pendingPage != null)
+                      Positioned(
+                        top: 12,
+                        left: 16,
+                        right: 16,
+                        child: Align(
+                          alignment: Alignment.topCenter,
+                          child: FilledButton(
+                            onPressed: _showNewPosts,
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size(0, 36),
+                              padding: const EdgeInsets.fromLTRB(14, 8, 16, 8),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              elevation: 3,
+                              shadowColor: theme.colorScheme.scrim.withValues(
+                                alpha: 0.25,
+                              ),
+                              textStyle: theme.textTheme.labelLarge,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              spacing: 6,
+                              children: [
+                                const Icon(Icons.arrow_upward, size: 18),
+                                Text(_newPostsLabel),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),

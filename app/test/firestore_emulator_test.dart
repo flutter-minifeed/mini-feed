@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:minifeed/models/author.dart';
 import 'package:minifeed/repository/comment/firestore_comment_repository.dart';
+import 'package:minifeed/repository/offline_exception.dart';
 import 'package:minifeed/repository/post/firestore_post_repository.dart';
 
 import 'helpers/firestore_emulator.dart';
@@ -210,7 +211,7 @@ void main() {
       // when, then
       await expectLater(
         comments.getComments(_fixturePost),
-        _firestoreError('unavailable'),
+        throwsA(isA<OfflineException>()),
       );
     } finally {
       await db.enableNetwork();
