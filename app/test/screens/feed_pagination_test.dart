@@ -239,7 +239,10 @@ void main() {
     }
 
     // when
-    await tester.enterText(find.byType(TextField), '내가 방금 쓴 글');
+    await tester.enterText(
+      find.byKey(const ValueKey('post-body')),
+      '내가 방금 쓴 글',
+    );
     await tester.pump();
     await tester.tap(find.text('게시'));
     await tester.pumpAndSettle();
@@ -384,8 +387,11 @@ class _PageRepository implements PostRepository {
   @override
   Future<List<Post>> getPosts() => original.getPosts();
   @override
-  Future<Post> addPost(String body, {String? requestId}) =>
-      original.addPost(body, requestId: requestId);
+  Future<Post> addPost(
+    String body, {
+    String? requestId,
+    List<String> tags = const [],
+  }) => original.addPost(body, requestId: requestId, tags: tags);
   @override
   Future<PostPage> getPostPage({PostCursor? after}) async {
     requests.add(after);

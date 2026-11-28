@@ -4,19 +4,21 @@ import 'author.dart';
 ///
 /// 저장 형식에서 Post로 바꾸는 일은 각 저장소 구현이 맡는다.
 class Post {
-  const Post({
+  Post({
     required this.id,
     required this.author,
     required this.body,
+    List<String> tags = const [],
     required this.createdAt,
     required this.likeCount,
     required this.commentCount,
     required this.likedByMe,
-  });
+  }) : tags = List.unmodifiable(tags);
 
   final String id;
   final Author author;
   final String body;
+  final List<String> tags;
 
   /// 기기 시간대 기준 작성 시각.
   final DateTime createdAt;

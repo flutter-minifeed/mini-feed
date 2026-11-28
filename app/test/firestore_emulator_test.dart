@@ -41,6 +41,7 @@ void main() {
     // then
     expect(post?.id, _fixturePost);
     expect(post?.body, '게시글 45');
+    expect(post?.tags, isEmpty);
     expect(post?.author.nickName, '테스트 펭귄');
   });
 
@@ -95,7 +96,11 @@ void main() {
 
   test('게시글 생성은 규칙의 필드만 서버에 저장하고 피드 첫 글을 반환한다', () async {
     // when
-    final post = await posts.addPost('새로 쓴 글\n둘째 줄', requestId: 'new-post');
+    final post = await posts.addPost(
+      '새로 쓴 글\n둘째 줄',
+      requestId: 'new-post',
+      tags: const ['제주', '운동·건강'],
+    );
 
     // then
     final data = (await db.collection('posts').doc(post.id).get(_server))
@@ -105,13 +110,19 @@ void main() {
       'nickName': author.nickName,
       'colorIndex': author.colorIndex,
       'body': post.body,
+      'tags': ['제주', '운동·건강'],
       'createdAt': isA<Timestamp>(),
       'likeCount': 0,
       'commentCount': 0,
     });
     expect((data['createdAt'] as Timestamp).toDate(), post.createdAt);
     expect(post.likedByMe, isFalse);
-    expect((await posts.getPosts()).first.id, post.id);
+    expect((await posts.getPosts()).first.tags, ['제주', '운동·건강']);
+    expect((await posts.getPostById(post.id))!.tags, post.tags);
+    await expectLater(
+      posts.addPost(post.body, requestId: post.id, tags: ['다른태그']),
+      throwsArgumentError,
+    );
   });
 
   test('같은 요청을 동시에 재시도해도 하나의 문서와 최초 작성 시각을 받는다', () async {

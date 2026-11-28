@@ -161,6 +161,31 @@ for (const [name, change] of [
   });
 }
 
+for (const [name, tags, allowed] of [
+  ['빈 태그', [], true],
+  ['직접 입력과 고정 주제 5개', ['제주', '운동·건강', 'Trip_2', '일·알바', '연애·가족'], true],
+  ['6개', ['가', '나', '다', '라', '마', '바'], false],
+  ['배열이 아닌 값', '여행', false],
+  ['문자열이 아닌 항목', ['여행', 1], false],
+  ['대소문자 중복', ['Flutter', 'flutter'], false],
+  ['빈 이름', [''], false],
+  ['21자', ['가'.repeat(21)], false],
+  ['임의의 가운뎃점', ['내·태그'], false],
+  ['공백', ['제주 여행'], false],
+  ['접두 기호', ['#여행'], false],
+]) {
+  test(name + ' 태그로 작성하면 ' + (allowed ? '허용된다' : '거부된다'), async () => {
+    // given
+    const ref = postRef(authenticated());
+
+    // when
+    const request = setDoc(ref, post({ tags }));
+
+    // then
+    await (allowed ? assertSucceeds(request) : assertFails(request));
+  });
+}
+
 test('필수 필드를 하나라도 누락하면 게시글 생성이 거부된다', async () => {
   // given
   const ref = postRef(authenticated());

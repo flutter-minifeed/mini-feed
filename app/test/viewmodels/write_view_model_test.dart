@@ -66,6 +66,23 @@ void main() {
     expect(post, same(repository.posts.single));
   });
 
+  test('실패 후 태그만 수정하면 새 요청 ID와 수정한 태그를 전달한다', () async {
+    // given
+    final gate = Completer<void>();
+    repository.blockAddUntil = gate;
+    final first = viewModel.submit('첫 글', tags: ['여행']);
+    gate.completeError(StateError('저장 거부'));
+    await first;
+    repository.blockAddUntil = null;
+
+    // when
+    final post = await viewModel.submit('첫 글', tags: ['제주']);
+
+    // then
+    expect(repository.requestIds.toSet(), hasLength(2));
+    expect(post?.tags, ['제주']);
+  });
+
   test('저장 오류는 실패 상태로 알리고 성공 결과를 반환하지 않는다', () async {
     // given
     final gate = Completer<void>();
